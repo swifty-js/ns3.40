@@ -1,0 +1,25 @@
+\begin{abstract}
+随着云计算、大数据和人工智能技术的快速发展，现代数据中心网络规模呈指数级增长，对传输控制协议（TCP）拥塞控制机制的性能提出了前所未有的挑战。传统基于丢包的拥塞控制算法（如TCP NewReno、CUBIC）存在拥塞信号滞后、高带宽延迟积（Bandwidth-Delay Product，BDP）网络收敛缓慢、无法区分拥塞程度等固有缺陷；而基于延迟的算法（如TCP Vegas、BBR）则面临往返时延（Round-Trip Time，RTT）测量不稳定、与丢包算法共存时公平性差等问题。本文提出Lark算法——一种基于强化学习的多信号融合自适应网络拥塞控制方法。该算法名称寓意"云雀"，象征着高吞吐量（High Throughput）与低延迟（Low Latency）的设计目标，如同云雀般轻盈敏捷、反应迅速。
+
+Lark算法的核心创新包括：（1）设计了包含15个参数的完整观测空间，首次将显式拥塞通知（Explicit Congestion Notification，ECN）状态、拥塞控制状态机（Congestion Algorithm State）状态、拥塞事件类型等丰富的协议栈信息纳入强化学习状态表示；（2）提出多信号融合拥塞检测方法，采用分层优先级机制综合分析丢包信号、ECN信号、拥塞状态信号，并通过频率过滤策略区分持续性拥塞和瞬态扰动；（3）设计差异化拥塞响应机制，针对不同拥塞类型采用不同的窗口保留因子（Window Retention Factor）——丢包0.70、ECN标记0.85、超时0.50，并引入连续缩减保护机制（最多连续3次缩减后保持窗口），充分区分拥塞信号的性质和严重程度；（4）实现强化学习驱动的自适应参数调优，根据RTT膨胀比、奖励信号的指数移动平均（Exponential Moving Average，EMA）、连续增长趋势等多因素动态调整乘性增加因子$\alpha$（取值范围$[1.05, 1.50]$，基准值1.20）；（5）采用融合控制策略$V_t = \max(\alpha \times BDP, W) + \gamma \times MSS$（$\gamma = 2.0$），将基于BDP窗口化最大值过滤（Windowed Max-filter）估计的速率控制与基于当前窗口的保守控制相结合，并引入管道利用率感知的加速增长机制。
+
+本文基于ns-3网络仿真平台和ns3-gym/OpenGym强化学习框架实现了Lark算法，采用ZeroMQ进程间通信实现仿真进程与决策进程的高效协作，并采用MTP-Interface多线程并行化仿真架构加速训练验证。在涵盖机架内高速网络、不同过载比场景、跨Pod网络和跨数据中心广域网（Wide Area Network，WAN）等9种典型数据中心网络场景的大量实验中，Lark算法相比传统算法展现出显著优势：在数据中心内部场景下，Lark实现了与传统最优算法（NewReno/CUBIC）相当的吞吐量（差距<1\%），同时将延迟降低了70\%至81\%（从1.9$\sim$2.8ms降至0.436$\sim$0.837ms）；在跨Pod和WAN场景下，Lark的吞吐量与传统算法持平，带宽利用率均超过99\%。实验结果表明，Lark算法成功实现了"高吞吐、低延迟"的设计目标，为数据中心网络拥塞控制提供了一种高效、自适应的解决方案。
+
+\keywords{拥塞控制，强化学习，多信号融合，显式拥塞通知，自适应参数调优，数据中心网络}
+
+\end{abstract}
+
+
+
+
+\begin{englishabstract}
+
+With the rapid development of cloud computing, big data, and artificial intelligence technologies, modern data center networks have experienced exponential growth in scale, posing unprecedented challenges to the performance of Transmission Control Protocol (TCP) congestion control mechanisms. Traditional loss-based congestion control algorithms (such as TCP NewReno and CUBIC) suffer from inherent defects including delayed congestion signals, slow convergence in high Bandwidth-Delay Product (BDP) networks, and inability to distinguish congestion severity. Meanwhile, delay-based algorithms (such as TCP Vegas and BBR) face issues like unstable Round-Trip Time (RTT) measurements and poor fairness when coexisting with loss-based algorithms.
+
+This paper proposes Lark, a reinforcement learning-based multi-signal fusion adaptive network congestion control algorithm. The name ``Lark'' symbolizes the design goals of High Throughput and Low Latency, like a lark that is light, agile, and responsive. The core innovations of Lark include: (1) a complete observation space containing 15 parameters, incorporating Explicit Congestion Notification (ECN) status, Congestion Algorithm (CA) state machine status, and congestion event types into the reinforcement learning state representation for the first time; (2) a multi-signal fusion congestion detection method using hierarchical priority mechanisms to comprehensively analyze packet loss signals, ECN signals, and congestion state signals, with frequency filtering to distinguish persistent congestion from transient disturbances; (3) a differentiated congestion response mechanism with different window retention factors for different congestion types (packet loss: 0.70, ECN: 0.85, timeout: 0.50), along with consecutive decrease protection (holding window after 3 consecutive reductions); (4) reinforcement learning-driven adaptive parameter tuning based on RTT inflation ratio, reward signal EMA, and consecutive growth trends, dynamically adjusting the multiplicative increase factor $\alpha \in [1.05, 1.50]$ with base value 1.20; (5) a fusion control strategy $V_t = \max(\alpha \times BDP, W) + \gamma \times MSS$ ($\gamma = 2.0$) combining windowed max-filter BDP estimation with current window-based conservative control and pipeline utilization-aware acceleration.
+
+We implemented Lark based on the ns-3 network simulation platform and ns3-gym/OpenGym reinforcement learning framework, with ZeroMQ inter-process communication and MTP-Interface multi-threaded parallel simulation architecture to accelerate training and validation. Extensive experiments across 9 typical data center network scenarios demonstrate significant advantages: in data center internal scenarios, Lark achieved throughput comparable to traditional optimal algorithms (NewReno/CUBIC) with less than 1\% gap, while reducing latency by 70\% to 81\% (from 1.9$\sim$2.8ms to 0.436$\sim$0.837ms); in cross-Pod and WAN scenarios, Lark matched traditional algorithms in throughput with bandwidth utilization exceeding 99\%.
+
+\englishkeywords{Congestion Control, Reinforcement Learning, Multi-signal Fusion, Explicit Congestion Notification, Adaptive Parameter Tuning, Data Center Network}
+
+\end{englishabstract}
