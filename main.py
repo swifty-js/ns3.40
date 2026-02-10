@@ -242,24 +242,34 @@ def cmd_sim(args):
 # 汇总报告 (summary)
 # =============================================================================
 def cmd_summary(args):
-    """从已有日志中提取指标，生成 CSV 报告"""
-    if args.udp:
-        search_dirs = ["./logs/lark-udp", "./logs/comparison-udp"]
-        tag = "udp"
-    else:
-        search_dirs = ["./logs/lark", "./logs/comparison"]
-        tag = "tcp"
+    """从已有日志中提取指标，生成 CSV 报告 (同时处理 TCP 和 UDP)"""
+    search_dirs = [
+        "./logs/lark",
+        "./logs/comparison",
+        "./logs/lark-udp",
+        "./logs/comparison-udp",
+    ]
 
     os.makedirs("./logs/summary", exist_ok=True)
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    out_path = f"./logs/summary/results_{tag}_{timestamp}.csv"
+    out_path = f"./logs/summary/results_{timestamp}.csv"
 
+    fieldnames = [
+        "Scenario",
+        "Protocol",
+        "Type",
+        "AccessBW",
+        "BottleneckBW",
+        "Throughput_Mbps",
+        "LossRate_Pct",
+    ]
     rows = []
     for search_dir in search_dirs:
-        pattern = os.path.join(search_dir, "*.flowmonitor")
-        for flowmon in glob.glob(pattern):
+        if not os.path.isdir(search_dir):
+            continue
+        tag = "udp" if "udp" in search_dir.lower() else "tcp"
+        for flowmon in glob.glob(os.path.join(search_dir, "*.flowmonitor")):
             basename = os.path.basename(flowmon).replace(".flowmonitor", "")
-            # scenario_Protocol -> 最后一个 _ 分隔
             parts = basename.rsplit("_", 1)
             if len(parts) != 2:
                 continue
@@ -283,6 +293,7 @@ def cmd_summary(args):
                 {
                     "Scenario": scenario,
                     "Protocol": protocol,
+                    "Type": tag,
                     "AccessBW": access_bw,
                     "BottleneckBW": bottleneck_bw,
                     "Throughput_Mbps": throughput,
@@ -290,14 +301,6 @@ def cmd_summary(args):
                 }
             )
 
-    fieldnames = [
-        "Scenario",
-        "Protocol",
-        "AccessBW",
-        "BottleneckBW",
-        "Throughput_Mbps",
-        "LossRate_Pct",
-    ]
     with open(out_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
@@ -789,8 +792,7 @@ def main():
   python main.py sim --scenario wifi_ac     # 只跑 wifi_ac 场景
   python main.py draw                       # 生成全部绘图
   python main.py draw --comparison-dir ./logs/comparison
-  python main.py summary                    # 生成纯 TCP 汇总 CSV
-  python main.py summary --udp              # 生成 UDP 汇总 CSV
+  python main.py summary                    # 生成汇总 CSV (TCP + UDP)
 """,
     )
     sub = parser.add_subparsers(dest="command", help="子命令")
@@ -823,8 +825,9 @@ def main():
     p_draw.add_argument("--output-dir", default=None, help="指定输出目录")
 
     # --- summary ---
-    p_summary = sub.add_parser("summary", help="生成汇总 CSV 报告")
-    p_summary.add_argument("--udp", action="store_true", help="汇总 UDP 实验结果")
+    p_summary = sub.add_parser(
+        "summary", help="生成汇总 CSV 报告 (同时包含 TCP 和 UDP)"
+    )
 
     args = parser.parse_args()
 

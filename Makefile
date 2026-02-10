@@ -46,11 +46,17 @@ format: ## Format code
 	-o -name "*.hxx" \
 	-o -name "*.cxx" | xargs clang-format -i
 	# Python 代码格式化 (ruff)
+	# pip install ruff
 	ruff format ./
 	# Shell 脚本格式化 (shfmt)，-r 避免无文件时报错
+	# go install mvdan.cc/sh/v3/cmd/shfmt@latest
 	find . -name "*.sh" -not -path "./.venv/*" | xargs -r shfmt -l -w
-	# Markdown / JSON / YAML 等格式化 (prettier)
-	prettier -w ./
+	# Markdown / JSON / YAML 等格式化 (biome)
+	# pnpm add @biomejs/biome -g
+	biome format --write --vcs-enabled=true \
+	--vcs-client-kind=git \
+	--vcs-use-ignore-file=true \
+	--files-ignore-unknown=true ./
 
 .PHONY: build
 build: ## Configure and build ns-3
@@ -89,12 +95,8 @@ draw: ## Generate plots from logs
 	python ./main.py draw
 
 .PHONY: summary
-summary: ## Generate summary CSV report (TCP)
+summary: ## Generate summary CSV report (TCP + UDP)
 	python ./main.py summary
-
-.PHONY: summary-udp
-summary-udp: ## Generate summary CSV report (UDP)
-	python ./main.py summary --udp
 
 .PHONY: all
 all: compare ## Run all simulations
