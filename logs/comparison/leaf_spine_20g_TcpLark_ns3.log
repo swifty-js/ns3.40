@@ -4,55 +4,55 @@ Ns3Env parameters:
 --openGymPort: 5555
 --seed: 42
 --Tcp version: ns3::TcpLark
---Queue size: 100 packets (150000 bytes), BDP=9999 bytes
-Simulation process id: 237802 (parent (waf shell) id: 237795)
+--Queue size: 100 packets (150000 bytes), BDP=44999 bytes
+Simulation process id: 2262 (parent (waf shell) id: 2256)
 Waiting for Python process to connect on port: tcp://localhost:5555
 Please start proper Python Gym Agent
 TCP Flow 1 Src Addr: 10.1.1.1 Dst Addr: 10.2.1.1
 Time Last Rx Packet: 20.1
 Time First Tx Packet: 0
-Tx Packets Count: 5676883
-Rx Packets Count: 5676684
+Tx Packets Count: 11343813
+Rx Packets Count: 11343618
 Loss Rate: 0%
-Throughput: 3370.99 Mbps
+Throughput: 6736.19 Mbps
 TCP Flow 2 Src Addr: 10.2.1.1 Dst Addr: 10.1.1.1
 Time Last Rx Packet: 20.1
-Time First Tx Packet: 4.084e-06
-Tx Packets Count: 2838342
-Rx Packets Count: 2838342
+Time First Tx Packet: 9.041e-06
+Tx Packets Count: 5671809
+Rx Packets Count: 5671807
 Loss Rate: 0%
-Throughput: 58.7438 Mbps
+Throughput: 117.387 Mbps
 TCP Flow 3 Src Addr: 10.1.2.1 Dst Addr: 10.2.2.1
 Time Last Rx Packet: 20.1
 Time First Tx Packet: 0.1
-Tx Packets Count: 5592801
-Rx Packets Count: 5592602
+Tx Packets Count: 11176157
+Rx Packets Count: 11175962
 Loss Rate: 0%
-Throughput: 3337.66 Mbps
+Throughput: 6669.81 Mbps
 TCP Flow 4 Src Addr: 10.2.2.1 Dst Addr: 10.1.2.1
 Time Last Rx Packet: 20.1
-Time First Tx Packet: 0.100124
-Tx Packets Count: 2796301
-Rx Packets Count: 2796301
+Time First Tx Packet: 0.100069
+Tx Packets Count: 5587981
+Rx Packets Count: 5587979
 Loss Rate: 0%
-Throughput: 58.1634 Mbps
+Throughput: 116.23 Mbps
 TCP Flow 5 Src Addr: 10.1.3.1 Dst Addr: 10.2.3.1
 Time Last Rx Packet: 20.1
 Time First Tx Packet: 0.2
-Tx Packets Count: 5550991
-Rx Packets Count: 5550792
+Tx Packets Count: 11092575
+Rx Packets Count: 11092382
 Loss Rate: 0%
-Throughput: 3329.36 Mbps
+Throughput: 6653.2 Mbps
 TCP Flow 6 Src Addr: 10.2.3.1 Dst Addr: 10.1.3.1
 Time Last Rx Packet: 20.1
-Time First Tx Packet: 0.200124
-Tx Packets Count: 2775396
-Rx Packets Count: 2775396
+Time First Tx Packet: 0.200069
+Tx Packets Count: 5546191
+Rx Packets Count: 5546188
 Loss Rate: 0%
-Throughput: 58.0187 Mbps
+Throughput: 115.941 Mbps
 Wait for stop message
 RxPkts:
----SinkId: 0 RxPkts: 5676682
----SinkId: 1 RxPkts: 5592600
----SinkId: 2 RxPkts: 5550790
-Total Rx Bytes Count: 8174422080
+---SinkId: 0 RxPkts: 11343616
+---SinkId: 1 RxPkts: 11175960
+---SinkId: 2 RxPkts: 11092380
+Total Rx Bytes Count: 16334807040

@@ -1,6 +1,6 @@
 /* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
-#ifndef TCP_GEMINI_H
-#define TCP_GEMINI_H
+#ifndef TCP_LARK_H
+#define TCP_LARK_H
 
 #include "../rl-tcp/tcp-rl.h" // Inherit base logic from RL example
 #include "tcp-lark-env.h"
@@ -24,4 +24,4 @@ private:
 
 } // namespace ns3
 
-#endif /* TCP_GEMINI_H */
+#endif /* TCP_LARK_H */

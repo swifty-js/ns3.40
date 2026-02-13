@@ -77,8 +77,6 @@ static void PrintRxCount() {
 }
 
 int main(int argc, char *argv[]) {
-  MtpInterface::Enable();
-
   uint32_t openGymPort = 5555;
   double tcpEnvTimeStep = 0.1;
 
@@ -141,6 +139,12 @@ int main(int argc, char *argv[]) {
   cmd.Parse(argc, argv);
 
   transport_prot = std::string("ns3::") + transport_prot;
+
+  // MTP (multi-threaded parallel simulation) is incompatible with OpenGym's
+  // ZMQ-based synchronous communication. Enable MTP only for non-RL protocols.
+  if (transport_prot.compare("ns3::TcpLark") != 0) {
+    MtpInterface::Enable();
+  }
 
   SeedManager::SetSeed(1);
   SeedManager::SetRun(run);
@@ -379,16 +383,21 @@ int main(int argc, char *argv[]) {
                     << flow.second.timeFirstTxPacket.GetSeconds());
       NS_LOG_UNCOND("Tx Packets Count: " << flow.second.txPackets);
       NS_LOG_UNCOND("Rx Packets Count: " << flow.second.rxPackets);
-      NS_LOG_UNCOND("Loss Rate: " << (flow.second.lostPackets /
-                                      (double)flow.second.txPackets) *
-                                         100
-                                  << "%");
-      NS_LOG_UNCOND("Throughput: "
-                    << flow.second.rxBytes * 8.0 /
-                           (flow.second.timeLastRxPacket.GetSeconds() -
-                            flow.second.timeFirstTxPacket.GetSeconds()) /
-                           1e6
-                    << " Mbps");
+
+      double lossRate = 0.0;
+      if (flow.second.txPackets > 0) {
+        lossRate =
+            (flow.second.lostPackets / (double)flow.second.txPackets) * 100;
+      }
+      NS_LOG_UNCOND("Loss Rate: " << lossRate << "%");
+
+      double throughput = 0.0;
+      double rxTime = flow.second.timeLastRxPacket.GetSeconds() -
+                      flow.second.timeFirstTxPacket.GetSeconds();
+      if (rxTime > 0) {
+        throughput = flow.second.rxBytes * 8.0 / rxTime / 1e6;
+      }
+      NS_LOG_UNCOND("Throughput: " << throughput << " Mbps");
     }
   }
 
@@ -398,6 +407,13 @@ int main(int argc, char *argv[]) {
 
   PrintRxCount();
   NS_LOG_UNCOND("Total Rx Bytes Count: " << sink->GetTotalRx());
+
+  // Release smart pointers before Simulator::Destroy() to avoid
+  // calling into destroyed OpenGymEnv objects (pure virtual crash).
+  monitor = nullptr;
+  sink = nullptr;
+  openGymInterface = nullptr;
+
   Simulator::Destroy();
   return 0;
 }

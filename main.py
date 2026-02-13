@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-NS-3 Lark TCP 仿真管理工具
-功能: 仿真运行 (sim) / 绘图 (draw) / 汇总报告 (summary)
+NS-3 Lark TCP Simulation Management Tool
+Features: Simulation (sim) / Plotting (draw) / Summary Report (summary)
 """
 
 import argparse
@@ -23,7 +23,7 @@ plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
 plt.rcParams["axes.unicode_minus"] = False
 
 # =============================================================================
-# 全局默认配置
+# Global Default Configuration
 # =============================================================================
 DEFAULT_DURATION = 20
 DEFAULT_N_LEAF = 3
@@ -31,51 +31,51 @@ DEFAULT_SIM_SEED = 42
 DEFAULT_PROTOCOLS = ["TcpLark", "TcpNewReno", "TcpCubic", "TcpBbr"]
 AGENT_SCRIPT = "./contrib/opengym/examples/lark-tcp/test_lark.py"
 
-# 34 个场景定义: (场景名, 接入带宽, 瓶颈带宽, 接入延迟, 瓶颈延迟)
+# 36 scenario definitions: (name, access_bw, bottleneck_bw, access_delay, bottleneck_delay)
 SCENARIOS: List[Tuple[str, str, str, str, str]] = [
-    # --- 第一类: 数据中心机架内 (Intra-Rack) ---
+    # --- Category 1: Intra-Rack Data Center ---
     ("intra_rack_10g", "25Gbps", "10Gbps", "1us", "2us"),
     ("intra_rack_25g", "25Gbps", "25Gbps", "1us", "2us"),
-    # --- 第二类: Leaf-Spine 架构 ---
+    # --- Category 2: Leaf-Spine Architecture ---
     ("leaf_spine_20g", "50Gbps", "20Gbps", "2us", "5us"),
     ("leaf_spine_50g", "50Gbps", "50Gbps", "2us", "5us"),
-    # --- 第三类: 过载收敛 (Oversubscription) ---
+    # --- Category 3: Oversubscription Convergence ---
     ("oversub_4to1_10g", "10Gbps", "2.5Gbps", "2us", "5us"),
     ("oversub_4to1_40g", "40Gbps", "10Gbps", "2us", "5us"),
     ("oversub_2to1_25g", "25Gbps", "12.5Gbps", "2us", "5us"),
     ("oversub_2to1_50g", "50Gbps", "25Gbps", "2us", "5us"),
-    # --- 第四类: 拥塞程度梯度 ---
+    # --- Category 4: Congestion Level Gradient ---
     ("congested_light", "10Gbps", "5Gbps", "2us", "5us"),
     ("congested_medium", "10Gbps", "2Gbps", "2us", "5us"),
     ("congested_heavy", "10Gbps", "1Gbps", "2us", "5us"),
-    # --- 第五类: 跨 Pod / 跨数据中心 ---
+    # --- Category 5: Cross-Pod / Cross-DC ---
     ("cross_pod_10g", "25Gbps", "10Gbps", "5us", "50us"),
     ("cross_pod_20g", "50Gbps", "20Gbps", "5us", "50us"),
     ("cross_dc_wan", "10Gbps", "1Gbps", "10us", "5ms"),
-    # --- 第六类: RDMA 级超低延迟 ---
+    # --- Category 6: RDMA-like Ultra-Low Latency ---
     ("rdma_like_25g", "25Gbps", "25Gbps", "500ns", "1us"),
     ("rdma_like_50g", "50Gbps", "50Gbps", "500ns", "1us"),
-    # --- 第七类: 混合流量与非对称 ---
+    # --- Category 7: Mixed Traffic & Asymmetric ---
     ("mixed_small_flow", "10Gbps", "2Gbps", "2us", "10us"),
     ("mixed_large_flow", "50Gbps", "12.5Gbps", "2us", "10us"),
     ("asymmetric_high", "50Gbps", "1Gbps", "1us", "10us"),
     ("symmetric_low", "1Gbps", "1Gbps", "5us", "20us"),
-    # --- 第八类: 数据中心带宽扩展 ---
+    # --- Category 8: Data Center Bandwidth Scaling ---
     ("dc_100m", "1Gbps", "100Mbps", "2us", "5us"),
     ("dc_500m", "1Gbps", "500Mbps", "2us", "5us"),
     ("dc_100g", "100Gbps", "100Gbps", "1us", "2us"),
     ("dc_oversub_10to1", "10Gbps", "1Gbps", "2us", "5us"),
-    # --- 第九类: 无线 WiFi ---
+    # --- Category 9: WiFi Wireless ---
     ("wifi_ac", "1Gbps", "400Mbps", "1ms", "5ms"),
     ("wifi_ax", "1Gbps", "600Mbps", "1ms", "3ms"),
     ("wifi_n", "100Mbps", "50Mbps", "2ms", "10ms"),
     ("wifi_legacy", "100Mbps", "10Mbps", "5ms", "20ms"),
-    # --- 第十类: 蜂窝移动 (LTE / 5G NR) ---
+    # --- Category 10: Cellular Mobile (LTE / 5G NR) ---
     ("lte_good", "100Mbps", "50Mbps", "5ms", "20ms"),
     ("lte_poor", "50Mbps", "10Mbps", "10ms", "50ms"),
     ("nr_5g_embb", "1Gbps", "500Mbps", "1ms", "5ms"),
     ("nr_5g_edge", "500Mbps", "100Mbps", "2ms", "10ms"),
-    # --- 第十一类: 广域网 / 卫星通信 ---
+    # --- Category 11: WAN / Satellite ---
     ("wan_metro", "10Gbps", "1Gbps", "100us", "2ms"),
     ("wan_longhaul", "10Gbps", "1Gbps", "500us", "25ms"),
     ("satellite_leo", "100Mbps", "50Mbps", "5ms", "20ms"),
@@ -84,7 +84,7 @@ SCENARIOS: List[Tuple[str, str, str, str, str]] = [
 
 
 # =============================================================================
-# 仿真运行 (run_sim)
+# Simulation Runner (run_sim)
 # =============================================================================
 def run_sim(
     protocol: str,
@@ -99,12 +99,12 @@ def run_sim(
     sim_seed: int = DEFAULT_SIM_SEED,
     enable_udp_burst: int = 0,
 ) -> bool:
-    """运行单个仿真场景，返回是否成功"""
+    """Run a single simulation scenario, return True on success."""
     os.makedirs(log_dir, exist_ok=True)
     prefix = os.path.join(log_dir, f"{scenario}_{protocol}")
     flowmon_file = f"{prefix}.flowmonitor"
 
-    # 断点续跑: flowmonitor 已存在则跳过
+    # Resume support: skip if flowmonitor already exists
     if os.path.isfile(flowmon_file):
         print(f"[SKIP] {scenario}_{protocol} - flowmonitor already exists")
         return True
@@ -134,7 +134,7 @@ def run_sim(
 
     try:
         if protocol == "TcpLark":
-            # TcpLark: 后台启动 ns-3，等待 RL 环境就绪后启动 Python 智能体
+            # TcpLark: launch ns-3 in background, start Python agent after RL env is ready
             with open(ns3_log, "w") as log_f:
                 ns3_proc = subprocess.Popen(
                     ["./ns3", "run", ns3_cmd],
@@ -143,35 +143,73 @@ def run_sim(
                 )
 
             time.sleep(5)
+            agent_started = False
+            agent_proc = None
+
             for _ in range(60):
-                if ns3_proc.poll() is not None:
+                # Check if ns3 process has exited unexpectedly
+                poll_result = ns3_proc.poll()
+                if poll_result is not None:
+                    if not agent_started:
+                        print(
+                            f"[ERROR] ns3 process crashed before agent started (exit code: {poll_result})"
+                        )
+                        return False
                     break
+
                 try:
                     with open(ns3_log, "r") as f:
-                        if "Waiting for Python" in f.read():
+                        content = f.read()
+                        # Check for fatal errors
+                        if (
+                            "pure virtual method called" in content
+                            or "terminate called" in content
+                        ):
+                            print(f"[ERROR] ns3 process encountered fatal error")
+                            ns3_proc.terminate()
+                            ns3_proc.wait(timeout=5)
+                            return False
+                        if "Waiting for Python" in content and not agent_started:
+                            agent_started = True
                             agent_log = f"{prefix}_agent.log"
                             with open(agent_log, "w") as af:
-                                subprocess.run(
+                                # cwd must be set to the agent script directory,
+                                # otherwise "from tcp_lark import TcpLark" will fail
+                                agent_cwd = os.path.dirname(
+                                    os.path.abspath(AGENT_SCRIPT)
+                                )
+                                agent_proc = subprocess.Popen(
                                     [
                                         sys.executable,
-                                        AGENT_SCRIPT,
+                                        "-u",  # unbuffered stdout for real-time logging
+                                        os.path.abspath(AGENT_SCRIPT),
                                         "--start=0",
                                         "--iterations=1",
                                     ],
                                     stdout=af,
                                     stderr=subprocess.STDOUT,
+                                    cwd=agent_cwd,
                                 )
-                            break
                 except FileNotFoundError:
                     pass
                 time.sleep(1)
 
             ns3_proc.wait()
+
+            # Wait for agent process to finish
+            if agent_proc:
+                try:
+                    agent_proc.wait(timeout=30)
+                except subprocess.TimeoutExpired:
+                    agent_proc.terminate()
+
             if ns3_proc.returncode != 0:
-                print(f"[ERROR] Simulation failed: {scenario}_{protocol}")
+                print(
+                    f"[ERROR] Simulation failed: {scenario}_{protocol} (exit code: {ns3_proc.returncode})"
+                )
                 return False
         else:
-            # 非 RL 协议: 直接同步运行
+            # Non-RL protocols: run synchronously
             with open(ns3_log, "w") as log_f:
                 result = subprocess.run(
                     ["./ns3", "run", ns3_cmd],
@@ -192,13 +230,13 @@ def run_sim(
 
 
 def cmd_sim(args):
-    """执行仿真 (compare / compare-udp)"""
+    """Execute simulations (compare / compare-udp)."""
     enable_udp = 1 if args.udp else 0
     log_dir = "./logs/comparison-udp" if args.udp else "./logs/comparison"
     protocols = args.protocols or DEFAULT_PROTOCOLS
     scenarios = SCENARIOS
 
-    # 如果指定了场景过滤
+    # Filter scenarios if specified
     if args.scenario:
         scenarios = [s for s in scenarios if s[0] in args.scenario]
         if not scenarios:
@@ -239,10 +277,10 @@ def cmd_sim(args):
 
 
 # =============================================================================
-# 汇总报告 (summary)
+# Summary Report (summary)
 # =============================================================================
 def cmd_summary(args):
-    """从已有日志中提取指标，生成 CSV 报告 (同时处理 TCP 和 UDP)"""
+    """Extract metrics from existing logs and generate a CSV report (TCP and UDP)."""
     search_dirs = [
         "./logs/lark",
         "./logs/comparison",
@@ -315,7 +353,7 @@ def _grep_first(pattern: str, text: str) -> Optional[str]:
 
 
 # =============================================================================
-# 数据模型 (FlowMonitor 解析)
+# Data Models (FlowMonitor Parsing)
 # =============================================================================
 @dataclass
 class FlowData:
@@ -386,7 +424,7 @@ class ScenarioResult:
 
 
 # =============================================================================
-# FlowMonitor XML 解析
+# FlowMonitor XML Parsing
 # =============================================================================
 def _parse_ns_time(time_str: str) -> float:
     if not time_str:
@@ -450,7 +488,7 @@ def load_all_results(logs_dir: str) -> List[ScenarioResult]:
 
 
 # =============================================================================
-# 绘图函数
+# Plotting Functions
 # =============================================================================
 PROTOCOL_COLORS_BAR = ["#2ecc71", "#3498db", "#e74c3c", "#9b59b6"]
 PROTOCOL_COLORS_MAP = {
@@ -740,7 +778,7 @@ def plot_flow_throughput_comparison(log_dir: str, output_dir: str):
 
 
 def cmd_draw(args):
-    """生成绘图"""
+    """Generate plots."""
     datasets = [
         ("./logs/comparison", "./logs/plots"),
         ("./logs/comparison-udp", "./logs/plots-udp"),
@@ -779,54 +817,54 @@ def cmd_draw(args):
 
 
 # =============================================================================
-# CLI 入口
+# CLI Entry Point
 # =============================================================================
 def main():
     parser = argparse.ArgumentParser(
-        description="NS-3 Lark TCP 仿真管理工具",
+        description="NS-3 Lark TCP Simulation Management Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""\
-使用示例:
-  python main.py sim                        # 运行全部纯 TCP 仿真
-  python main.py sim --udp                  # 运行全部 TCP+UDP 仿真
-  python main.py sim --scenario wifi_ac     # 只跑 wifi_ac 场景
-  python main.py draw                       # 生成全部绘图
+Usage examples:
+  python main.py sim                        # Run all pure TCP simulations
+  python main.py sim --udp                  # Run all TCP+UDP simulations
+  python main.py sim --scenario wifi_ac     # Run only the wifi_ac scenario
+  python main.py draw                       # Generate all plots
   python main.py draw --comparison-dir ./logs/comparison
-  python main.py summary                    # 生成汇总 CSV (TCP + UDP)
+  python main.py summary                    # Generate summary CSV (TCP + UDP)
 """,
     )
-    sub = parser.add_subparsers(dest="command", help="子命令")
+    sub = parser.add_subparsers(dest="command", help="subcommand")
 
     # --- sim ---
-    p_sim = sub.add_parser("sim", help="运行仿真")
-    p_sim.add_argument("--udp", action="store_true", help="启用 UDP 突发干扰流")
+    p_sim = sub.add_parser("sim", help="Run simulations")
+    p_sim.add_argument("--udp", action="store_true", help="Enable UDP burst interference")
     p_sim.add_argument(
-        "--scenario", nargs="+", help="只运行指定场景 (空格分隔多个场景名)"
+        "--scenario", nargs="+", help="Run only specified scenarios (space-separated)"
     )
     p_sim.add_argument(
         "--protocols",
         nargs="+",
         default=None,
-        help="指定协议列表 (默认: TcpLark TcpNewReno TcpCubic TcpBbr)",
+        help="Protocol list (default: TcpLark TcpNewReno TcpCubic TcpBbr)",
     )
     p_sim.add_argument(
-        "--duration", type=int, default=DEFAULT_DURATION, help="仿真时长 (秒)"
+        "--duration", type=int, default=DEFAULT_DURATION, help="Simulation duration (seconds)"
     )
     p_sim.add_argument(
-        "--n-leaf", type=int, default=DEFAULT_N_LEAF, help="每侧叶子节点数"
+        "--n-leaf", type=int, default=DEFAULT_N_LEAF, help="Number of leaf nodes per side"
     )
     p_sim.add_argument(
-        "--sim-seed", type=int, default=DEFAULT_SIM_SEED, help="随机种子"
+        "--sim-seed", type=int, default=DEFAULT_SIM_SEED, help="Random seed"
     )
 
     # --- draw ---
-    p_draw = sub.add_parser("draw", help="生成绘图")
-    p_draw.add_argument("--comparison-dir", default=None, help="指定单个数据目录")
-    p_draw.add_argument("--output-dir", default=None, help="指定输出目录")
+    p_draw = sub.add_parser("draw", help="Generate plots")
+    p_draw.add_argument("--comparison-dir", default=None, help="Specify a single data directory")
+    p_draw.add_argument("--output-dir", default=None, help="Specify output directory")
 
     # --- summary ---
     p_summary = sub.add_parser(
-        "summary", help="生成汇总 CSV 报告 (同时包含 TCP 和 UDP)"
+        "summary", help="Generate summary CSV report (includes both TCP and UDP)"
     )
 
     args = parser.parse_args()

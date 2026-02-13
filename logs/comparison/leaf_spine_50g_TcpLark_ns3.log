@@ -1,0 +1,11 @@
+[0/2] Re-checking globbed directories...
+ninja: no work to do.
+Ns3Env parameters:
+--openGymPort: 5555
+--seed: 42
+--Tcp version: ns3::TcpLark
+--Queue size: 224 packets (336000 bytes), BDP=112499 bytes
+Simulation process id: 6084 (parent (waf shell) id: 6078)
+Waiting for Python process to connect on port: tcp://localhost:5555
+Please start proper Python Gym Agent
+Command 'build/contrib/opengym/examples/ns3.40-lark-tcp-default --transport_prot=TcpLark --access_bandwidth=50Gbps --bottleneck_bandwidth=50Gbps --access_delay=2us --bottleneck_delay=5us --duration=20 --nLeaf=3 --simSeed=42 --enable_udp_burst=0 --prefix_name=./logs/comparison/leaf_spine_50g_TcpLark' died with <Signals.SIGKILL: 9>.
