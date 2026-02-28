@@ -18,12 +18,10 @@ sudo apt autoclean && sudo apt autoremove
 conda create -p ./.venv python=3.13
 conda activate ./.venv
 
+./ns3 configure --enable-mtp --enable-examples
+./ns3 build
+
 pip3 install --user ./contrib/opengym/model/ns3gym
-
-rm -rf ./logs && mkdir -p ./logs
-
-./ns3 configure --enable-mtp --enable-examples &>/dev/null
-./ns3 build &>/dev/null
 
 ./ns3 run "rl-tcp --transport_prot=TcpRl" &> ./logs/rl-tcp-ns3.log
 python ./contrib/opengym/examples/rl-tcp/test_tcp.py --start=0 &> ./logs/rl-tcp-agent.log
