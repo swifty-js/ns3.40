@@ -5,3 +5,4 @@ Ns3Env parameters:
 --seed: 42
 --Tcp version: ns3::TcpNewReno
 --Queue size: 224 packets (336000 bytes), BDP=112499 bytes
+Process was interrupted by the user

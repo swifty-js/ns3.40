@@ -108,7 +108,7 @@ def start_sim_script(port=5555, sim_seed=0, sim_args={}, debug=False):
         # users were complaining that when they start example they have to wait 10 min for initialization.
         # simply ns3 is being built during this time, so now the output of the build will be put to stdout
         # but sometimes build is not required and I would like to avoid unnecessary output on the screen
-        # it is not easy to get tell before start ./waf whether the build is required or not
+        # it is not easy to get tell before start ./ns3 whether the build is required or not
         # here, I use simple trick, i.e. if output of build contains {"Compiling","Linking"}
         # then the build is required and, hence, i put the output to the stdout
         error_output = subprocess.DEVNULL

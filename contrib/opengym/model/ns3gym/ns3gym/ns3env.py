@@ -73,7 +73,7 @@ class Ns3ZmqBridge(object):
                     port
                 )
             )
-            print('Please start proper ns-3 simulation script using ./waf --run "..."')
+            print('Please start proper ns-3 simulation script')
 
         self._action_space = None
         self._observation_space = None

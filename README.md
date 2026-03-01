@@ -15,6 +15,7 @@ sudo apt update && sudo apt full-upgrade
 sudo apt install libzmq5 libzmq3-dev libprotobuf-dev protobuf-compiler
 sudo apt autoclean && sudo apt autoremove
 
+# conda config --add channels conda-forge
 conda create -p ./.venv python=3.13
 conda activate ./.venv
 
@@ -22,6 +23,7 @@ conda activate ./.venv
 ./ns3 build
 
 pip3 install --user ./contrib/opengym/model/ns3gym
+pip3 install matplotlib
 
 ./ns3 run "rl-tcp --transport_prot=TcpRl" &> ./logs/rl-tcp-ns3.log
 python ./contrib/opengym/examples/rl-tcp/test_tcp.py --start=0 &> ./logs/rl-tcp-agent.log
