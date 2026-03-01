@@ -345,9 +345,17 @@ footskip=0.25cm% 没用页脚,将正文底部到页脚底部的距离 0cm %
 \setsansfont{Arial}             % 无衬线字体
 \setmonofont{Courier New}       % 等宽字体，一般是打印字体
 %% 中文字体默认使用宋体
-\setCJKfamilyfont{hwxk}{STXingkai} %设置字体华文行楷
+\IfFontExistsTF{STXingkai}{
+  \setCJKfamilyfont{hwxk}{STXingkai}
+}{
+  \setCJKfamilyfont{hwxk}{Xingkai SC}
+}
 \newcommand{\stxk}{\CJKfamily{hwxk}}
-\setCJKfamilyfont{zhsong}[AutoFakeBold = {2.17}]{SimSun} %设置字体宋体
+\IfFontExistsTF{SimSun}{
+  \setCJKfamilyfont{zhsong}[AutoFakeBold = {2.17}]{SimSun}
+}{
+  \setCJKfamilyfont{zhsong}[AutoFakeBold = {2.17}]{Songti SC}
+}
 %\renewcommand{\songti}{\CJKfamily{zhsong}}
 
 %% graphics packages

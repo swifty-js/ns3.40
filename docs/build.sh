@@ -41,7 +41,7 @@ build_simple() {
 build_with_bib() {
 	local tex="$1"
 	local name="${tex%.tex}"
-	log "编译 $tex（含 BibTeX）..."
+	log "编译 $tex (含 BibTeX)..."
 	xelatex -interaction=nonstopmode -halt-on-error "$tex" >/dev/null 2>&1 || {
 		err "$tex 第1遍失败"
 		return 1
