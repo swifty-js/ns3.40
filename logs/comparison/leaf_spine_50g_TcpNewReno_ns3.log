@@ -5,4 +5,4 @@ Ns3Env parameters:
 --seed: 42
 --Tcp version: ns3::TcpNewReno
 --Queue size: 224 packets (336000 bytes), BDP=112499 bytes
-Process was interrupted by the user
+Command 'build/contrib/opengym/examples/ns3.40-lark-tcp-default --transport_prot=TcpNewReno --access_bandwidth=50Gbps --bottleneck_bandwidth=50Gbps --access_delay=2us --bottleneck_delay=5us --duration=20 --nLeaf=3 --simSeed=42 --enable_udp_burst=0 --prefix_name=./logs/comparison/leaf_spine_50g_TcpNewReno' died with <Signals.SIGKILL: 9>.
