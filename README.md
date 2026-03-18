@@ -47,4 +47,6 @@ python ./contrib/opengym/examples/lark-tcp/test_lark.py --start=0 --verbose &> .
 find . -type f -not -name "*.rst" -not -name "*.md" -delete
 find . -name "*.rst" -exec sh -c 'mv "$1" "${1%.rst}.md"' sh {} \;
 find . -depth -type d -empty -delete
+
+ln -s ./.github/skills ./.trae/skills
 ```
