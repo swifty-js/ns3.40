@@ -5,6 +5,10 @@ description: ns-3 is a network simulator. Use this skill whenever the user asks 
 
 # The Network Simulator, Version 3
 
+## ns3-gym
+
+[ns3-gym](./doc/ns3-gym/README.md)
+
 ## Table of Contents
 
 - [Overview](#overview-an-open-source-project)
