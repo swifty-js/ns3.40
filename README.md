@@ -35,15 +35,12 @@ python ./contrib/opengym/examples/lark-tcp/test_lark.py --start=0 --verbose &> .
 ./ns3 run "lark-tcp --transport_prot=TcpNewReno" &> ./logs/lark-tcp-new-reno.log
 ```
 
-## References
-
-- [ns-3 Tutorial](https://www.nsnam.org/docs/tutorial/html/index.html)
-- [ns-3 Model Library](https://www.nsnam.org/docs/models/html/index.html)
-- [ns-3 Manual](https://www.nsnam.org/docs/manual/html/index.html)
-
-## Helpful commands
+## Useful commands
 
 ```bash
+git fetch origin tag ns-3.40
+git switch -c dev ns-3.40
+
 find . -type f -not -name "*.rst" -not -name "*.md" -delete
 find . -name "*.rst" -exec sh -c 'mv "$1" "${1%.rst}.md"' sh {} \;
 find . -depth -type d -empty -delete

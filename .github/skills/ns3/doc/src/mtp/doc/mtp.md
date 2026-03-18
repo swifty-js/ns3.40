@@ -23,7 +23,7 @@ Model Description
 
 ---
 
-The source code for the new module lives in the directory `src/opengym`.
+The source code for the new module lives in the directory `contrib/mtp`.
 
 Add here a basic description of what is being modeled.
 
