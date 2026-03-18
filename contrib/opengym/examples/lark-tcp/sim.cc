@@ -169,6 +169,12 @@ int main(int argc, char *argv[]) {
     // Config::SetDefault("ns3::TcpLark::Penalty",
     //                    DoubleValue(-30.0)); // Penalty when decreasing
     //                    congestion window
+    // Config::SetDefault("ns3::TcpLark::Reward",
+    //                    DoubleValue(2.0)); // Reward when increasing
+    //                    congestion window
+    // Config::SetDefault("ns3::TcpLark::Penalty",
+    //                    DoubleValue(-30.0)); // Penalty when decreasing
+    //                    congestion window
   }
 
   // Calculate the ADU size
@@ -205,11 +211,22 @@ int main(int argc, char *argv[]) {
   // Enable ECN only when using TcpLark with Python agent
   if (transport_prot.compare("ns3::TcpLark") == 0) {
     Config::SetDefault("ns3::TcpSocketBase::UseEcn",
+  //// Configure the error model
+  //// Here we use RateErrorModel with packet error rate
+  // Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable>();
+  // uv->SetStream(50);
+  // RateErrorModel error_model;
+  // error_model.SetRandomVariable(uv);
+  // error_model.SetUnit(RateErrorModel::ERROR_UNIT_PACKET);
+  // error_model.SetRate(error_p);
+
                        EnumValue(TcpSocketState::On));
   } else {
     Config::SetDefault("ns3::TcpSocketBase::UseEcn",
                        EnumValue(TcpSocketState::Off));
   }
+  // bottleNeckLink.SetDeviceAttribute  ("ReceiveErrorModel", PointerValue
+  // (&error_model));
 
   //// Configure the error model
   //// Here we use RateErrorModel with packet error rate

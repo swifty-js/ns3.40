@@ -61,15 +61,15 @@ class TcpLark(TcpEventBased):
         super(TcpLark, self).__init__()
 
         # --- Core parameters (throughput-optimized) ---
-        self.alpha_base = 1.20  # Target cwnd = alpha * BDP
-        self.alpha_min = 1.05
-        self.alpha_max = 1.50
-        self.gamma = 2.0  # Additive increase: gamma * MSS per ACK event
+        self.alpha_base = 1.50  # Target cwnd = alpha * BDP
+        self.alpha_min = 1.20
+        self.alpha_max = 2.00
+        self.gamma = 3.0  # Additive increase: gamma * MSS per ACK event
 
         # Multiplicative decrease factors (window retention ratios)
-        self.beta_loss = 0.70  # Retain 70% on packet loss
-        self.beta_ecn = 0.85  # Retain 85% on ECN (milder, proactive)
-        self.beta_timeout = 0.50  # Retain 50% on timeout (severe)
+        self.beta_loss = 0.80  # Retain 80% on packet loss
+        self.beta_ecn = 0.90  # Retain 90% on ECN (milder, proactive)
+        self.beta_timeout = 0.60  # Retain 60% on timeout (severe)
 
         # Consecutive decrease protection
         self.max_consecutive_decreases = 3
@@ -168,14 +168,14 @@ class TcpLark(TcpEventBased):
         ):
             rtt_ratio = lastRtt_us / state["min_rtt_us"]
 
-            if rtt_ratio < 1.3:
+            if rtt_ratio < 1.5:
                 # Minimal queuing -> increase aggressiveness
-                alpha = min(alpha + 0.03, self.alpha_max)
+                alpha = min(alpha + 0.05, self.alpha_max)
                 state["consecutive_increases"] += 1
-            elif rtt_ratio < 2.0:
+            elif rtt_ratio < 2.5:
                 # Moderate queuing -> gentle increase
-                alpha = min(alpha + 0.01, self.alpha_max)
-            elif rtt_ratio > 3.0:
+                alpha = min(alpha + 0.02, self.alpha_max)
+            elif rtt_ratio > 4.0:
                 # Heavy queuing -> reduce
                 alpha = max(alpha - 0.02, self.alpha_min)
                 state["consecutive_increases"] = 0
@@ -285,15 +285,15 @@ class TcpLark(TcpEventBased):
 
         if cWnd < ssThresh and state["in_slow_start"]:
             # === SLOW START ===
-            # Target: 2x BDP (not too aggressive to avoid burst loss)
-            target_ss = max(int(2.0 * bdp), 10 * segmentSize)
+            # Target: 3x BDP (more aggressive to reach full capacity faster)
+            target_ss = max(int(3.0 * bdp), 20 * segmentSize)
 
-            # Standard exponential: +1 MSS per ACKed segment
-            increase = segmentsAcked * segmentSize
+            # Standard exponential: +2 MSS per ACKed segment to boost start
+            increase = 2 * segmentsAcked * segmentSize
 
-            # When very far below BDP, accelerate
-            if bdp > 0 and cWnd < 0.3 * bdp:
-                increase = 2 * segmentsAcked * segmentSize
+            # When very far below BDP, accelerate heavily
+            if bdp > 0 and cWnd < 0.5 * bdp:
+                increase = 4 * segmentsAcked * segmentSize
 
             new_cwnd = min(cWnd + increase, target_ss)
 
@@ -317,10 +317,10 @@ class TcpLark(TcpEventBased):
             # Utilization-aware boost: if pipe is under-utilized, grow faster
             if bytesInFlight > 0 and cWnd > 0:
                 utilization = bytesInFlight / cWnd
-                if utilization < 0.7:
-                    new_cwnd += segmentSize
-                if utilization < 0.4:
+                if utilization < 0.8:
                     new_cwnd += 2 * segmentSize
+                if utilization < 0.5:
+                    new_cwnd += 4 * segmentSize
 
             new_ssThresh = ssThresh
 

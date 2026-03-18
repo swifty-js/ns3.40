@@ -52,13 +52,15 @@ private:
   // ECN Enhanced Support
   uint32_t m_ecnCeCounter;      // Count of ECN CE marks received
   bool m_ecnCongestionDetected; // Flag for ECN-based congestion detection
+  bool m_ecnCongestionDetected; // Flag for ECN-based congestion detection
   Time m_lastEcnTime;           // Time of last ECN event
-
   // Additional metrics for RL optimization
   uint64_t m_totalBytesAcked; // Cumulative bytes acked
   Time m_lastAckTime;         // Time of last ACK for inter-ACK calculation
 
-  // Deferred cwnd from GetSsThresh (const tcb cannot be modified directly)
+
+  // Additional metrics for RL optimization
+  uint64_t m_totalBytesAcked; // Cumulative bytes acked
   bool m_hasPendingCwnd;  // Whether a deferred cwnd is pending
   uint32_t m_pendingCwnd; // The deferred cwnd value from Python
 };
