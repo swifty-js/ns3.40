@@ -40,3 +40,11 @@ python ./contrib/opengym/examples/lark-tcp/test_lark.py --start=0 --verbose &> .
 - [ns-3 Tutorial](https://www.nsnam.org/docs/tutorial/html/index.html)
 - [ns-3 Model Library](https://www.nsnam.org/docs/models/html/index.html)
 - [ns-3 Manual](https://www.nsnam.org/docs/manual/html/index.html)
+
+## Helpful commands
+
+```bash
+find . -type f -not -name "*.rst" -not -name "*.md" -delete
+find . -name "*.rst" -exec sh -c 'mv "$1" "${1%.rst}.md"' sh {} \;
+find . -depth -type d -empty -delete
+```
