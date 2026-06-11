@@ -37,5 +37,6 @@ sudo apt install -y texlive-full
 # MacOS
 brew install --cask mactex
 
-wget https://github.com/be5invis/Sarasa-Gothic/releases/download/v1.0.39/SarasaGothic-TTF-1.0.39.7z
+# https://github.com/be5invis/Sarasa-Gothic
+brew install gnuplot
 ```
