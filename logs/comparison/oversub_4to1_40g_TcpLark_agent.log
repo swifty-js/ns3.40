@@ -1,0 +1,14 @@
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+startSim: False, iterationNum: 1, verbose: False, port: 5555
+Waiting for simulation script to connect on port: tcp://localhost:5555
+Please start proper ns-3 simulation script
+Observation space:  Box(0, 1000000000, (15,), uint64)
+Action space:  Box(0, 65535, (2,), uint64)
+--- Iteration 0 Start ---
+Creating Lark Fusion Agent for Socket 1
+Creating Lark Fusion Agent for Socket 3
+Creating Lark Fusion Agent for Socket 5
+Done

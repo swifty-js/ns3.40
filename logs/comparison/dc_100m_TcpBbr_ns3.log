@@ -1,0 +1,54 @@
+[0/2] Re-checking globbed directories...
+ninja: no work to do.
+Ns3Env parameters:
+--openGymPort: No OpenGym
+--seed: 42
+--Tcp version: ns3::TcpBbr
+--Queue size: 100 packets (150000 bytes), BDP=224 bytes
+TCP Flow 1 Src Addr: 10.1.1.1 Dst Addr: 10.2.1.1
+Time Last Rx Packet: 20.0975
+Time First Tx Packet: 0
+Tx Packets Count: 28845
+Rx Packets Count: 28845
+Loss Rate: 0%
+Throughput: 17.13 Mbps
+TCP Flow 2 Src Addr: 10.2.1.1 Dst Addr: 10.1.1.1
+Time Last Rx Packet: 20.0893
+Time First Tx Packet: 1.4568e-05
+Tx Packets Count: 14426
+Rx Packets Count: 14426
+Loss Rate: 0%
+Throughput: 0.298729 Mbps
+TCP Flow 3 Src Addr: 10.1.2.1 Dst Addr: 10.2.2.1
+Time Last Rx Packet: 20.0038
+Time First Tx Packet: 0.1
+Tx Packets Count: 28460
+Rx Packets Count: 28460
+Loss Rate: 0%
+Throughput: 17.0659 Mbps
+TCP Flow 4 Src Addr: 10.2.2.1 Dst Addr: 10.1.2.1
+Time Last Rx Packet: 19.9995
+Time First Tx Packet: 0.100333
+Tx Packets Count: 14233
+Rx Packets Count: 14233
+Loss Rate: 0%
+Throughput: 0.297548 Mbps
+TCP Flow 5 Src Addr: 10.1.3.1 Dst Addr: 10.2.3.1
+Time Last Rx Packet: 20.0385
+Time First Tx Packet: 0.2
+Tx Packets Count: 28807
+Rx Packets Count: 28807
+Loss Rate: 0%
+Throughput: 17.3308 Mbps
+TCP Flow 6 Src Addr: 10.2.3.1 Dst Addr: 10.1.3.1
+Time Last Rx Packet: 20.0361
+Time First Tx Packet: 0.200858
+Tx Packets Count: 14407
+Rx Packets Count: 14407
+Loss Rate: 0%
+Throughput: 0.302156 Mbps
+RxPkts:
+---SinkId: 0 RxPkts: 28843
+---SinkId: 1 RxPkts: 28458
+---SinkId: 2 RxPkts: 28805
+Total Rx Bytes Count: 41533920

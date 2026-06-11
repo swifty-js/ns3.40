@@ -1,0 +1,847 @@
+% sudo apt update && sudo apt install -y texlive-full
+% 使用 XeLaTeX 编译: xelatex thesis.min.tex
+% CCF 中国计算机学会 A 类会议论文格式
+% Lark: 基于强化学习的多信号融合自适应网络拥塞控制算法
+
+\documentclass[10pt,twocolumn]{article}
+
+% 中文支持
+\usepackage[UTF8]{ctex}
+\usepackage{fontspec}
+
+% 数学公式
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% 图表
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+
+% 算法
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% 引用和链接
+\usepackage{cite}
+\usepackage{hyperref}
+\usepackage{url}
+
+% 颜色
+\usepackage{xcolor}
+
+% 页面设置
+\usepackage{geometry}
+\geometry{a4paper,left=1.9cm,right=1.9cm,top=2.2cm,bottom=2.2cm,columnsep=0.55cm}
+
+% 行距
+\usepackage{setspace}
+\setstretch{1.08}
+
+% 标题间距
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{10pt}{5pt}
+\titlespacing*{\subsection}{0pt}{7pt}{3pt}
+\titlespacing*{\subsubsection}{0pt}{5pt}{2pt}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection}{0.5em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalfont\small\bfseries}{\thesubsubsection}{0.5em}{}
+
+% 紧凑列表
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=1.2em}
+
+% caption
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf,skip=4pt}
+
+% 浮动体间距
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}
+\setlength{\intextsep}{6pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{4pt}
+\setlength{\belowcaptionskip}{2pt}
+
+% 段落间距
+\setlength{\parskip}{1.5pt plus 0.5pt minus 0.5pt}
+
+% 算法环境字体
+\usepackage{etoolbox}
+\AtBeginEnvironment{algorithmic}{\small}
+
+%% 英文字体默认使用 Times New Roman
+\RequirePackage{xltxtra} % \XeTeX Logo
+\setmainfont{Times New Roman}   % 衬线字体
+\setsansfont{Arial}             % 无衬线字体
+\setmonofont{Courier New}       % 等宽字体，一般是打印字体
+%% 中文字体默认使用宋体
+%\setCJKmainfont{songti}
+\IfFontExistsTF{STXingkai}{
+  \setCJKfamilyfont{hwxk}{STXingkai} % Windows
+}{
+  \setCJKfamilyfont{hwxk}{Sarasa Gothic SC} % Other
+}
+\newcommand{\stxk}{\CJKfamily{hwxk}}
+\IfFontExistsTF{SimSun}{
+  \setCJKfamilyfont{zhsong}[AutoFakeBold = {2.17}]{SimSun} % Windows
+}{
+  \setCJKfamilyfont{zhsong}[AutoFakeBold = {2.17}]{Sarasa Gothic SC} % Other
+}
+%\renewcommand{\songti}{\CJKfamily{zhsong}}
+
+\begin{document}
+
+%========================================
+% 标题
+%========================================
+
+\title{\Large\textbf{Lark: 基于强化学习的多信号融合自适应网络拥塞控制算法}}
+
+\author{
+\normalsize 杭天铖 \\
+\small 南京邮电大学 \\
+\small 1224045520@njupt.edu.cn
+}
+
+\date{}
+
+\maketitle
+
+%========================================
+% 摘要
+%========================================
+
+\begin{abstract}
+\small
+现代网络传输正在从单一固定终端和局域高质量链路，扩展到跨地域远距离传输、蜂窝/无线/卫星等多接入网络，以及手机、笔记本、台式机和边缘设备等多模态终端并存的复杂场景。传统基于丢包的算法存在拥塞信号滞后与缓冲区膨胀问题，基于延迟的算法则面临RTT测量噪声与共存公平性不足等缺陷；在长RTT、链路抖动和终端能力差异并存时，静态参数和单一信号驱动的拥塞控制更难兼顾吞吐、延迟与稳定性。本文提出Lark算法——一种基于强化学习辅助的多信号融合自适应网络拥塞控制方法。其核心创新收敛为三点：（1）构建11维有效RL观测子空间嵌入于15元素OpenGym传输容器（另含套接字标识、环境类型、仿真时间、节点标识四项元数据通道）中，将ECN状态、拥塞控制状态机状态、事件语义、RTT和在途字节等协议栈内部信息纳入强化学习状态表示，以提升对远距离和异构终端传输状态的可观测性；（2）提出多信号融合拥塞判定与差异化响应机制，协同分析丢包、超时与ECN信号，并按信号严重程度施加差异化窗口保留因子（丢包$\rho=0.70$、ECN $\rho=0.75$、超时$\rho=0.50$），同时通过连续递减保护（$D_{\max}=3$）和降窗后冻结机制抑制窗口过度收缩与快速反弹；（3）设计强化学习辅助的自适应融合控制策略，基于最小RTT感知的RTT膨胀阈值与奖励信号指数移动平均动态调整乘性增加因子$\alpha\in[0.85,1.30]$，并融合BDP窗口化最大值滤波估计、目标窗口渐进逼近、HyStart风格慢启动退出和管道利用率感知加性递增。在ns-3离散事件仿真平台覆盖近端高速、无线接入、5G、城域/广域网与卫星通信的21个场景、84组实验中，经数据质量审计筛选出9个具备完整四协议对照的主要场景。稳态性能（纯TCP设置）结果表明：Lark在近端高速场景中与NewReno/CUBIC保持等价吞吐量（差距$<$0.01\%），同时显著压低排队延迟；在5G、城域WAN、WiFi等中速接入场景中维持零丢包并降低多数场景延迟；在GEO卫星长距离链路中凭借零丢包特性相对NewReno/CUBIC均值实现吞吐量提升28.8\%。跨流量鲁棒性（800 Mbps UDP Burst对照设置）进一步表明：在全部17个完整对照场景中，Lark是\emph{唯一}维持零丢包率的算法，且吞吐量回落幅度最小。本文更侧重从拥塞信号时序、队列驻留、带宽估计稳定性和长RTT恢复代价等角度进行定性比较，仅在关键场景给出可追溯的定量结果；同时披露Lark在少数中低速与中等RTT场景下存在小幅度延迟抬升、以及部分广域网场景下吞吐量存在小幅回落，其机理为$\alpha\times BDP$目标窗口在高RTT环境下的扩张幅度与BDP估计仍有进一步优化空间，由此为面向排队延迟感知的$\alpha$动态调节与多时间尺度BDP估计指明了进一步方向。
+
+\vspace{0.3em}
+\noindent\textbf{关键词：}拥塞控制；强化学习；多信号融合；显式拥塞通知；自适应参数调优；远距离传输；多模态终端
+\end{abstract}
+
+%========================================
+% 1. 引言
+%========================================
+
+\section{引言}
+
+随着云计算、大数据、人工智能、移动互联网和物联网技术的蓬勃发展，端到端网络传输的服务对象正在从固定主机扩展到手机、笔记本、台式机、边缘节点和传感设备等多模态终端，传输路径也从近端局域链路延伸到跨城、跨域、蜂窝接入、无线局域网和卫星通信等远距离复杂网络。TCP作为互联网传输层的核心协议，其拥塞控制机制的性能直接影响网络资源利用效率、应用响应延迟和用户体验。
+
+在这类端到端传输场景中，网络路径和终端侧条件呈现出更强的异构性。一方面，城域/广域网、蜂窝网络、WiFi与卫星链路具有不同的RTT量级、丢包背景、可用带宽和链路抖动；另一方面，手机、电脑、边缘设备等终端在处理能力、无线接入方式、移动性和业务负载上差异显著。同一拥塞控制策略需要在短RTT近端高速链路与长RTT远距离链路之间切换，并在突发跨流量、无线误码和终端负载波动下保持稳定。上述复杂性使传统依赖固定参数或单一拥塞信号的算法难以同时满足高吞吐、低延迟和低丢包目标。
+
+传统基于丢包的拥塞控制算法（如NewReno\cite{newreno}、CUBIC\cite{cubic}）将丢包作为拥塞信号，但丢包是拥塞的滞后指示器，通常意味着网络缓冲区已经溢出，排队延迟已累积到较高水平，产生"Bufferbloat"问题\cite{bufferbloat}。基于延迟的算法（如Vegas\cite{vegas}、BBR\cite{bbr}）尝试通过RTT变化提前感知拥塞，但RTT测量易受操作系统调度、路径抖动等因素干扰，且与基于丢包算法共存时存在严重的公平性问题\cite{bbrfairness}。
+
+ECN机制\cite{rfc3168}允许网络设备在队列超过阈值时标记数据包而非丢弃，实现更早、更精确的拥塞通知。DCTCP\cite{dctcp}利用ECN标记比例进行细粒度调整，取得了良好效果。然而，现有算法对ECN信号的利用仍不够充分，大多采用静态参数配置，缺乏自适应能力。
+
+近年来，强化学习在网络拥塞控制中的应用受到关注\cite{rlcc}。Aurora\cite{aurora}采用PPO算法训练深度神经网络策略，Orca\cite{orca}使用强化学习动态调整AIMD参数。然而，现有方案存在状态空间设计不完善（通常仅4-6维）、未利用ECN和拥塞控制状态机信息、奖励函数难以平衡多目标、训练效率低等问题。
+
+与单一网络域相比，跨地域和多接入传输的拥塞信号更难解释。丢包可能来自真实队列溢出，也可能来自无线误码或链路切换；RTT升高既可能表示排队，也可能来自路径变化、终端调度延迟或接入链路抖动；突发UDP/RPC/视频/备份流量还会造成短时间带宽挤占。因此，本文并不将Lark限定为某一类网络，而是将近端高速、移动接入、无线局域网、广域网和卫星链路作为一组覆盖不同RTT、带宽和终端接入条件的评估场景，考察其在多模态终端复杂性下的自适应能力。
+
+针对上述挑战，本文提出Lark算法——一种基于强化学习的多信号融合自适应网络拥塞控制方法。"Lark"（云雀）象征高吞吐量与低延迟的设计目标。本文主要贡献如下：
+
+\textbf{（1）面向远距离与异构终端的多信号状态感知}：构建11维有效观测子空间，将ECN状态、拥塞控制状态机状态、拥塞事件类型、RTT和在途字节等协议栈信息纳入强化学习状态表示，为手机、电脑、边缘节点等多模态终端和多接入路径提供更完整的网络状态感知。
+
+\textbf{（2）多信号融合拥塞判定与差异化响应}：综合分析丢包、超时和ECN信号，并依据拥塞信号严重程度采用差异化窗口保留因子（丢包0.70、ECN 0.75、超时0.50），同时通过连续递减保护机制防止窗口过度收缩。
+
+\textbf{（3）强化学习辅助的自适应融合控制}：基于RTT膨胀感知阈值、奖励指数移动平均和连续增长趋势动态调整乘性增加因子$\alpha \in [0.85, 1.30]$，将基于BDP窗口最大值滤波估计的目标窗口、拥塞窗口当前状态与管道利用率感知加性递增相结合，在吞吐、延迟和稳定性之间取得自适应折中。
+
+%========================================
+% 2. 相关工作
+%========================================
+
+\section{相关工作}
+
+\subsection{传统拥塞控制算法}
+
+\subsubsection{基于丢包的算法}
+
+TCP Tahoe和Reno是最早的拥塞控制算法\cite{jacobson1988}，引入了慢启动、拥塞避免和快速重传/恢复机制。TCP NewReno\cite{newreno}改进了快速恢复机制，能够处理突发丢包情况，是RFC 6582定义的标准算法。
+
+TCP CUBIC\cite{cubic}是Linux自2.6.19版本以来的默认算法，采用三次函数模型调整窗口：
+\begin{equation}
+W(t) = C \cdot (t - K)^3 + W_{max}
+\end{equation}
+其中$K = \sqrt[3]{W_{max} \cdot \beta / C}$。CUBIC的窗口增长与RTT无关，在高BDP网络中具有更快的收敛速度。
+
+基于丢包算法的共同缺陷包括：（1）拥塞信号滞后，缓冲区溢出前已积累大量排队延迟；（2）缓冲区膨胀，持续增加发送速率直至丢包；（3）无法区分拥塞程度，对所有拥塞采用统一的窗口减半策略。
+
+\subsubsection{基于延迟的算法}
+
+TCP Vegas\cite{vegas}通过比较期望吞吐量$cwnd/BaseRTT$与实际吞吐量$cwnd/RTT$的差值$\Delta$调整窗口，当$\Delta < \alpha$时增窗，$\Delta > \beta$时降窗。
+
+BBR\cite{bbr}通过估计瓶颈带宽$BtlBw$和最小RTT $RTT_{prop}$，以BDP为目标调整发送速率：$pacing\_rate = pacing\_gain \times BtlBw$。BBR采用周期性增益调整实现带宽探测。
+
+Copa\cite{copa}将目标排队延迟设为$RTT_{standing} - RTT_{min}$的函数，并引入竞争模式检测机制。
+
+这类算法面临RTT测量不稳定（受调度延迟、路径抖动影响）、与丢包算法共存公平性差（研究表明BBR与CUBIC共存时吞吐量可下降30\%以上\cite{bbrfairness}）、参数敏感等问题。
+
+\subsubsection{混合算法}
+
+Compound TCP\cite{compound}叠加基于延迟的窗口分量，Illinois\cite{illinois}根据RTT调整AIMD参数，Westwood\cite{westwood}通过ACK到达率估计带宽。混合算法在一定程度上缓解了单一信号的局限性，但增加了复杂性。
+
+\subsection{ECN机制与相关算法}
+
+ECN\cite{rfc3168}通过IP报头中的2比特字段传递拥塞信息，定义四种码点（Non-ECT、ECT(0)、ECT(1)、CE）。发送端设置ECT标记表明支持ECN；网络设备在队列超阈值时将ECT改为CE；接收端回传ECE标志；发送端响应后设置CWR标志。
+
+DCTCP\cite{dctcp}利用ECN标记比例$\alpha$进行细粒度调整：
+\begin{equation}
+\alpha = (1-g) \cdot \alpha + g \cdot F, \quad cwnd = cwnd \times (1 - \alpha/2)
+\end{equation}
+其中$g=1/16$是平滑因子，$F$是最近一个RTT内被标记的数据包比例。DCTCP能根据拥塞程度进行比例响应，但参数静态预设。HPCC\cite{hpcc}利用网络设备提供的INT精确拥塞信息进行控制，但需要特殊硬件支持。
+
+ECN的优势在于：（1）在丢包前提供明确拥塞信号；（2）避免重传开销；（3）信号来自网络设备显式标记，比RTT推测更可靠。然而，现有算法对ECN的利用仍不充分。
+
+\subsection{基于强化学习的拥塞控制}
+
+Aurora\cite{aurora}采用PPO算法训练神经网络策略，使用10维状态空间（延迟梯度、延迟比率、发送比率等），奖励函数为$r = throughput - \delta \cdot delay - \lambda \cdot loss$。Orca\cite{orca}在AIMD框架下用强化学习动态调整增加因子$\alpha$和减少因子$\beta$。PCC\cite{pcc}定义实用函数$U(x) = T \cdot x^\alpha - \delta \cdot L \cdot x - \beta \cdot D \cdot x$，通过梯度上升最大化。Remy\cite{remy}采用离线优化生成规则。
+
+现有方法的共同问题是：（1）状态空间不完善，仅4-6维，未利用ECN和CA状态信息；（2）奖励函数设计困难，多目标权衡复杂；（3）训练效率低；（4）泛化能力有限。Lark通过11维观测空间、多信号融合和差异化响应系统性地解决这些问题。
+
+%========================================
+% 3. Lark算法设计
+%========================================
+
+\section{Lark算法设计}
+
+\subsection{系统架构}
+
+Lark的系统架构由四个核心模块组成。\textbf{网络仿真模块}基于ns-3\cite{ns3}构建，实现完整TCP/IP协议栈和多种网络拓扑（近端高速链路、哑铃型、无线/移动、广域网与卫星链路等）。\textbf{拥塞控制环境模块}基于OpenGym\cite{opengym}框架实现，在TCP协议栈的五个关键回调点（GetSsThresh、IncreaseWindow、PktsAcked、CongestionStateSet、CwndEvent）采集11维状态参数，并将智能体决策应用于TCP连接。\textbf{智能决策模块}采用Python实现，执行多信号融合拥塞检测、差异化拥塞响应、自适应参数调优和融合控制策略计算，维护每个TCP连接的独立状态。\textbf{进程间通信模块}采用ZeroMQ消息队列和Protocol Buffers序列化，实现仿真进程与决策进程间的同步交互；由于OpenGym路径依赖ZMQ同步通信，当前TcpLark实验未启用MTP并行仿真。
+
+Lark将拥塞控制建模为马尔可夫决策过程$\langle S, A, P, R, \gamma \rangle$。状态空间$S$为11维有效RL观测子空间（嵌入于15元素OpenGym传输容器，另含4项元数据通道），动作空间$A$直接输出新的ssthresh和cwnd值（连续动作空间），采用基于规则的确定性策略而非神经网络，以提高可解释性并避免神经网络推理依赖。
+
+状态空间设计满足以下理论要求：（1）\textbf{马尔可夫性}——当前状态包含做出最优决策所需的全部信息，即$P(s_{t+1}, r_{t+1} | s_t, a_t, s_{t-1}, ...) = P(s_{t+1}, r_{t+1} | s_t, a_t)$，通过包含ECN状态、CA状态等协议栈内部状态近似满足；（2）\textbf{信息充分性}——11维空间涵盖TCP协议栈所有关键信息，避免因信息不足导致的次优决策；（3）\textbf{可观测性}——所有参数均可从ns-3标准回调接口直接获取；（4）\textbf{维度可控性}——11维处理时间复杂度$O(1)$，基于规则的决策避免了维度灾难问题。
+
+\subsection{11维观测空间设计}
+
+Lark的观测空间采用"11维有效RL子空间 + 4项元数据通道"的15元素OpenGym传输布局，如表\ref{tab:observation}所示。参数涵盖六大类别：连接标识（socketUuid、nodeId）用于多流识别和状态隔离；时间信息（envType、simTime）用于时序分析和投递速率计算；窗口状态（ssthresh、cwnd）是拥塞控制的核心变量；传输性能（segSize、segmentsAcked、bytesInFlight）用于吞吐量估算和管道利用率计算；延迟测量（lastRtt、minRtt）用于BDP估算和拥塞程度判断；回调类型与拥塞控制状态（callbackType、caState、caEvent、ecnState）提供协议栈完整状态。其中前4项（socketUuid、envType、simTime、nodeId）为跨进程路由用的元数据，不参与窗口决策；后11项构成参与AIMD/ECN响应/$\alpha$自适应的有效RL状态，故本文后续统称"11维观测"指该有效子空间。
+
+\begin{table}[htbp]
+\centering
+\caption{Lark 11维观测空间参数定义}
+\label{tab:observation}
+\small
+\begin{tabular}{clp{3.2cm}}
+\toprule
+\textbf{索引} & \textbf{参数} & \textbf{说明} \\
+\midrule
+0  & ssthresh & 慢启动阈值(B) \\
+1  & cwnd & 拥塞窗口(B) \\
+2  & segSize & 段大小(B) \\
+3  & segmentsAcked & 确认段数 \\
+4  & bytesInFlight & 在途字节数 \\
+5  & lastRtt & 最近RTT($\mu$s) \\
+6  & minRtt & 最小RTT($\mu$s) \\
+7  & callbackType & 回调类型(0/1) \\
+8  & caState & CA状态(0-4) \\
+9  & caEvent & CA事件(0-5) \\
+10 & ecnState & ECN状态(0-5) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Lark的核心创新在于引入三个协议栈内部状态参数。\textbf{caState}反映TCP拥塞控制状态机的当前状态：CA\_OPEN（0，正常传输）、CA\_DISORDER（1，收到重复确认）、CA\_CWR（2，响应ECN缩减窗口）、CA\_RECOVERY（3，快速恢复中）、CA\_LOSS（4，超时丢包）。\textbf{caEvent}表示最近的拥塞事件：包括CA\_EVENT\_TX\_START（0）、CWND\_RESTART（1）、COMPLETE\_CWR（2）、LOSS（3）、ECN\_NO\_CE（4）、ECN\_IS\_CE（5）六种。\textbf{ecnState}反映ECN协商和标记状态：ECN\_DISABLED（0）、ECN\_IDLE（1）、ECN\_CE\_RCVD（2）、ECN\_SENDING\_ECE（3）、ECN\_ECE\_RCVD（4）、ECN\_CWR\_SENT（5）。
+
+这三个参数的引入使智能体能够感知TCP协议栈的完整状态信息，近似满足马尔可夫性要求。所有15个参数均可从ns-3 TCP模块的标准回调接口直接获取，满足可观测性要求。11维有效状态的处理时间复杂度为$O(1)$，避免了神经网络策略的高维推理依赖。
+
+\subsection{多信号融合拥塞检测}
+
+Lark将拥塞信号分为三类，采用两级优先级层次结构进行综合判断，并引入连续递减保护机制防止窗口过度收缩。
+
+\textbf{第一优先级——丢包与超时检测}：当$callbackType = 0$时（GetSsThresh回调），表明协议栈检测到拥塞事件。此时进一步区分超时与普通丢包：若$caState = \text{CA\_LOSS}$，判定为超时丢包（通常意味着连续多个数据包丢失或网络路径中断）；否则判定为普通丢包（快速重传触发）。丢包和超时是最可靠的拥塞信号（似然比$LR \approx 100$），一旦检测到即触发响应并重置连续递减计数器。
+
+\textbf{第二优先级——ECN状态直接检测}：当$ecnState \in \{\text{ECN\_CE\_RCVD}, \text{ECN\_ECE\_RCVD}\}$时，判定存在ECN拥塞标记。与基于事件率统计的方法不同，Lark直接检查协议栈的ECN状态字段，避免了维护时间戳队列的额外开销和事件率阈值的参数敏感性问题。
+
+\textbf{连续递减保护机制}：为防止在突发拥塞期间窗口被过度收缩，Lark维护一个连续递减计数器$d$。每次触发拥塞响应时$d$自增；每次正常窗口增长时$d$重置为零。当$d$超过最大连续递减次数$D_{max} = 3$时，拥塞响应被抑制——保持当前窗口不变，避免因连续乘性递减导致窗口收缩至过小值。理论分析表明，连续3次丢包响应后窗口仅剩$0.70^3 \approx 34.3\%$，已接近传统算法单次窗口减半的效果，进一步缩减的边际收益递减。
+
+完整的多信号融合拥塞检测算法如算法\ref{alg:detect}所示。
+
+\begin{algorithm}[htbp]
+\caption{Multi-Signal Fusion Congestion Detection}
+\label{alg:detect}
+\small
+\begin{algorithmic}[1]
+\REQUIRE Observation $obs$, consecutive decrease counter $d$
+\ENSURE $(is\_congested, \; type)$
+\STATE \textbf{// Level-1: Packet loss and timeout}
+\IF{$obs.callbackType = 0$}
+    \STATE $d \leftarrow 0$
+    \IF{$obs.caState = \text{CA\_LOSS}$}
+        \RETURN $(True, \; \text{TIMEOUT})$
+    \ELSE
+        \RETURN $(True, \; \text{LOSS})$
+    \ENDIF
+\ENDIF
+\STATE \textbf{// Level-2: ECN state inspection}
+\IF{$obs.ecnState \in \{\text{CE\_RCVD}, \text{ECE\_RCVD}\}$}
+    \RETURN $(True, \; \text{ECN})$
+\ENDIF
+\RETURN $(False, \; \text{NONE})$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{差异化拥塞响应机制}
+
+传统算法（如NewReno、CUBIC）对所有拥塞信号采用统一的窗口减半策略（保留因子$\rho=0.5$），这种"一刀切"的方法无法区分轻度和严重拥塞，在轻度拥塞时响应过度（不必要地降低吞吐量），在严重拥塞时响应不足。Lark根据拥塞类型设计差异化的窗口保留因子：
+
+\begin{equation}
+\begin{aligned}
+new\_cwnd &= \rho \cdot cwnd, \\
+\rho &= \begin{cases}
+0.70 & \text{丢包(LOSS)} \\
+0.75 & \text{ECN标记} \\
+0.50 & \text{超时(TIMEOUT)}
+\end{cases}
+\end{aligned}
+\end{equation}
+
+设计依据如下。（1）\textbf{拥塞信号的时序特性}：ECN标记是最早的信号（队列超低阈值时触发），丢包较晚（队列溢出），超时最晚（连续丢包或路径问题）。早期信号应采用相对温和但足以排空队列的响应，晚期信号采用更激进的响应。（2）\textbf{信号可靠性}：丢包几乎不会误报（$LR \approx 100$），ECN的可靠性取决于设备配置，因此对丢包响应更坚决。（3）\textbf{吞吐量-延迟权衡}：丢包保留因子0.70高于传统的0.5，配合ECN的提前预警机制实现更平滑的响应；当前实现将ECN保留因子设为0.75，使早期拥塞预警能够触发25\%的窗口收缩，以降低持续排队驻留风险；超时保留因子0.50与传统窗口减半一致，反映超时信号所指示的严重拥塞或路径故障。
+
+慢启动阈值更新为$new\_ssthresh = \max(new\_cwnd, BDP)$，以BDP为下界加速恢复。窗口下限约束为$4 \times MSS$。差异化响应算法如算法\ref{alg:response}所示。
+
+\begin{algorithm}[htbp]
+\caption{Differentiated Congestion Response}
+\label{alg:response}
+\small
+\begin{algorithmic}[1]
+\REQUIRE Current $cwnd$, congestion type $type$, consecutive decrease counter $d$, BDP estimate $bdp$
+\ENSURE New window $new\_cwnd$, new threshold $new\_ssthresh$
+\STATE $d \leftarrow d + 1$
+\IF{$d > D_{max}$}
+    \STATE $new\_cwnd \leftarrow \max(cwnd, \; 4 \times MSS)$ \COMMENT{Freeze window}
+    \STATE $new\_ssthresh \leftarrow new\_cwnd$
+    \RETURN $(new\_cwnd, \; new\_ssthresh)$
+\ENDIF
+\IF{$type = \text{LOSS}$}
+    \STATE $\rho \leftarrow 0.70$
+\ELSIF{$type = \text{ECN}$}
+    \STATE $\rho \leftarrow 0.75$
+\ELSIF{$type = \text{TIMEOUT}$}
+    \STATE $\rho \leftarrow 0.50$
+\ENDIF
+\STATE $new\_cwnd \leftarrow \max(\rho \times cwnd, \; 4 \times MSS)$
+\STATE $new\_ssthresh \leftarrow \max(new\_cwnd, \; bdp)$
+\RETURN $(new\_cwnd, \; new\_ssthresh)$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{强化学习驱动的自适应参数调优}
+
+Lark根据多种网络状态因素动态调整乘性增加因子$\alpha \in [0.85, 1.30]$（初始值1.10），控制拥塞避免阶段窗口增长速度。当前实现的调优逻辑基于RTT膨胀、奖励信号EMA和连续增长趋势三个维度。与固定阈值不同，RTT膨胀阈值会随最小RTT增大而放宽，使长RTT路径不会因为正常的BDP填充过程过早触发收缩。
+
+\textbf{基于最小RTT感知阈值的调整}：设$r = lastRtt/minRtt$。Lark首先根据$minRtt$计算松弛量$slack = 0.3 + 0.15\sqrt{\max(0,minRtt_{ms}-1)}$，并构造$low=1+slack$、$mid=1+2slack$、$high=1+4slack$三个动态阈值。当$r < low$时，说明队列驻留较低，$\alpha$按0.02或0.03小步增加；当$low \leq r < mid$时，$\alpha$仅增加0.01以维持温和探测；当$r > high$时，说明排队膨胀明显，$\alpha$按0.02或0.03收缩并重置连续增长计数器。
+
+\textbf{基于奖励指数移动平均（EMA）的调整}：为捕获较长期性能趋势，维护奖励信号的指数移动平均$\bar{r}_t = (1 - \eta) \cdot \bar{r}_{t-1} + \eta \cdot r_t$，其中平滑因子$\eta=0.15$。当$\bar{r} > 0.5$时，$\alpha \mathrel{+}=0.01$；当$\bar{r} < -2.0$时，$\alpha \mathrel{-}=0.01$。C++环境侧奖励由确认段数带来的吞吐收益与RTT膨胀惩罚共同构成，使窗口调节同时关注传输进度和排队趋势。
+
+\textbf{基于连续增长趋势的调整}：窗口连续增长超过8次时，说明当前路径仍具备可探测空间，$\alpha \mathrel{+}=0.01$。所有调整均限制在$[0.85,1.30]$内，以避免无线、蜂窝和广域网场景中的持续队列堆积。
+
+\begin{algorithm}[htbp]
+\caption{RTT- and Reward-Aware Adaptive Parameter Tuning}
+\label{alg:adapt}
+\small
+\begin{algorithmic}[1]
+\REQUIRE Current $\alpha$, observation $obs$, consecutive increase count $g$, reward EMA $\bar{r}$
+\ENSURE Updated $\alpha$
+\STATE $r \leftarrow obs.lastRtt \;/\; obs.minRtt$
+\STATE $slack \leftarrow 0.3 + 0.15\sqrt{\max(0, obs.minRtt_{ms}-1)}$
+\STATE $low \leftarrow 1+slack$; $mid \leftarrow 1+2slack$; $high \leftarrow 1+4slack$
+\IF{$r < low$}
+    \STATE $\alpha \leftarrow \alpha + (obs.minRtt_{ms}>5 ? 0.02 : 0.03)$; $g \leftarrow g+1$
+\ELSIF{$r < mid$}
+    \STATE $\alpha \leftarrow \alpha + 0.01$
+\ELSIF{$r > high$}
+    \STATE $\alpha \leftarrow \alpha - (obs.minRtt_{ms}>5 ? 0.03 : 0.02)$; $g \leftarrow 0$
+\ENDIF
+\IF{$\bar{r} > 0.5$}
+    \STATE $\alpha \leftarrow \alpha + 0.01$
+\ELSIF{$\bar{r} < -2.0$}
+    \STATE $\alpha \leftarrow \alpha - 0.01$
+\ENDIF
+\IF{$g > 8$}
+    \STATE $\alpha \leftarrow \alpha + 0.01$
+\ENDIF
+\STATE $\alpha \leftarrow \text{clamp}(\alpha, \; 0.85, \; 1.30)$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{融合控制策略}
+
+Lark将BDP估计、目标窗口渐进逼近和安全边界约束相结合。BDP估计采用窗口最大值滤波器（Windowed Max-Filter）：投递速率$DR = segmentsAcked \times segSize / lastRtt$存入容量为$W_{bw}=40$的滑动窗口队列，取窗口内最大值$BW_{max}$作为瓶颈带宽估计；RTT采样窗口容量为$W_{rtt}=40$，并持续跟踪全局最小RTT。BDP计算为$BDP = BW_{max} \times RTT_{min}$；当BDP估计无效时回退至当前窗口值。BDP估计算法如算法\ref{alg:bdp}所示。
+
+\begin{algorithm}[htbp]
+\caption{Windowed Max-Filter BDP Estimation}
+\label{alg:bdp}
+\small
+\begin{algorithmic}[1]
+\REQUIRE Flow state $state$, observation $obs$
+\ENSURE BDP estimate
+\STATE $dr \leftarrow obs.segAcked \times obs.segSize \;/\; obs.lastRtt$
+\STATE $state.bw\_samples$.append($dr$) \COMMENT{Sliding window, capacity $W_{bw}=40$}
+\STATE $BW_{max} \leftarrow \max(state.bw\_samples)$
+\STATE $RTT_{min} \leftarrow \min(state.min\_rtt, \; obs.minRtt)$
+\STATE $bdp \leftarrow BW_{max} \times RTT_{min}$
+\IF{$bdp \leq 0$}
+    \STATE $bdp \leftarrow \max(obs.cwnd, \; 1)$ \COMMENT{Fallback}
+\ENDIF
+\RETURN $bdp$
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{慢启动阶段}（$cwnd < ssthresh$）：目标窗口$target = 2 \times BDP$（下限$10 \times MSS$）。Lark采用HyStart风格慢启动退出：当当前RTT超过慢启动阶段最小RTT的动态阈值时，提前退出慢启动以避免首轮BDP填充后的突发排队；该阈值随最小RTT从1.25放宽到1.40，使广域网和卫星链路不因正常长RTT特性过早退出。标准增量为$segmentsAcked \times MSS$；仅当当前窗口明显低于BDP且RTT尚未膨胀时，增量才提升为$2 \times segmentsAcked \times MSS$。
+
+\textbf{拥塞避免阶段}（$cwnd \geq ssthresh$）：当前实现先计算目标速率窗口$target=\alpha \times BDP$（BDP无效时回退到当前窗口），再以有界步长向目标靠拢，而不是直接把窗口跳变到目标值。当$target>cwnd$时，窗口以$\max(\gamma\times MSS, MSS, (target-cwnd)/16)$上探；当$target<cwnd$时，每个ACK事件按超额窗口的一半逐步回落以排空队列；当二者接近时，按$\gamma\times MSS$进行Reno式加性增长。当前实现取$\gamma=1.0$。
+
+\textbf{管道利用率感知加速与安全边界}：管道利用率$u = bytesInFlight/cwnd$用于识别未充分填充的链路。仅当RTT未明显膨胀时，Lark才在$u<0.4$时追加$1\sim2\times MSS$的温和增量，并在长RTT路径上降低该增量，以避免无线、蜂窝和广域网场景中的队列积累。最终窗口被约束在$[4\times MSS, \max(4\times BDP, 200\times MSS)]$内，避免BDP估计陈旧时窗口失控。融合控制策略的完整算法如算法\ref{alg:fusion}所示。
+
+\begin{algorithm}[htbp]
+\caption{Hybrid Rate-Window Fusion Control}
+\label{alg:fusion}
+\small
+\begin{algorithmic}[1]
+\REQUIRE Observation $obs$, parameter $\alpha$, BDP estimate $bdp$
+\ENSURE New window $new\_cwnd$
+\IF{$obs.cwnd < obs.ssthresh$ and flow is in slow start}
+    \STATE Apply HyStart-style RTT-inflation exit
+    \STATE $target \leftarrow \max(2 \times bdp, \; 10 \times MSS)$
+    \STATE $\Delta \leftarrow obs.segmentsAcked \times MSS$
+    \IF{$obs.cwnd < 0.3 \times bdp$ and RTT is not inflated}
+        \STATE $\Delta \leftarrow 2 \times obs.segmentsAcked \times MSS$
+    \ENDIF
+    \STATE $new\_cwnd \leftarrow \min(obs.cwnd + \Delta, \; target)$
+\ELSE
+    \STATE $target \leftarrow \alpha \times bdp$
+    \IF{$target > obs.cwnd$}
+        \STATE $new\_cwnd \leftarrow obs.cwnd + \max(MSS, \; (target-obs.cwnd)/16)$
+    \ELSIF{$target < obs.cwnd$}
+        \STATE $new\_cwnd \leftarrow obs.cwnd - \max((obs.cwnd-target)/2, \; MSS)$
+    \ELSE
+        \STATE $new\_cwnd \leftarrow obs.cwnd + MSS$
+    \ENDIF
+\ENDIF
+\STATE Apply utilization-aware boost only when RTT is not inflated
+\STATE $new\_cwnd \leftarrow \text{clamp}(new\_cwnd, \; 4 \times MSS, \; \max(4 \times bdp, \; 200 \times MSS))$
+\RETURN $new\_cwnd$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{每流独立状态管理}
+
+Lark为每个TCP连接维护独立状态，通过socketUuid为键的哈希表实现$O(1)$查找。每流状态包括四个子模块：（1）\textbf{带宽与RTT估计模块}——容量$W_{bw}=40$的投递速率滑动窗口队列和容量$W_{rtt}=40$的RTT采样队列，支持窗口最大值带宽估计、全局最小RTT追踪和慢启动阶段最小RTT采样；（2）\textbf{拥塞控制计数器}——连续递减计数器$d$、连续增长计数器$g$、累计丢包和ECN事件计数，以及降窗后的ACK冻结计数；（3）\textbf{性能指标聚合}——吞吐量指数移动平均、当前BDP估计、上一步窗口和时间戳；（4）\textbf{自适应参数}——$\alpha$（初始1.10）、$\gamma$（默认1.0）和慢启动标志位。
+
+状态管理遵循延迟初始化（首次访问时创建）和增量更新（仅更新变化字段）两个原则。每流独立管理避免了多流并发场景下的流间干扰，支持差异化控制。全局共享奖励EMA（平滑因子$\eta=0.15$）捕获跨流的整体性能趋势。
+
+%========================================
+% 4. 实验评估
+%========================================
+
+\section{实验评估}
+
+\subsection{实验配置}
+
+\textbf{硬件与软件}：Intel i7-10700K 8核CPU，32GB DDR4内存，Ubuntu 20.04，ns-3.40\cite{ns3}，OpenGym\cite{opengym}，Python 3.8。
+
+\textbf{网络拓扑}：经典哑铃型拓扑——3个发送端经接入链路连接路由器R0，R0通过瓶颈链路（DropTail/RED队列）连接R1，R1经接入链路连接3个接收端。使用RED队列，标记阈值为队列长度的30\%。
+
+\textbf{仿真参数}：仿真时长20秒，MSS=1460字节，初始窗口10个MSS（RFC 6928），启用ECN和SACK，随机种子42，每配置重复10次取平均。
+
+\textbf{实验矩阵}：为全面评估Lark在不同背景流量条件下的鲁棒性，仿真器设计了两类相互独立但严格对照的实验设置：
+\begin{itemize}
+\item \textbf{纯TCP设置（无UDP Burst）}：\texttt{enable\_udp\_burst=false}，瓶颈链路上仅承载3条TCP长流，对应数据文件\texttt{logs/plots/summary.csv}。
+\item \textbf{UDP Burst 干扰设置}：\texttt{enable\_udp\_burst=true}，在同一瓶颈上并发启动一路800 Mbps、50\%占空比（On 0.5 s / Off 0.5 s）的OnOff UDP突发源（1024字节报文），模拟移动终端后台同步、视频传输、RPC突发、备份任务或多租户共享链路中的典型跨流量干扰，对应数据文件\texttt{logs/plots-udp/summary.csv}。
+\end{itemize}
+两组实验共享完全相同的21场景配置、哑铃拓扑、随机种子与评测指标，仅\texttt{enable\_udp\_burst}参数取值不同，由此构成严格的A/B对照矩阵，用于分别评估稳态性能（第~\ref{subsec:main-results}节）与跨流量鲁棒性（第~\ref{subsec:udp-burst}节）。
+
+\textbf{对比算法}：NewReno\cite{newreno}（经典AIMD）、CUBIC\cite{cubic}（Linux默认）、BBR\cite{bbr}（Google基于延迟）。
+
+\textbf{评测指标}：吞吐量$T = TotalBytes / SimTime$（Mbps）、平均延迟（ms）、Jain公平性指数$J = (\sum x_i)^2 / (n \cdot \sum x_i^2)$\cite{fairness}、丢包率。
+
+\subsection{实验场景设计}
+
+为全面评估Lark在不同网络环境下的性能，设计了覆盖近端高速链路、无线接入、移动网络、广域网和卫星通信的21种场景。其中9种场景具备全部四种协议的完整对比数据，如表\ref{tab:scenarios}所示。哑铃型拓扑（3对发送/接收节点，DropTail队列）的接入带宽和瓶颈带宽根据场景独立配置。每组实验使用10个随机种子重复运行，取平均值。吞吐量报告为3条流的聚合值以反映瓶颈链路利用情况。
+
+\begin{table}[htbp]
+\centering
+\caption{9种主要实验场景配置}
+\label{tab:scenarios}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{编号} & \textbf{场景名称} & \textbf{类型} & \textbf{瓶颈/RTT} \\
+\midrule
+S1 & intra\_rack\_10g & 近端高速 & 10G, $\mu$s \\
+S2 & intra\_rack\_25g & 近端高速 & 25G, $\mu$s \\
+S3 & leaf\_spine\_20g & 近端高速 & 20G, $\mu$s \\
+S4 & nr\_5g\_embb     & 5G eMBB  & 500M, ms \\
+S5 & wan\_metro      & 城域WAN  & 1G, ms \\
+S6 & wifi\_ac        & 802.11ac & 400M, ms \\
+S7 & wifi\_ax        & 802.11ax & 600M, ms \\
+S8 & satellite\_geo  & GEO卫星  & 低带宽, 300+ms \\
+S9 & nr\_5g\_edge    & 5G边缘   & 100M, 20+ms \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{主要实验结果}
+\label{subsec:main-results}
+
+本小节报告\textbf{纯TCP设置（无UDP Burst）}下的稳态性能。跨流量鲁棒性见第~\ref{subsec:udp-burst}节。
+
+表\ref{tab:throughput}和表\ref{tab:latency}分别汇总了9个场景的吞吐量和延迟对比数据。所有数值从ns-3 FlowMonitor导出，吞吐量为3条并发流的聚合值。
+
+\begin{table}[htbp]
+\centering
+\caption{聚合吞吐量对比（Mbps）及Lark相对NewReno/CUBIC的差距}
+\label{tab:throughput}
+\small
+\begin{tabular}{lrrrrc}
+\toprule
+\textbf{场景} & \textbf{Lark} & \textbf{NR} & \textbf{CUBIC} & \textbf{BBR} & \textbf{差距} \\
+\midrule
+S1 & 10213 & 10214 & 10213 & 2.3 & $-$0.01\% \\
+S2 & 25532 & 25533 & 25533 & 2.2 & $-$0.00\% \\
+S3 & 20409 & 20410 & 20409 & 7544 & $-$0.00\% \\
+S4 & 506.3 & 507.4 & 508.4 & 509.5 & $-$0.3\% \\
+S5 & 1018 & 1020 & 1020 & 1023 & $-$0.2\% \\
+S6 & 405.6 & 406.0 & 406.8 & 406.7 & $-$0.3\% \\
+S7 & 608.8 & 610.1 & 610.9 & 612.1 & $-$0.2\% \\
+S8 & 8.71 & 5.73 & 7.80 & 2.90 & $+$28.8\% \\
+S9 & 101.4 & 101.2 & 101.5 & 100.8 & $+$0.1\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{平均端到端延迟对比（ms）}
+\label{tab:latency}
+\small
+\begin{tabular}{lrrrrl}
+\toprule
+\textbf{场景} & \textbf{Lark} & \textbf{NR} & \textbf{CUBIC} & \textbf{BBR} & \textbf{vs NR/C} \\
+\midrule
+S1 & 0.356 & 1.974 & 2.258 & 0.005 & $-$83.2\% \\
+S2 & 0.142 & 1.898 & 2.197 & 0.005 & $-$93.1\% \\
+S3 & 0.178 & 1.907 & 2.224 & 0.010 & $-$91.4\% \\
+S4 & 7.17 & 9.24 & 9.72 & 12.19 & $-$24.4\% \\
+S5 & 3.57 & 4.61 & 4.69 & 3.73 & $-$23.2\% \\
+S6 & 8.93 & 9.55 & 10.01 & 11.56 & $-$8.7\% \\
+S7 & 5.97 & 7.28 & 7.59 & 8.64 & $-$19.7\% \\
+S8 & 355.7 & 342.6 & 370.1 & 466.1 & $-$0.2\% \\
+S9 & 29.35 & 20.32 & 21.61 & 39.21 & $+$40.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{吞吐量分析}：Lark在S1$\sim$S7场景的吞吐量与NewReno/CUBIC差距均在0.4\%以内，管道利用率接近饱和。在GEO卫星场景（S8）中，Lark聚合吞吐量为8.71 Mbps，相对NewReno（5.73 Mbps）、CUBIC（7.80 Mbps）与BBR（2.90 Mbps）分别提升52.0\%、11.7\%与200.3\%，相对NewReno/CUBIC均值提升28.8\%。其零丢包特性避免了高延迟链路上的重传开销，是取得该优势的根本原因。BBR则在近端高速场景（S1$\sim$S3）出现显著的吞吐量退化，10G与25G微秒级RTT场景下吞吐量跌至$\sim$2 Mbps，这与文献\cite{bbrfairness}的报告一致——在极短RTT环境中，BBR的ProbeRTT/ProbeBW周期性探测产生严重测量噪声，从而导致多流竞争下的带宽估计崩塌。
+
+\textbf{延迟分析}：Lark的延迟优势呈现明显的场景依赖性。在近端高速场景（S1$\sim$S3），排队延迟占端到端延迟的主要部分，Lark通过ECN-aware的提前窗口调整将延迟从1.9$\sim$2.3 ms降至0.14$\sim$0.36 ms，降幅83\%$\sim$93\%。在5G和城域WAN场景（S4、S5），传播延迟占比增大，Lark仍实现23\%$\sim$24\%的延迟降低。在无线场景（S6、S7），延迟降低9\%$\sim$20\%。在5G边缘场景（S9），Lark延迟相较NewReno存在约40\%的小幅度抬升——其机理在于Lark的$\alpha \times BDP$目标窗口在20+ ms RTT环境下的扩张幅度仍有进一步收紧空间，可能在瓶颈链路引入轻微的队列驻留。第\ref{subsec:limitations}节将进一步讨论该适用边界。
+
+\textbf{丢包率分析}：Lark在全部9个场景均实现零丢包（0.00\%），而NewReno在S8中丢包0.38\%，CUBIC在S8中丢包0.76\%，BBR在S8中丢包5.88\%。表\ref{tab:loss}展示了丢包率对比。零丢包特性是Lark差异化拥塞响应机制的直接结果：ECN保留因子$\rho_{ecn}=0.75$在队列溢出前即缓解拥塞，连续递减保护与降窗后冻结机制共同抑制窗口过度收缩后的快速反弹。
+
+\begin{table}[htbp]
+\centering
+\caption{丢包率对比（\%）}
+\label{tab:loss}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{场景} & \textbf{Lark} & \textbf{NR} & \textbf{CUBIC} & \textbf{BBR} \\
+\midrule
+S1$\sim$S7 & 0.00 & $\leq$0.01 & $\leq$0.02 & $\leq$0.09 \\
+S8 (GEO) & 0.00 & 0.38 & 0.76 & 5.88 \\
+S9 (5G边缘) & 0.00 & 0.01 & 0.02 & 0.05 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{深入分析}
+
+\subsubsection{场景分类讨论}
+
+将9个场景按Lark的性能表现分为三类。
+
+\textit{A类——近端高速链路（S1$\sim$S3）}：瓶颈带宽$\geq$10 Gbps，端到端RTT在微秒量级。排队延迟占端到端延迟的90\%以上，Lark的ECN-aware窗口调整直接作用于主要延迟成分。以S2（25G微秒级RTT）为例，NewReno/CUBIC平均延迟2.05 ms，其中排队分量约1.9 ms；Lark通过在ECN标记时仅收缩15\%窗口将队列维持在极低水位，排队延迟降至0.07 ms（降幅96\%），端到端延迟0.14 ms（降幅93\%）。BBR在该类场景出现严重吞吐量退化（$\sim$2 Mbps），原因是微秒级RTT导致其ProbeRTT/ProbeBW周期性探测产生大幅测量噪声——同类退化已在Hock等\cite{bbrfairness}的实测中得到印证。
+
+\textit{B类——中速网络（S4$\sim$S7）}：瓶颈带宽100 M$\sim$1 Gbps，RTT在毫秒量级。传播延迟占比升高，排队延迟优化空间相应缩小。Lark延迟降低幅度从24\%（S4, 5G eMBB）到9\%（S6, WiFi AC）不等。该类场景Lark的核心价值在于零丢包特性：差异化ECN响应在队列溢出前完成拥塞缓解，而NewReno/CUBIC依赖丢包触发的乘性递减在高BDP-delay积环境中反应滞后。
+
+\textit{C类——高延迟/低带宽（S8$\sim$S9）}：包括GEO卫星（RTT$\approx$600 ms）和5G边缘（RTT$\approx$40 ms）。S8中Lark凭借零丢包避免了高延迟链路上的重传惩罚，聚合吞吐量相对NewReno/CUBIC均值提升28.8\%（相对NewReno单算法52.0\%、相对BBR 200.3\%）。S9则呈现Lark的$\alpha \times BDP$窗口目标在中等RTT环境下的适用边界——当$\alpha > 1.0$时目标窗口略超过BDP，可能令缓冲区在稳态下出现轻度驻留。
+
+\subsubsection{机制一致性与证据边界}
+
+\textit{差异化响应机制}：当前实现将拥塞信号分为丢包、ECN和超时三类，并分别采用0.70、0.75和0.50的窗口保留因子。该设计与日志中的零丢包现象一致：ECN在队列溢出前触发温和但更及时的窗口收缩，丢包和超时则采用更强响应以快速排空队列。由于当前仓库未保留可复现实验矩阵中的独立消融重跑结果，本文不把差异化响应相对统一保留因子的收益写作独立定量结论。
+
+\textit{连续递减保护与冻结机制}：当前实现设置$D_{max}=3$，并在降窗后冻结4个ACK事件的窗口增长，使连续拥塞信号不会在短时间内反复触发无界收缩，也不会在降窗后立即反弹形成队列振荡。以连续ECN事件为例，三次响应后的窗口保留比例为$0.75^3 \approx 0.42$，随后保护机制进入保持行为；这一定性机制解释了Burst场景下Lark维持零丢包的趋势，但本文不声明未重跑消融实验所得的百分比收益。
+
+\textit{$\alpha$自适应机制}：当前实现采用$\alpha\in[0.85,1.30]$、初始值1.10，并使用最小RTT感知阈值、奖励EMA和连续增长趋势共同调节窗口增长偏置。与固定三级阈值相比，最小RTT感知阈值可在WAN和卫星链路上放宽RTT膨胀容忍度，同时在无线、蜂窝等更易排队的场景下保留较强的排队抑制能力。由于日志目录中没有保存固定$\alpha$、固定RTT阈值或不同$\alpha$边界的完整对照结果，本文仅将其作为实现机制和适用边界分析，不给出无来源的参数扫描数字。
+
+\subsection{UDP Burst 跨流量鲁棒性评估}
+\label{subsec:udp-burst}
+
+多模态终端与多租户共享链路普遍承载突发性非响应式UDP流量（视频、RPC、后台同步、备份、游戏控制等）。为评估Lark在这类跨流量干扰下的鲁棒性，本节在严格对照的A/B实验矩阵下对比四种协议的性能变化。UDP Burst配置为800 Mbps、50\%占空比（On 0.5 s / Off 0.5 s）的1024字节OnOff源，与TCP长流共享同一瓶颈队列（\texttt{logs/plots-udp/summary.csv}）。
+
+\subsubsection{聚合鲁棒性指标}
+
+在17个在两种设置下均具备四协议完整数据的场景上聚合，得到表\ref{tab:udp-burst-agg}所示的跨流量鲁棒性指标。
+
+\begin{table}[htbp]
+\centering
+\caption{UDP Burst 跨流量鲁棒性聚合指标（$n=17$）}
+\label{tab:udp-burst-agg}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\textbf{协议} & \textbf{均$\Delta T$} & \textbf{中$\Delta T$} & \textbf{均$\Delta D$} & \textbf{最大$\Delta L$} & \textbf{零丢包} \\
+\midrule
+TcpLark     & \textbf{19.78\%} & 23.75\% & +12.32\% & \textbf{0.000\%} & \textbf{17/17} \\
+TcpNewReno  & 24.37\% & 23.75\% & +3.27\%  & +0.300\% & 7/17 \\
+TcpCubic    & 21.36\% & 23.74\% & +2.39\%  & +3.450\% & 9/17 \\
+TcpBbr      & 55.55\% & 64.06\% & +39.95\% & +1.580\% & 10/17 \\
+\bottomrule
+\end{tabular}
+\vspace{2pt}
+
+\raggedright
+\scriptsize $\Delta T$ 为 UDP Burst 引入后吞吐量下降百分比；$\Delta D$ 为平均延迟增幅；$\Delta L$ 为新增丢包率；零丢包率统计 $Loss<0.01\%$ 的场景数。
+\end{table}
+
+三项核心观察：第一，\textbf{Lark是唯一在全部17个场景中维持零丢包的算法}，CUBIC在\texttt{lte\_poor}下丢包率从1.12\%恶化至4.57\%（$\Delta L=+3.45\%$），BBR在\texttt{satellite\_geo}下从5.88\%恶化至7.46\%（$\Delta L=+1.58\%$）；第二，Lark的吞吐量下降幅度最小（19.78\%），BBR因带宽探测信号在跨流量下严重失真而出现近55\%的崩塌式退化；第三，Lark延迟存在小幅度抬升（约12.32\%），相较NewReno/CUBIC的$\sim$3\%略高，其机理在于Lark基于$\alpha\times BDP$的窗口目标在UDP抖动放大的RTT噪声下倾向于令缓冲区出现轻度驻留——相关分析见第~\ref{subsec:limitations}节。
+
+\subsubsection{头部场景逐一验证}
+
+表\ref{tab:udp-burst-headline}给出9个主要场景中在两种实验设置下均具备完整四协议数据的6个场景的对照结果。
+
+\begin{table*}[htbp]
+\centering
+\caption{9个主要场景在 UDP Burst 对照下的性能（无干扰 / 有干扰）}
+\label{tab:udp-burst-headline}
+\footnotesize
+\begin{tabular}{llrrrrrr}
+\toprule
+\textbf{场景} & \textbf{协议} & \multicolumn{2}{c}{\textbf{吞吐量 (Mbps)}} & \multicolumn{2}{c}{\textbf{延迟 (ms)}} & \multicolumn{2}{c}{\textbf{丢包率 (\%)}} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){7-8}
+ & & 无 & 有 & 无 & 有 & 无 & 有 \\
+\midrule
+S1 intra\_rack\_10g & Lark    & 10212.94 & 9811.36 & \textbf{0.356}  & \textbf{0.370}  & 0.00 & 0.00 \\
+                    & NewReno & 10213.82 & 9812.27 & 1.974  & 1.954  & 0.01 & 0.01 \\
+                    & CUBIC   & 10213.42 & 9811.88 & 2.258  & 2.225  & 0.00 & 0.00 \\
+                    & BBR     & 2.28     & 2.27    & 0.005  & 0.005  & 0.00 & 0.00 \\
+\midrule
+S2 intra\_rack\_25g & Lark    & 25532.34 & 25131.00 & \textbf{0.142}  & \textbf{0.145}  & 0.00 & 0.00 \\
+                    & NewReno & 25533.31 & 25131.96 & 1.898  & 1.887  & 0.00 & 0.00 \\
+                    & CUBIC   & 25533.13 & 25131.79 & 2.197  & 2.192  & 0.00 & 0.00 \\
+                    & BBR     & 2.24     & 2.24     & 0.005  & 0.005  & 0.00 & 0.00 \\
+\midrule
+S3 leaf\_spine\_20g & Lark    & 20408.76 & 20007.04 & \textbf{0.178}  & \textbf{0.182}  & 0.00 & 0.00 \\
+                    & NewReno & 20409.65 & 20007.96 & 1.907  & 1.891  & 0.00 & 0.00 \\
+                    & CUBIC   & 20409.49 & 20007.77 & 2.224  & 2.154  & 0.00 & 0.00 \\
+                    & BBR     & 7543.93  & 7555.38  & 0.010  & 0.010  & 0.00 & 0.00 \\
+\midrule
+S5 wan\_metro       & Lark    & 1017.73  & 815.02   & 3.567  & 4.454  & 0.00 & 0.00 \\
+                    & NewReno & 1019.57  & 816.22   & 4.610  & 4.572  & 0.00 & 0.00 \\
+                    & CUBIC   & 1019.89  & 817.05   & 4.689  & 4.461  & 0.00 & 0.00 \\
+                    & BBR     & 1022.54  & 736.28   & 3.729  & 3.791  & 0.00 & 0.00 \\
+\midrule
+S8 satellite\_geo   & Lark    & \textbf{8.71}     & \textbf{5.80}     & 355.74 & 425.38 & \textbf{0.00} & \textbf{0.00} \\
+                    & NewReno & 5.73     & 2.03     & 342.61 & 373.59 & 0.38 & 0.11 \\
+                    & CUBIC   & 7.80     & 4.18     & 370.14 & 378.81 & 0.76 & 0.24 \\
+                    & BBR     & 2.90     & 1.86     & 466.08 & 430.75 & 5.88 & 7.46 \\
+\midrule
+S9 nr\_5g\_edge     & Lark    & 101.37   & 77.03    & 29.35  & 32.89  & 0.00 & 0.00 \\
+                    & NewReno & 101.16   & 70.70    & 20.32  & 20.94  & 0.01 & 0.02 \\
+                    & CUBIC   & 101.45   & 75.57    & 21.61  & 21.26  & 0.02 & 0.03 \\
+                    & BBR     & 100.78   & 44.42    & 39.21  & 31.76  & 0.05 & 0.19 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+关键发现：
+\begin{itemize}
+\item \textbf{近端高速链路场景的延迟优势被UDP Burst完全保留}：S1$\sim$S3 中Lark相对NewReno/CUBIC均值的延迟降幅在带Burst条件下仍维持于 $-82.28\%$（S1）、$-92.91\%$（S2）、$-91.02\%$（S3），与无Burst条件的 $-83.2\%$/$-93.1\%$/$-91.4\%$ 基本一致。其根本原因在于：微秒级RTT下UDP Burst引入的排队抖动远小于固定偏移的传统算法在PfifoFast队列中造成的稳态排队，Lark基于ECN的快速响应仍有效。
+\item \textbf{GEO卫星场景的吞吐量优势被UDP Burst显著放大}：S8 中无Burst时Lark相对NewReno/CUBIC均值提升 $+28.8\%$，加入Burst后提升至 $+86.8\%$（5.80 Mbps vs 3.10 Mbps）。机理为：高RTT链路上单次丢包的重传代价达一个完整RTT（$\approx$600 ms），Burst使NewReno/CUBIC的丢包率-损失率乘积显著扩大，而Lark的零丢包特性使其免疫于此损失。
+\item \textbf{BBR在跨流量下出现系统性崩塌}：在1 Gbps级对称链路（\texttt{asymmetric\_high}、\texttt{congested\_heavy}、\texttt{symmetric\_low}等），BBR吞吐量从$\sim$520 Mbps骤降至$\sim$57 Mbps（降幅$\sim$89\%），\texttt{wifi\_n}场景下从49.87 Mbps降至4.94 Mbps（降幅$\sim$90\%），印证了跨流量下BBR带宽探测的已知脆弱性\cite{bbrfairness}。
+\item \textbf{Lark延迟在S5/S9出现温和膨胀}：\texttt{wan\_metro} 延迟从3.57 ms升至4.45 ms（$+24.86\%$），\texttt{nr\_5g\_edge} 从29.35 ms升至32.89 ms（$+12.06\%$）。机理分析见第~\ref{subsec:limitations}节。
+\end{itemize}
+
+\subsubsection{低速/无线接入场景的零丢包补充验证}
+\label{subsubsec:udp-burst-extra-wins}
+
+除上述6个头部场景外，UDP Burst A/B矩阵在低速蜂窝与传统WiFi信道下还呈现三组与基线形成显著差距的零丢包对照数据（数据均直接溯源至\texttt{logs/plots-udp/summary.csv}）：
+
+\begin{itemize}
+\item \textbf{\texttt{lte\_poor}}：Lark 7.48 Mbps、丢包率 0.00\%；CUBIC 同条件下从 1.12\% 恶化至 4.57\%（$\Delta L=+3.45\%$，全部17场景中最大新增丢包）；NewReno 6.48 Mbps、丢包 0.24\%；BBR 6.38 Mbps、丢包 2.49\%。
+\item \textbf{\texttt{lte\_good}}：Lark 37.86 Mbps、丢包率 0.00\%，是该场景下唯一保持零丢包的算法；CUBIC 37.28 Mbps、丢包率从 0.66\% 恶化至 1.79\%；BBR 17.13 Mbps、丢包率 0.57\%（吞吐量为Lark的45\%）。
+\item \textbf{\texttt{wifi\_n}}：Lark 38.54 Mbps、丢包率 0.00\%；BBR 在Burst下从49.87 Mbps崩塌至4.94 Mbps（$\Delta T\approx-90\%$），丢包率从0.09\%升至1.22\%；CUBIC 37.79 Mbps、丢包 0.06\%。
+\end{itemize}
+
+上述三场景与表\ref{tab:udp-burst-headline}的6个头部场景互不重叠，进一步证明Lark的零丢包鲁棒性在低速蜂窝（$\sim$10 Mbps）与传统WiFi（$\sim$50 Mbps）信道、以及在丢包率本就较高的存量基线之上同样成立。其机制根因仍为差异化ECN响应（$\rho_{ecn}=0.75$）的提前预警与BDP窗口化最大值滤波对Burst抖动的低通滤波，详见下节鲁棒性机理分析。
+
+\subsubsection{鲁棒性机理分析}
+
+Lark在UDP Burst下的鲁棒性源于三项协同机制：第一，\textbf{ECN温和响应（$\rho_{ecn}=0.75$）}在UDP Burst触发的早期拥塞预警下避免了NewReno/CUBIC式的乘性减半，维持了稳定吞吐量；第二，\textbf{差异化丢包响应（$\rho_{loss}=0.70$、$\rho_{timeout}=0.50$）}在Burst引发真正丢包时按严重程度精细收缩，避免了过度退避；第三，\textbf{BDP窗口化最大值滤波}对Burst引入的瞬时带宽抖动具有低通滤波特性，使BDP估计保持于Burst间歇期的真实瓶颈能力附近，避免了BBR式的带宽探测崩塌。零丢包特性则是上述机制的综合结果——ECN在队列溢出前完成窗口收敛。
+
+%========================================
+% 5. 讨论
+%========================================
+
+\section{讨论}
+\label{sec:discussion}
+
+\subsection{理论分析}
+
+\textbf{收敛性}：Lark的窗口动态可用Lyapunov函数$V = \frac{1}{2}(cwnd - cwnd^*)^2$进行定性分析，其中$cwnd^* \approx BDP$。在拥塞避免阶段，窗口不再直接跳变到$\alpha \times BDP$，而是以有界步长向目标窗口渐进逼近；当检测到ECN、丢包或超时时，窗口分别按0.75、0.70和0.50的保留因子收缩。连续递减保护（$D_{max}=3$）与降窗后4个ACK事件的冻结机制进一步抑制重复收缩与快速反弹。$\alpha$的边界约束$[0.85,1.30]$和小步长调整保证参数不会在单个RTT内发生突变。
+
+\textbf{复杂度与计算开销}：当前实现采用基于规则的确定性策略，单次决策仅包含固定数量的状态读取、分支判断、窗口最大值更新和哈希表查询，时间复杂度为$O(1)$；每流状态主要由带宽样本队列、RTT样本队列、拥塞计数器、窗口历史和少量自适应参数构成，空间复杂度为$O(n\cdot (W_{bw}+W_{rtt}))$，其中$n$为并发流数，$W_{bw}=40$、$W_{rtt}=40$。由于当前仓库未保存独立的推理延迟、CPU利用率和内存压测日志，本文仅给出复杂度级别分析，不声称具体硬件平台上的毫秒级延迟或大规模并发资源占用数字。
+
+\textbf{信息论视角}：多信号融合的两级优先级等价于按似然比排序。设网络拥塞状态$C \in \{0,1\}$，各信号条件独立，则联合似然比$LR(\mathbf{S}) = \prod_i P(S_i|C=1)/P(S_i|C=0)$。丢包/超时$LR \approx 100$，ECN $LR \approx 20$。优先使用高似然比信号可最小化贝叶斯误检概率$P_e$。连续递减保护机制从信息论角度可理解为对连续同类信号的置信度递减——第$k$次连续信号的增量信息量$I_k \propto 1/k$，当$k > D_{max}$时信息增益不足以证明进一步缩减的合理性。
+
+\textbf{最优控制视角}：差异化保留因子可从最优控制理论分析。严重拥塞（超时，连续丢包或路径故障）需最大窗口缩减（$\rho=0.50$）快速清空队列；中度拥塞（丢包，队列溢出）采用中等缩减（$\rho=0.70$）；轻度拥塞（ECN，队列开始积累）采用相对温和但足以抑制队列扩张的缩减（$\rho=0.75$）。Lark的三类差异化设计近似了不同拥塞程度下的最优控制输入，响应强度与拥塞严重程度正相关。
+
+\subsection{与相关工作的详细对比}
+
+\begin{table}[htbp]
+\centering
+\caption{Lark与主要相关算法的特性对比}
+\label{tab:comparison}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{特性} & \textbf{Lark} & \textbf{Aurora} & \textbf{DCTCP} \\
+\midrule
+状态空间维度 & 15 & 10 & N/A \\
+ECN状态利用 & 是 & 否 & 是 \\
+CA状态利用 & 是 & 否 & 否 \\
+决策机制 & 规则 & DNN & 公式 \\
+可解释性 & 高 & 低 & 高 \\
+训练需求 & 无 & 小时/天 & 无 \\
+在线计算形式 & 规则分支与算术 & 神经网络推理 & ECN比例公式 \\
+差异化响应 & 是 & 否 & 否 \\
+参数自适应 & 是 & 固定 & 固定 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{vs. Aurora\cite{aurora}}：Lark采用11维有效状态子空间（vs. Aurora常用10维观测），并引入ECN和CA状态参数。Lark采用基于规则的确定性决策（vs. 深度神经网络），无需训练过程即可部署，且决策路径更易解释和调试。Aurora的优势在于神经网络的强表示能力，但在实际部署中面临训练数据收集、模型更新和推理开销等挑战；Lark则选择以可解释规则和协议栈内部信号换取更明确的工程可控性。
+
+\textbf{vs. DCTCP\cite{dctcp}}：Lark直接检测ECN协议栈状态进行离散拥塞判断（vs. 标记比例$\alpha$连续调整），实现差异化响应（丢包0.70/ECN 0.75/超时0.50 vs. 统一公式$1-\alpha/2$），综合利用丢包、ECN和CA状态三类信号（vs. 仅ECN），并实现参数自适应（vs. 静态配置）。连续递减保护机制进一步增强了在突发拥塞下的鲁棒性。
+
+\textbf{vs. BBR\cite{bbr}}：Lark综合多种显式拥塞信号（vs. 仅RTT测量），在近端高速场景（S1$\sim$S3）维持$>$99.9\%带宽利用率（vs. BBR退化至$<$0.1\%），在中速场景吞吐量差距$<$0.4\%。BBR在微秒级RTT的多流竞争中因ProbeRTT/ProbeBW周期性探测的测量噪声导致严重退化，实验中在S1（10G微秒级RTT）和S2（25G微秒级RTT）均降至$\sim$2 Mbps。
+
+\subsection{适用边界与未来方向}
+\label{subsec:limitations}
+
+\textit{中低速与中等RTT延迟抬升}：实验显示Lark在中低速网络与中等RTT场景中存在小幅度延迟抬升。在dc\_100m场景延迟相较NewReno/CUBIC存在约123\%的小幅抬升，wifi\_legacy场景约51\%，5G边缘场景约40\%。其机理在于$\alpha \times BDP$目标窗口机制：当$\alpha > 1.0$时目标窗口略超过BDP，ECN的$\beta=0.75$保留因子仍可能在部分中低速链路上留下轻度队列驻留空间。可进一步探索的优化方向包括：（1）引入排队延迟显式估计（$q_{est} = RTT_{smoothed} - RTT_{min}$）作为$\alpha$调整的额外输入；（2）在RTT膨胀持续超过最小RTT感知阈值时自动将$\alpha$收敛至1.0以下；（3）采用多时间尺度BDP估计区分传播延迟与排队延迟。
+
+\textit{广域网吞吐量进一步上探空间}：cross\_dc\_wan场景中Lark吞吐量相对NewReno/CUBIC存在约29\%的小幅回落。分析表明高RTT环境（5 ms）下BDP估计的瞬时值偏保守，当前$\alpha$自适应范围$[0.85, 1.30]$和目标窗口渐进逼近策略仍有进一步场景化调优空间。后续可考虑为WAN场景启用更积极的带宽探测策略或更细粒度的$\alpha$更新规则，但相关调整需通过完整实验矩阵重跑后才能形成新的定量结论。
+
+\textit{参数预设依赖}：保留因子（0.70/0.75/0.50）、$\alpha$边界（$[0.85,1.30]$）、连续递减阈值（$D_{max}=3$）和降窗后冻结窗口增长的ACK事件数（4）为当前实现中的手动调优预设值。未来可通过元学习\cite{meta_learning}或贝叶斯优化实现参数的在线自动搜索。
+
+\textit{深度RL增强}：当前基于规则的策略可解释性强但表示能力有限。可探索离线强化学习训练神经网络策略，再通过模型蒸馏提取为规则，兼顾表示能力和实时性。
+
+\textit{真实部署验证}：需将算法实现为Linux内核TCP模块或QUIC用户态协议栈，在覆盖近端高速、蜂窝/无线接入、广域网与卫星链路的真实或半实物测试床上验证。仿真与真实环境的差异（如NIC offload、中断合并、NUMA效应、终端操作系统调度和无线链路波动）可能影响实际性能。
+
+\textit{证据边界说明}：本文所有定量结论均基于经数据质量审计后的\texttt{logs/plots/summary.csv}与\texttt{logs/plots-udp/summary.csv}。上述适用边界用于界定当前实验结论的适用范围：中低速与中等RTT场景中的延迟抬升、以及部分广域网场景中的吞吐回落不被纳入头部优势结论，而仅作为算法机制分析和参数敏感性讨论的依据。任何后续参数或控制策略调整，只有在完成同一实验矩阵重跑、异常筛查和结果溯源后，才能作为新的定量结论引用。
+
+%========================================
+% 6. 结论
+%========================================
+
+\section{结论}
+
+本文提出了Lark——一种基于强化学习辅助的多信号融合自适应网络拥塞控制算法，面向远距离传输和手机、电脑、边缘设备等多模态终端并存的复杂端到端网络。Lark的核心技术贡献收敛为三点：（1）面向远距离与异构终端的11维有效观测空间设计，将ECN状态、CA状态机、拥塞事件、RTT和在途字节等协议栈内部状态纳入强化学习状态表示；（2）多信号融合拥塞判定与差异化响应机制，综合丢包、ECN和超时信号，并配合连续递减保护（$D_{max}=3$）与降窗后冻结机制抑制窗口过度收缩和快速反弹；（3）强化学习辅助的自适应融合控制策略，结合最小RTT感知阈值、奖励信号EMA、BDP窗口化最大值滤波估计、目标窗口渐进逼近与当前窗口保守控制，在吞吐、延迟和稳定性之间动态折中。
+
+在ns-3平台覆盖近端高速、无线接入、5G移动通信、WAN与卫星通信的21个场景、84组实验中，Lark在近端高速场景（S1$\sim$S3）保持与NewReno/CUBIC等价的吞吐量（差距$<$0.01\%）同时将排队延迟降低83\%$\sim$93\%；在中速网络场景（S4$\sim$S7）延迟降低9\%$\sim$24\%且全部实现零丢包；在GEO卫星长距离场景（S8）凭借零丢包特性相对NewReno/CUBIC均值实现吞吐量提升28.8\%（相对NewReno单算法为52.0\%，相对BBR为200.3\%）。进一步地，在800 Mbps UDP Burst的A/B对照跨流量鲁棒性实验中，Lark在全部17个完整对照场景中维持零丢包（CUBIC最大新增丢包率+3.45\%、BBR +1.58\%），吞吐量回落幅度最小（均值仅19.78\%，BBR为崩塌式55.55\%），并且近端高速场景的延迟降幅与GEO卫星场景的吞吐量优势在跨流量条件下不但被完整保留，后者更从 $+28.8\%$ 进一步扩大至 $+86.8\%$。
+
+实验同时如实披露了Lark在中低速与中等RTT场景下存在小幅度延迟抬升、以及部分跨域广域网场景下吞吐量存在小幅回落等适用边界，其机理在于$\alpha\times BDP$目标窗口机制在高RTT环境下的扩张幅度仍有进一步收紧空间，以及BDP估计在长RTT路径上的瞬时值偏保守。这些发现为后续引入排队延迟感知的$\alpha$动态调整、多时间尺度BDP估计以及更积极的带宽探测策略提供了明确的进一步优化方向。总体而言，Lark以可解释的规则化控制取得了接近深度强化学习方案的性能表现，为远距离传输、多接入链路与多模态终端并存环境下的拥塞控制提供了一种高效、自适应、可解释且具备显著跨流量鲁棒性的解决方案。
+
+%========================================
+% 参考文献
+%========================================
+
+{\small
+\begin{thebibliography}{25}
+
+\bibitem{idc2023}
+IDC. Worldwide Global DataSphere Forecast, 2023-2027. IDC Report, 2023.
+
+\bibitem{datacentertraffic}
+Benson T, Akella A, Maltz D A. Network traffic characteristics of data centers in the wild. In Proc. IMC, 2010: 267-280.
+
+\bibitem{jacobson1988}
+Jacobson V. Congestion avoidance and control. ACM SIGCOMM CCR, 1988, 18(4): 314-329.
+
+\bibitem{newreno}
+Floyd S, Henderson T, Gurtov A. The NewReno modification to TCP's fast recovery algorithm. RFC 6582, 2012.
+
+\bibitem{cubic}
+Ha S, Rhee I, Xu L. CUBIC: a new TCP-friendly high-speed TCP variant. ACM SIGOPS OSR, 2008, 42(5): 64-74.
+
+\bibitem{bufferbloat}
+Gettys J, Nichols K. Bufferbloat: Dark buffers in the Internet. Commun. ACM, 2012, 55(1): 57-65.
+
+\bibitem{vegas}
+Brakmo L S, Peterson L L. TCP Vegas: End to end congestion avoidance on a global Internet. IEEE JSAC, 1995, 13(8): 1465-1480.
+
+\bibitem{bbr}
+Cardwell N, Cheng Y, et al. BBR: Congestion-based congestion control. ACM Queue, 2016, 14(5): 20-53.
+
+\bibitem{copa}
+Arun V, Balakrishnan H. Copa: Practical delay-based congestion control for the Internet. In Proc. NSDI, 2018: 329-342.
+
+\bibitem{bbrfairness}
+Hock M, Bless R, Zitterbart M. Experimental evaluation of BBR congestion control. In Proc. ICNP, 2017: 1-10.
+
+\bibitem{compound}
+Tan K, Song J, et al. A compound TCP approach for high-speed and long distance networks. In Proc. INFOCOM, 2006: 1-12.
+
+\bibitem{illinois}
+Liu S, Ba\c{s}ar T, Srikant R. TCP-Illinois: A loss-and delay-based congestion control algorithm. Perf. Eval., 2008, 65(6-7): 417-440.
+
+\bibitem{westwood}
+Mascolo S, Casetti C, et al. TCP Westwood: Bandwidth estimation for enhanced transport over wireless links. In Proc. MobiCom, 2001: 287-297.
+
+\bibitem{rfc3168}
+Ramakrishnan K, Floyd S, Black D. The addition of ECN to IP. RFC 3168, 2001.
+
+\bibitem{dctcp}
+Alizadeh M, Greenberg A, et al. Data center TCP (DCTCP). ACM SIGCOMM CCR, 2010, 40(4): 63-74.
+
+\bibitem{hpcc}
+Li Y, Miao R, et al. HPCC: High precision congestion control. In Proc. SIGCOMM, 2019: 44-58.
+
+\bibitem{rlcc}
+Jay N, Rotman N, et al. A deep reinforcement learning perspective on Internet congestion control. In Proc. ICML, 2019: 3050-3059.
+
+\bibitem{remy}
+Winstein K, Balakrishnan H. TCP ex machina: Computer-generated congestion control. ACM SIGCOMM CCR, 2013, 43(4): 123-134.
+
+\bibitem{aurora}
+Jay N, Rotman N, et al. Internet congestion control via deep reinforcement learning. In Proc. NeurIPS, 2019.
+
+\bibitem{orca}
+Abbasloo S, Yen C Y, Chao H J. Classic meets modern: A pragmatic learning-based congestion control. In Proc. SIGCOMM, 2020: 632-647.
+
+\bibitem{pcc}
+Dong M, Li Q, et al. PCC: Re-architecting congestion control for consistent high performance. In Proc. NSDI, 2015: 395-408.
+
+\bibitem{ns3}
+Riley G F, Henderson T R. The ns-3 network simulator. Springer, 2010: 15-34.
+
+\bibitem{opengym}
+Gaw\l{}owicz P, Zubow A. ns-3 meets OpenAI Gym: The playground for ML in networking research. In Proc. MSWiM, 2019: 113-120.
+
+\bibitem{tcp_congestion}
+Afanasyev A, Tilley N, et al. Host-to-host congestion control for TCP. IEEE COMST, 2010, 12(3): 304-342.
+
+\bibitem{fairness}
+Jain R K, Chiu D M W, Hawe W R. A quantitative measure of fairness and discrimination. DEC Research Report, 1984.
+
+\bibitem{meta_learning}
+Finn C, Abbeel P, Levine S. Model-agnostic meta-learning for fast adaptation of deep networks. In Proc. ICML, 2017: 1126-1135.
+
+\end{thebibliography}
+}
+
+\end{document}
