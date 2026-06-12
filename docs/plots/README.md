@@ -14,7 +14,7 @@
 - `logs/` 下的 `.log` 文件：ns-3 运行日志与 TcpLark agent 日志。
 - `logs/plots*/*.png`：既有实验图像元数据，用于审计日志目录完整性。
 
-当前批量生成的每组图像均同时提供 `.png`、`.pdf` 和 `.svg` 三种格式。`.png` 适合 Word 和 Markdown 预览，`.pdf` 适合 LaTeX 论文排版，`.svg` 适合后续矢量编辑。
+当前批量生成 13 组图像，每组图像均同时提供 `.png`、`.pdf` 和 `.svg` 三种格式。`.png` 适合 Word 和 Markdown 预览，`.pdf` 适合 LaTeX 论文排版，`.svg` 适合后续矢量编辑。
 
 ## 批量更新方法
 
@@ -158,10 +158,36 @@ python3 docs/plots/main.py
 
 该图强调实验数据处理过程的可追溯性。对于论文和毕业论文而言，实验结论的可信度不仅取决于最终图表，还取决于数据来源是否完整、处理过程是否可复现。该图说明本目录中的插图不是手工截取或选择性绘制，而是基于完整日志目录自动生成。它适合放在毕业论文的实验数据处理或附录部分，也可作为内部审稿时的数据审计材料。
 
+## fig12_lark_advantage_ranked_scenarios
+
+文件：
+
+- `fig12_lark_advantage_ranked_scenarios.png`
+- `fig12_lark_advantage_ranked_scenarios.pdf`
+- `fig12_lark_advantage_ranked_scenarios.svg`
+
+该图基于完整 `logs/` 数据自动筛选 TcpLark 表现更优的实验组，并按照综合优势得分排序。综合得分同时考虑纯 TCP 条件下相对非 Lark 基线的吞吐增益、UDP Burst 条件下的吞吐保留增益、时延变化、纯 TCP 丢包改善和 UDP Burst 丢包改善。右侧摘要列进一步给出 TcpLark 相对最强基线的吞吐比例，以及两类实验设置中的丢包改善幅度。
+
+该图是本次 review 后新增的重点图像，直接回应“重点关注 TcpLark 表现更优秀的实验组”的需求。相比原有图像只展示代表性场景，该图明确把 satellite_geo、dc_100g、rdma_like_50g、intra_rack_25g、rdma_like_25g 等优势实验组排在前列，使论文作者能够快速选择最适合放入正文的正向证据。会议论文中，该图可作为实验小节的主图或补充图；毕业论文中，该图适合用于解释为何选取若干典型场景展开分析；专利中不建议直接引用该图的实验数值，但可作为内部支撑材料。
+
+## fig13_protocol_metric_scorecard
+
+文件：
+
+- `fig13_protocol_metric_scorecard.png`
+- `fig13_protocol_metric_scorecard.pdf`
+- `fig13_protocol_metric_scorecard.svg`
+
+该图将全部完整场景归一化到“场景内最优协议”为 100 分，并从 TCP 吞吐、TCP 时延、TCP 丢包、UDP Burst 吞吐保留和 UDP Burst 丢包五个维度比较 TcpLark、TcpNewReno、TcpCubic 和 TcpBbr。与单场景柱状图不同，该图强调跨场景平均表现，能够更紧凑地体现算法在多指标评价体系中的整体位置。
+
+该图体现 TcpLark 的综合竞争力。TcpLark 的优势不是只依赖某一个极端场景，而是在高吞吐利用、低丢包和跨流量保留方面形成较稳定的综合表现。对于会议论文，该图适合作为实验总结图，用于支撑“多场景、多指标综合评价”的结论；对于毕业论文，该图可以放在章节末尾作为总体性能画像；对于专利和答辩材料，该图有助于把复杂实验结果压缩成易理解的协议对比矩阵。
+
 ## 推荐使用方式
 
 会议论文建议优先使用以下图像：
 
+- `fig12_lark_advantage_ranked_scenarios`：TcpLark 优势实验组排序。
+- `fig13_protocol_metric_scorecard`：全场景多指标综合得分。
 - `fig01_tcp_throughput_representative`：吞吐性能总览。
 - `fig02_udp_burst_throughput_retention`：跨流量鲁棒性。
 - `fig03_delay_loss_tradeoff`：吞吐、时延和丢包综合权衡。
@@ -175,7 +201,7 @@ python3 docs/plots/main.py
 - `fig08_multi_signal_decision_flow`：拥塞信号融合机制。
 - `fig07_lark_system_architecture`：系统模块关系，可根据专利语言改写标题和模块名称。
 
-研究生毕业论文建议使用完整图组，其中 `fig05_flowmonitor_fairness_distribution`、`fig06_scenario_family_summary` 和 `fig11_logs_inventory_audit` 尤其适合用于扩展实验分析、场景归纳和可复现性说明。
+研究生毕业论文建议使用完整图组，其中 `fig05_flowmonitor_fairness_distribution`、`fig06_scenario_family_summary`、`fig12_lark_advantage_ranked_scenarios`、`fig13_protocol_metric_scorecard` 和 `fig11_logs_inventory_audit` 尤其适合用于扩展实验分析、场景归纳、优势实验组选择、总体性能画像和可复现性说明。
 
 ## 注意事项
 

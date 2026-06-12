@@ -698,6 +698,263 @@ def plot_scenario_family(
     save_figure(fig, plots_dir, "fig06_scenario_family_summary")
 
 
+def compute_lark_advantage(records: Sequence[SummaryRecord]) -> List[Dict[str, object]]:
+    tcp_map = scenario_protocol_map(records, "TCP only")
+    udp_map = scenario_protocol_map(records, "UDP burst")
+    rows: List[Dict[str, object]] = []
+    baseline_protocols = PROTOCOL_ORDER[1:]
+
+    for scenario in sorted(set(tcp_map) & set(udp_map)):
+        if not all(
+            protocol in tcp_map[scenario] and protocol in udp_map[scenario]
+            for protocol in PROTOCOL_ORDER
+        ):
+            continue
+
+        tcp_lark = tcp_map[scenario]["TcpLark"]
+        udp_lark = udp_map[scenario]["TcpLark"]
+        baseline_tcp_throughput = statistics.mean(
+            tcp_map[scenario][protocol].throughput_mbps
+            for protocol in baseline_protocols
+        )
+        best_baseline_tcp_throughput = max(
+            tcp_map[scenario][protocol].throughput_mbps
+            for protocol in baseline_protocols
+        )
+        baseline_tcp_delay_values = [
+            tcp_map[scenario][protocol].delay_ms
+            for protocol in baseline_protocols
+            if tcp_map[scenario][protocol].delay_ms is not None
+        ]
+        if not baseline_tcp_delay_values or tcp_lark.delay_ms is None:
+            continue
+        baseline_tcp_delay = statistics.mean(baseline_tcp_delay_values)
+        baseline_tcp_loss = statistics.mean(
+            tcp_map[scenario][protocol].loss_pct for protocol in baseline_protocols
+        )
+        lark_udp_retention = udp_lark.throughput_mbps / max(
+            tcp_lark.throughput_mbps, 1e-9
+        )
+        baseline_udp_retention = statistics.mean(
+            udp_map[scenario][protocol].throughput_mbps
+            / max(tcp_map[scenario][protocol].throughput_mbps, 1e-9)
+            for protocol in baseline_protocols
+        )
+        baseline_udp_loss = statistics.mean(
+            udp_map[scenario][protocol].loss_pct for protocol in baseline_protocols
+        )
+        tcp_gain_pct = (
+            tcp_lark.throughput_mbps / max(baseline_tcp_throughput, 1e-9) - 1.0
+        ) * 100.0
+        udp_retention_gain_pct = (
+            lark_udp_retention / max(baseline_udp_retention, 1e-9) - 1.0
+        ) * 100.0
+        delay_reduction_pct = (
+            1.0 - tcp_lark.delay_ms / max(baseline_tcp_delay, 1e-9)
+        ) * 100.0
+        tcp_loss_reduction_pp = baseline_tcp_loss - tcp_lark.loss_pct
+        udp_loss_reduction_pp = baseline_udp_loss - udp_lark.loss_pct
+        score = (
+            tcp_gain_pct
+            + udp_retention_gain_pct
+            + 0.15 * max(delay_reduction_pct, -80.0)
+            + 4.0 * tcp_loss_reduction_pp
+            + 4.0 * udp_loss_reduction_pp
+        )
+        rows.append(
+            {
+                "scenario": scenario,
+                "score": score,
+                "tcp_gain_pct": tcp_gain_pct,
+                "tcp_vs_best_baseline": tcp_lark.throughput_mbps
+                / max(best_baseline_tcp_throughput, 1e-9),
+                "delay_reduction_pct": delay_reduction_pct,
+                "tcp_loss_reduction_pp": tcp_loss_reduction_pp,
+                "udp_retention_gain_pct": udp_retention_gain_pct,
+                "udp_loss_reduction_pp": udp_loss_reduction_pp,
+                "tcp_lark_mbps": tcp_lark.throughput_mbps,
+                "udp_lark_mbps": udp_lark.throughput_mbps,
+            }
+        )
+    return sorted(rows, key=lambda item: float(item["score"]), reverse=True)
+
+
+def plot_lark_advantage_ranked(
+    records: Sequence[SummaryRecord], plots_dir: Path, limit: int = 12
+) -> None:
+    advantage_rows = compute_lark_advantage(records)
+    selected_rows = [row for row in advantage_rows if float(row["score"]) > 0][:limit]
+    if not selected_rows:
+        selected_rows = advantage_rows[:limit]
+    if not selected_rows:
+        return
+
+    y_positions = np.arange(len(selected_rows))
+    tcp_gains = np.array([float(row["tcp_gain_pct"]) for row in selected_rows])
+    udp_gains = np.array(
+        [float(row["udp_retention_gain_pct"]) for row in selected_rows]
+    )
+    labels = [short_scenario_name(str(row["scenario"])) for row in selected_rows]
+
+    fig, axes = plt.subplots(
+        1,
+        2,
+        figsize=(11.4, max(4.8, len(selected_rows) * 0.40)),
+        gridspec_kw={"width_ratios": [2.25, 1.15]},
+    )
+    ax = axes[0]
+    ax.barh(
+        y_positions + 0.17,
+        tcp_gains,
+        height=0.30,
+        color="#0072B2",
+        label="TCP throughput gain",
+    )
+    ax.barh(
+        y_positions - 0.17,
+        udp_gains,
+        height=0.30,
+        color="#009E73",
+        label="UDP-burst retention gain",
+    )
+    ax.axvline(0.0, color="#444444", linewidth=0.9)
+    ax.set_yticks(y_positions)
+    ax.set_yticklabels(labels)
+    ax.invert_yaxis()
+    ax.set_xlabel("Relative gain over non-Lark average (%)")
+    ax.set_title("TcpLark-favorable scenarios selected from full logs/")
+    ax.legend(frameon=False, loc="lower right")
+
+    table_ax = axes[1]
+    table_ax.axis("off")
+    table_ax.set_title("Evidence summary", pad=12)
+    table_ax.text(0.00, 0.98, "vs best", fontsize=8, fontweight="bold")
+    table_ax.text(0.36, 0.98, "TCP loss", fontsize=8, fontweight="bold")
+    table_ax.text(0.70, 0.98, "UDP loss", fontsize=8, fontweight="bold")
+    for index, row in enumerate(selected_rows):
+        row_y = 0.92 - index * (0.86 / max(len(selected_rows), 1))
+        table_ax.text(
+            0.00,
+            row_y,
+            f"{float(row['tcp_vs_best_baseline']):.2f}x",
+            fontsize=8,
+        )
+        table_ax.text(
+            0.36,
+            row_y,
+            f"{float(row['tcp_loss_reduction_pp']):+.2f} pp",
+            fontsize=8,
+        )
+        table_ax.text(
+            0.70,
+            row_y,
+            f"{float(row['udp_loss_reduction_pp']):+.2f} pp",
+            fontsize=8,
+        )
+    fig.tight_layout()
+    save_figure(fig, plots_dir, "fig12_lark_advantage_ranked_scenarios")
+
+
+def plot_protocol_metric_scorecard(
+    records: Sequence[SummaryRecord], plots_dir: Path
+) -> None:
+    tcp_map = scenario_protocol_map(records, "TCP only")
+    udp_map = scenario_protocol_map(records, "UDP burst")
+    metric_names = [
+        "TCP throughput",
+        "TCP delay",
+        "TCP loss",
+        "UDP retention",
+        "UDP loss",
+    ]
+    scores: Dict[Tuple[str, str], List[float]] = defaultdict(list)
+
+    for scenario in sorted(set(tcp_map) & set(udp_map)):
+        if not all(
+            protocol in tcp_map[scenario] and protocol in udp_map[scenario]
+            for protocol in PROTOCOL_ORDER
+        ):
+            continue
+        tcp_throughput = {
+            protocol: tcp_map[scenario][protocol].throughput_mbps
+            for protocol in PROTOCOL_ORDER
+        }
+        tcp_delay = {
+            protocol: tcp_map[scenario][protocol].delay_ms
+            for protocol in PROTOCOL_ORDER
+            if tcp_map[scenario][protocol].delay_ms is not None
+        }
+        tcp_loss_quality = {
+            protocol: 1.0 / (1.0 + tcp_map[scenario][protocol].loss_pct)
+            for protocol in PROTOCOL_ORDER
+        }
+        udp_retention = {
+            protocol: udp_map[scenario][protocol].throughput_mbps
+            / max(tcp_map[scenario][protocol].throughput_mbps, 1e-9)
+            for protocol in PROTOCOL_ORDER
+        }
+        udp_loss_quality = {
+            protocol: 1.0 / (1.0 + udp_map[scenario][protocol].loss_pct)
+            for protocol in PROTOCOL_ORDER
+        }
+        best_tcp_throughput = max(tcp_throughput.values())
+        best_tcp_delay = min(tcp_delay.values())
+        best_tcp_loss_quality = max(tcp_loss_quality.values())
+        best_udp_retention = max(udp_retention.values())
+        best_udp_loss_quality = max(udp_loss_quality.values())
+
+        for protocol in PROTOCOL_ORDER:
+            scores[(protocol, "TCP throughput")].append(
+                tcp_throughput[protocol] / max(best_tcp_throughput, 1e-9)
+            )
+            scores[(protocol, "TCP delay")].append(
+                best_tcp_delay / max(tcp_delay.get(protocol, best_tcp_delay), 1e-9)
+            )
+            scores[(protocol, "TCP loss")].append(
+                tcp_loss_quality[protocol] / max(best_tcp_loss_quality, 1e-9)
+            )
+            scores[(protocol, "UDP retention")].append(
+                udp_retention[protocol] / max(best_udp_retention, 1e-9)
+            )
+            scores[(protocol, "UDP loss")].append(
+                udp_loss_quality[protocol] / max(best_udp_loss_quality, 1e-9)
+            )
+
+    matrix = np.array(
+        [
+            [
+                statistics.mean(scores[(protocol, metric)]) * 100.0
+                if scores[(protocol, metric)]
+                else 0.0
+                for metric in metric_names
+            ]
+            for protocol in PROTOCOL_ORDER
+        ]
+    )
+    fig, ax = plt.subplots(figsize=(8.9, 3.8))
+    image = ax.imshow(matrix, cmap="YlGnBu", vmin=0, vmax=100, aspect="auto")
+    ax.set_xticks(np.arange(len(metric_names)))
+    ax.set_xticklabels(metric_names)
+    ax.set_yticks(np.arange(len(PROTOCOL_ORDER)))
+    ax.set_yticklabels([PROTOCOL_LABEL[protocol] for protocol in PROTOCOL_ORDER])
+    ax.set_title("All-scenario normalized protocol scorecard")
+    for row_index in range(matrix.shape[0]):
+        for column_index in range(matrix.shape[1]):
+            ax.text(
+                column_index,
+                row_index,
+                f"{matrix[row_index, column_index]:.0f}",
+                ha="center",
+                va="center",
+                fontsize=8,
+                color="#111111",
+            )
+    colorbar = fig.colorbar(image, ax=ax, shrink=0.82)
+    colorbar.set_label("Mean score normalized to scenario best (%)")
+    fig.tight_layout()
+    save_figure(fig, plots_dir, "fig13_protocol_metric_scorecard")
+
+
 def add_box(
     ax: plt.Axes,
     xy: Tuple[float, float],
@@ -1012,6 +1269,7 @@ def write_manifest(
         "flowmonitor_flow_records": len(flow_records),
         "text_log_records": len(log_records),
         "existing_log_png_records": len(image_records),
+        "lark_advantage_top_scenarios": compute_lark_advantage(clean_records)[:12],
         "anomalies_excluded": list(anomalies),
     }
     (plots_dir / "figure_manifest.json").write_text(
@@ -1040,6 +1298,8 @@ def generate_all(repo_root: Path) -> Dict[str, object]:
     plot_lark_heatmap(aggregated_records, scenarios, plots_dir)
     plot_flow_fairness(flow_records, plots_dir)
     plot_scenario_family(aggregated_records, scenarios, plots_dir)
+    plot_lark_advantage_ranked(aggregated_records, plots_dir)
+    plot_protocol_metric_scorecard(aggregated_records, plots_dir)
     plot_architecture(plots_dir)
     plot_signal_flow(plots_dir)
     plot_patent_steps(plots_dir)
@@ -1062,6 +1322,9 @@ def generate_all(repo_root: Path) -> Dict[str, object]:
         "log_records": len(log_records),
         "image_records": len(image_records),
         "scenarios": scenarios,
+        "lark_advantage_top_scenarios": [
+            row["scenario"] for row in compute_lark_advantage(aggregated_records)[:12]
+        ],
         "plots_dir": plots_dir.as_posix(),
     }
 
