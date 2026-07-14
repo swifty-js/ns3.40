@@ -698,7 +698,9 @@ def plot_scenario_family(
     save_figure(fig, plots_dir, "fig06_scenario_family_summary")
 
 
-def compute_swift_advantage(records: Sequence[SummaryRecord]) -> List[Dict[str, object]]:
+def compute_swift_advantage(
+    records: Sequence[SummaryRecord],
+) -> List[Dict[str, object]]:
     tcp_map = scenario_protocol_map(records, "TCP only")
     udp_map = scenario_protocol_map(records, "UDP burst")
     rows: List[Dict[str, object]] = []
@@ -1191,7 +1193,11 @@ def plot_topology(plots_dir: Path) -> None:
         fontsize=8,
     )
     ax.text(
-        0.08, 0.18, "TCP senders\nSwift / NewReno / CUBIC / BBR", ha="center", fontsize=8
+        0.08,
+        0.18,
+        "TCP senders\nSwift / NewReno / CUBIC / BBR",
+        ha="center",
+        fontsize=8,
     )
     ax.text(0.92, 0.18, "Receivers\nFlowMonitor metrics", ha="center", fontsize=8)
     ax.annotate(

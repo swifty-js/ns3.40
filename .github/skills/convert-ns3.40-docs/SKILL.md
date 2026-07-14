@@ -185,4 +185,4 @@ Ask only when a decision affects the legal, academic, or visual outcome and cann
 - the date to use in the patent filename if it should not be the current date;
 - whether to favor exact visual fidelity or editable Word text when they conflict;
 - whether to keep existing target files as backups when they are outside version control.
-control.
+  control.
