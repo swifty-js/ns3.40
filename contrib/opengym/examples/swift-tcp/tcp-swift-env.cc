@@ -1,5 +1,5 @@
 /* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
-#include "tcp-lark-env.h"
+#include "tcp-swift-env.h"
 
 #include "ns3/log.h"
 #include "ns3/simulator.h"
@@ -9,8 +9,8 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE("ns3::TcpLarkEnv");
-NS_OBJECT_ENSURE_REGISTERED(TcpLarkEnv);
+NS_LOG_COMPONENT_DEFINE("ns3::TcpSwiftEnv");
+NS_OBJECT_ENSURE_REGISTERED(TcpSwiftEnv);
 
 // Observation space upper bound (1e9 fits uint64_t and matches Python space)
 static constexpr uint64_t OBS_HIGH = 1000000000ULL;
@@ -27,7 +27,7 @@ static inline uint64_t SafeTimeUs(const Time &t) {
   return us > 0 ? SafeObs(static_cast<uint64_t>(us)) : 0;
 }
 
-TcpLarkEnv::TcpLarkEnv()
+TcpSwiftEnv::TcpSwiftEnv()
     : TcpGymEnv(), m_calledFunc(CalledFunc_t::INCREASE_WINDOW),
       m_bytesInFlight(0), m_segmentsAcked(0), m_rtt(Time(0)),
       m_caEvent(TcpSocketState::CA_EVENT_TX_START), m_ecnCeCounter(0),
@@ -37,26 +37,26 @@ TcpLarkEnv::TcpLarkEnv()
   NS_LOG_FUNCTION(this);
 }
 
-TcpLarkEnv::~TcpLarkEnv() {
+TcpSwiftEnv::~TcpSwiftEnv() {
   NS_LOG_FUNCTION(this);
   m_tcb = nullptr;
 }
 
-TypeId TcpLarkEnv::GetTypeId(void) {
-  static TypeId tid = TypeId("ns3::TcpLarkEnv")
+TypeId TcpSwiftEnv::GetTypeId(void) {
+  static TypeId tid = TypeId("ns3::TcpSwiftEnv")
                           .SetParent<TcpGymEnv>()
                           .SetGroupName("OpenGym")
-                          .AddConstructor<TcpLarkEnv>();
+                          .AddConstructor<TcpSwiftEnv>();
   return tid;
 }
 
-void TcpLarkEnv::DoDispose() {
+void TcpSwiftEnv::DoDispose() {
   NS_LOG_FUNCTION(this);
   m_tcb = nullptr;
   TcpGymEnv::DoDispose();
 }
 
-Ptr<OpenGymSpace> TcpLarkEnv::GetObservationSpace() {
+Ptr<OpenGymSpace> TcpSwiftEnv::GetObservationSpace() {
   uint32_t parameterNum = 15;
   float low = 0.0;
   float high = static_cast<float>(OBS_HIGH);
@@ -67,7 +67,7 @@ Ptr<OpenGymSpace> TcpLarkEnv::GetObservationSpace() {
   return box;
 }
 
-Ptr<OpenGymDataContainer> TcpLarkEnv::GetObservation() {
+Ptr<OpenGymDataContainer> TcpSwiftEnv::GetObservation() {
   uint32_t parameterNum = 15;
   std::vector<uint32_t> shape = {parameterNum};
   Ptr<OpenGymBoxContainer<uint64_t>> box =
@@ -132,14 +132,14 @@ Ptr<OpenGymDataContainer> TcpLarkEnv::GetObservation() {
   return box;
 }
 
-void TcpLarkEnv::TxPktTrace(Ptr<const Packet>, const TcpHeader &,
-                            Ptr<const TcpSocketBase>) {}
+void TcpSwiftEnv::TxPktTrace(Ptr<const Packet>, const TcpHeader &,
+                             Ptr<const TcpSocketBase>) {}
 
-void TcpLarkEnv::RxPktTrace(Ptr<const Packet>, const TcpHeader &,
-                            Ptr<const TcpSocketBase>) {}
+void TcpSwiftEnv::RxPktTrace(Ptr<const Packet>, const TcpHeader &,
+                             Ptr<const TcpSocketBase>) {}
 
-uint32_t TcpLarkEnv::GetSsThresh(Ptr<const TcpSocketState> tcb,
-                                 uint32_t bytesInFlight) {
+uint32_t TcpSwiftEnv::GetSsThresh(Ptr<const TcpSocketState> tcb,
+                                  uint32_t bytesInFlight) {
   NS_LOG_FUNCTION(this << bytesInFlight);
 
   if (!tcb) {
@@ -194,8 +194,8 @@ uint32_t TcpLarkEnv::GetSsThresh(Ptr<const TcpSocketState> tcb,
   return m_new_ssThresh;
 }
 
-void TcpLarkEnv::IncreaseWindow(Ptr<TcpSocketState> tcb,
-                                uint32_t segmentsAcked) {
+void TcpSwiftEnv::IncreaseWindow(Ptr<TcpSocketState> tcb,
+                                 uint32_t segmentsAcked) {
   NS_LOG_FUNCTION(this << segmentsAcked);
 
   if (!tcb) {
@@ -229,7 +229,7 @@ void TcpLarkEnv::IncreaseWindow(Ptr<TcpSocketState> tcb,
   // - rttPenalty: triggered earlier (ratio>1.5) but smaller magnitude,
   //   so the reward sign is trust-worthy without overwhelming throughput.
   // This matches the tighter reward_ema thresholds on the Python side
-  // (+0.5 / -2.0) — see tcp_lark.py _adapt_alpha().
+  // (+0.5 / -2.0) — see tcp_swift.py _adapt_alpha().
   float throughputBonus =
       std::min(static_cast<float>(segmentsAcked) * 0.5f, 5.0f);
 
@@ -253,8 +253,8 @@ void TcpLarkEnv::IncreaseWindow(Ptr<TcpSocketState> tcb,
   tcb->m_cWnd = m_new_cWnd;
 }
 
-void TcpLarkEnv::PktsAcked(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked,
-                           const Time &rtt) {
+void TcpSwiftEnv::PktsAcked(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked,
+                            const Time &rtt) {
   NS_LOG_FUNCTION(this << segmentsAcked << rtt);
 
   if (!tcb) {
@@ -268,7 +268,7 @@ void TcpLarkEnv::PktsAcked(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked,
   m_rtt = (rtt > Time(0)) ? rtt : Time(0);
 }
 
-void TcpLarkEnv::CongestionStateSet(
+void TcpSwiftEnv::CongestionStateSet(
     Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCongState_t newState) {
   NS_LOG_FUNCTION(this << newState);
 
@@ -280,8 +280,8 @@ void TcpLarkEnv::CongestionStateSet(
   m_tcb = tcb;
 }
 
-void TcpLarkEnv::CwndEvent(Ptr<TcpSocketState> tcb,
-                           const TcpSocketState::TcpCAEvent_t event) {
+void TcpSwiftEnv::CwndEvent(Ptr<TcpSocketState> tcb,
+                            const TcpSocketState::TcpCAEvent_t event) {
   NS_LOG_FUNCTION(this << event);
 
   if (!tcb) {

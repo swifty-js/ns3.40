@@ -1,1 +1,1 @@
-注意：Lark 算法是 11 维观测空间，体现在 `./contrib/opengym/examples/lark-tcp/tcp_lark.py#L413-416`
+注意：Swift 算法是 11 维观测空间，体现在 `./contrib/opengym/examples/swift-tcp/tcp_swift.py#L413-416`

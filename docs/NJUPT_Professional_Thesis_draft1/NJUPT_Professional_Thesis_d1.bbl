@@ -1,0 +1,160 @@
+\begin{thebibliography}{23}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{#1}
+\providecommand{\href}[2]{#2}
+\providecommand{\doi}[1]{DOI: \href{http://dx.doi.org/#1}{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax\relax\else
+  \urlstyle{same}\fi
+
+\bibitem[Floyd\ et~al.(2012)Floyd, Henderson, and Gurtov]{newreno}
+Floyd S, Henderson T, Gurtov A.
+\newblock The {NewReno} modification to {TCP}'s fast recovery
+  algorithm\allowbreak[J].
+\newblock RFC 6582, 2012.
+
+\bibitem[Ha\ et~al.(2008)Ha, Rhee, and Xu]{cubic}
+Ha S, Rhee I, Xu L.
+\newblock {CUBIC}: a new {TCP}-friendly high-speed {TCP} variant\allowbreak[J].
+\newblock ACM SIGOPS Operating Systems Review, 2008, 42\penalty0 (5): 64--74.
+
+\bibitem[Brakmo\ et~al.(1995)Brakmo and Peterson]{vegas}
+Brakmo L S, Peterson L L.
+\newblock {TCP Vegas}: End to end congestion avoidance on a global
+  {Internet}\allowbreak[J].
+\newblock IEEE Journal on Selected Areas in Communications, 1995, 13\penalty0
+  (8): 1465--1480.
+
+\bibitem[Cardwell\ et~al.(2016)Cardwell, Cheng, Gunn, et~al.]{bbr}
+Cardwell N, Cheng Y, Gunn C S, et~al.
+\newblock {BBR}: Congestion-based congestion control\allowbreak[J].
+\newblock ACM Queue, 2016, 14\penalty0 (5): 20--53.
+
+\bibitem[Alizadeh\ et~al.(2010)Alizadeh, Greenberg, Maltz, et~al.]{dctcp}
+Alizadeh M, Greenberg A, Maltz D A, et~al.
+\newblock Data center {TCP} ({DCTCP})\allowbreak[J].
+\newblock ACM SIGCOMM Computer Communication Review, 2010, 40\penalty0 (4):
+  63--74.
+
+\bibitem[Jay\ et~al.(2019{\natexlab{a}})Jay, Rotman, Godfrey, et~al.]{rlcc}
+Jay N, Rotman N, Godfrey B, et~al.
+\newblock A deep reinforcement learning perspective on {Internet} congestion
+  control\allowbreak[C].
+\newblock International Conference on Machine Learning.
+\newblock [S.l.]: PMLR, 2019{\natexlab{a}}: 3050--3059.
+
+\bibitem[Jacobson(1988)]{jacobson1988}
+Jacobson V.
+\newblock Congestion avoidance and control\allowbreak[J].
+\newblock ACM SIGCOMM Computer Communication Review, 1988, 18\penalty0 (4):
+  314--329.
+
+\bibitem[Xu\ et~al.(2004)Xu, Harfoush, and Rhee]{bic}
+Xu L, Harfoush K, Rhee I.
+\newblock Binary increase congestion control ({BIC}) for fast long-distance
+  networks\allowbreak[C].
+\newblock IEEE INFOCOM 2004: volume~4.
+\newblock [S.l.]: IEEE, 2004: 2514--2524.
+
+\bibitem[Gettys\ et~al.(2012)Gettys and Nichols]{bufferbloat}
+Gettys J, Nichols K.
+\newblock Bufferbloat: Dark buffers in the {Internet}\allowbreak[J].
+\newblock Communications of the ACM, 2012, 55\penalty0 (1): 57--65.
+
+\bibitem[Arun\ et~al.(2018)Arun and Balakrishnan]{copa}
+Arun V, Balakrishnan H.
+\newblock Copa: Practical delay-based congestion control for the
+  {Internet}\allowbreak[C].
+\newblock 15th USENIX Symposium on Networked Systems Design and Implementation
+  (NSDI 18).
+\newblock [S.l.]: USENIX Association, 2018: 329--342.
+
+\bibitem[Hock\ et~al.(2017)Hock, Bless, and Zitterbart]{bbrfairness}
+Hock M, Bless R, Zitterbart M.
+\newblock Experimental evaluation of {BBR} congestion control\allowbreak[C].
+\newblock 2017 IEEE 25th International Conference on Network Protocols (ICNP).
+\newblock [S.l.]: IEEE, 2017: 1--10.
+
+\bibitem[Tan\ et~al.(2006)Tan, Song, Zhang, et~al.]{compound}
+Tan K, Song J, Zhang Q, et~al.
+\newblock A compound {TCP} approach for high-speed and long distance
+  networks\allowbreak[C].
+\newblock Proceedings IEEE INFOCOM 2006.
+\newblock [S.l.]: IEEE, 2006: 1--12.
+
+\bibitem[Liu\ et~al.(2008)Liu, Ba{\c{s}}ar, and Srikant]{illinois}
+Liu S, Ba{\c{s}}ar T, Srikant R.
+\newblock {TCP-Illinois}: A loss-and delay-based congestion control algorithm
+  for high-speed networks\allowbreak[J].
+\newblock Performance Evaluation, 2008, 65\penalty0 (6-7): 417--440.
+
+\bibitem[Mascolo\ et~al.(2001)Mascolo, Casetti, Gerla, et~al.]{westwood}
+Mascolo S, Casetti C, Gerla M, et~al.
+\newblock {TCP Westwood}: Bandwidth estimation for enhanced transport over
+  wireless links\allowbreak[C].
+\newblock Proceedings of the 7th Annual International Conference on Mobile
+  Computing and Networking.
+\newblock [S.l.]: ACM, 2001: 287--297.
+
+\bibitem[Ramakrishnan\ et~al.(2001)Ramakrishnan, Floyd, and Black]{rfc3168}
+Ramakrishnan K, Floyd S, Black D.
+\newblock The addition of explicit congestion notification ({ECN}) to
+  {IP}\allowbreak[J].
+\newblock RFC 3168, 2001.
+
+\bibitem[Bai\ et~al.(2016)Bai, Chen, Hu, et~al.]{ecnpp}
+Bai W, Chen K, Hu S, et~al.
+\newblock Enabling {ECN} over generic packet scheduling\allowbreak[C].
+\newblock Proceedings of the 12th International on Conference on emerging
+  Networking EXperiments and Technologies.
+\newblock [S.l.]: ACM, 2016: 191--204.
+
+\bibitem[Li\ et~al.(2019)Li, Miao, Liu, et~al.]{hpcc}
+Li Y, Miao R, Liu H H, et~al.
+\newblock {HPCC}: High precision congestion control\allowbreak[C].
+\newblock Proceedings of the ACM Special Interest Group on Data Communication.
+\newblock [S.l.]: ACM, 2019: 44--58.
+
+\bibitem[Winstein\ et~al.(2013)Winstein and Balakrishnan]{remy}
+Winstein K, Balakrishnan H.
+\newblock {TCP} ex machina: Computer-generated congestion
+  control\allowbreak[J].
+\newblock ACM SIGCOMM Computer Communication Review, 2013, 43\penalty0 (4):
+  123--134.
+
+\bibitem[Jay\ et~al.(2019{\natexlab{b}})Jay, Rotman, Godfrey, et~al.]{aurora}
+Jay N, Rotman N, Godfrey B, et~al.
+\newblock Internet congestion control via deep reinforcement
+  learning\allowbreak[C].
+\newblock Advances in Neural Information Processing Systems (NeurIPS).
+\newblock [S.l.: s.n.], 2019{\natexlab{b}}.
+
+\bibitem[Abbasloo\ et~al.(2020)Abbasloo, Yen, and Chao]{orca}
+Abbasloo S, Yen C Y, Chao H J.
+\newblock Classic meets modern: A pragmatic learning-based congestion control
+  for the {Internet}\allowbreak[C].
+\newblock Proceedings of the Annual Conference of the ACM Special Interest
+  Group on Data Communication.
+\newblock [S.l.]: ACM, 2020: 632--647.
+
+\bibitem[Dong\ et~al.(2015)Dong, Li, Zarchy, et~al.]{pcc}
+Dong M, Li Q, Zarchy D, et~al.
+\newblock {PCC}: Re-architecting congestion control for consistent high
+  performance\allowbreak[C].
+\newblock 12th USENIX Symposium on Networked Systems Design and Implementation
+  (NSDI 15).
+\newblock [S.l.]: USENIX Association, 2015: 395--408.
+
+\bibitem[Jain\ et~al.(1984)Jain, Chiu, and Hawe]{fairness}
+Jain R K, Chiu D M W, Hawe W R.
+\newblock A quantitative measure of fairness and discrimination\allowbreak[R].
+\newblock [S.l.]: Eastern Research Laboratory, Digital Equipment Corporation,
+  1984.
+
+\bibitem[Finn\ et~al.(2017)Finn, Abbeel, and Levine]{meta_learning}
+Finn C, Abbeel P, Levine S.
+\newblock Model-agnostic meta-learning for fast adaptation of deep
+  networks\allowbreak[C].
+\newblock International Conference on Machine Learning.
+\newblock [S.l.]: PMLR, 2017: 1126--1135.
+
+\end{thebibliography}

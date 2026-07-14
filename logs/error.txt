@@ -1,4 +1,4 @@
-TcpLark Experiment Data Anomaly Report
+TcpSwift Experiment Data Anomaly Report
 Generated: 2026-04-16
 Data sources: logs/plots/summary.csv, logs/summary/results_20260331_101556.csv, logs/summary/results_20260416_021344.csv
 
@@ -25,17 +25,17 @@ The following scenarios lack data for all 4 protocols and MUST be excluded
 from comparative analysis:
 
   - congested_light:     only TcpBbr
-  - congested_medium:    missing TcpNewReno (only Bbr, Cubic, Lark)
+  - congested_medium:    missing TcpNewReno (only Bbr, Cubic, Swift)
   - cross_pod_10g:       only TcpBbr
   - cross_pod_20g:       only TcpBbr
   - dc_100g:             only TcpBbr
-  - leaf_spine_50g:      only TcpLark
+  - leaf_spine_50g:      only TcpSwift
   - mixed_large_flow:    only TcpBbr
-  - mixed_small_flow:    missing TcpNewReno (only Bbr, Cubic, Lark)
-  - oversub_4to1_10g:    missing TcpNewReno (only Cubic, Bbr, Lark)
+  - mixed_small_flow:    missing TcpNewReno (only Bbr, Cubic, Swift)
+  - oversub_4to1_10g:    missing TcpNewReno (only Cubic, Bbr, Swift)
   - rdma_like_25g:       only TcpBbr
   - rdma_like_50g:       only TcpBbr
-  - wan_longhaul:        only TcpLark and TcpNewReno
+  - wan_longhaul:        only TcpSwift and TcpNewReno
 
 ================================================================================
 3. BBR THROUGHPUT COLLAPSE IN HIGH-BANDWIDTH DC SCENARIOS
@@ -76,15 +76,15 @@ One flow may dominate while others starve, resulting in:
   - OR results CSV captured a different run/subset than summary.csv
 
 Decision: Flag these BBR values as unreliable. Focus comparison on
-Lark vs NR/CUBIC where data is consistent (ratio ~3.03x for all).
+Swift vs NR/CUBIC where data is consistent (ratio ~3.03x for all).
 For BBR, report summary.csv values but note high variability.
 
 ================================================================================
 5. LARK DELAY REGRESSION SCENARIOS
 ================================================================================
-In several scenarios, Lark shows HIGHER delay than NR/CUBIC baseline:
+In several scenarios, Swift shows HIGHER delay than NR/CUBIC baseline:
 
-  Scenario          Lark_delay  NR/CUBIC_avg  Degradation
+  Scenario          Swift_delay  NR/CUBIC_avg  Degradation
   dc_100m           17.717 ms   7.939 ms      +123%
   dc_500m            5.365 ms   3.419 ms      +57%
   wifi_legacy      136.139 ms  89.957 ms      +51%
@@ -98,31 +98,31 @@ In several scenarios, Lark shows HIGHER delay than NR/CUBIC baseline:
   dc_oversub_10to1   3.491 ms   2.846 ms      +23%
   symmetric_low      3.491 ms   2.881 ms      +21%
 
-Analysis: Lark's BDP-based target window (alpha * BDP) combined with the
+Analysis: Swift's BDP-based target window (alpha * BDP) combined with the
 additive gamma*MSS term may cause sustained queue buildup when the BDP
 estimate is slightly too aggressive. The ECN beta=0.85 (retain 85%)
 is more conservative than NR/CUBIC's loss-based window halving,
-meaning Lark maintains a larger window and thus larger queuing delay.
+meaning Swift maintains a larger window and thus larger queuing delay.
 
-Impact: These scenarios should NOT be highlighted as Lark advantages.
+Impact: These scenarios should NOT be highlighted as Swift advantages.
 The thesis must honestly report both wins and losses.
 
 ================================================================================
 6. CROSS_DC_WAN THROUGHPUT DEFICIT
 ================================================================================
-  cross_dc_wan: Lark=722.09 Mbps vs NR=1016.13 vs CUBIC=1017.69 (29% lower)
+  cross_dc_wan: Swift=722.09 Mbps vs NR=1016.13 vs CUBIC=1017.69 (29% lower)
 
 This is a significant throughput deficit. Possible causes:
   - WAN delay (5ms) causes the BDP window to be underestimated
   - Alpha adaptation may be too conservative at high RTT ratios
   - The 3-level RTT gradient thresholds (1.3/2.0/3.0) may not suit WAN RTTs
 
-Decision: Exclude from "Lark advantage" scenarios. Discuss as a limitation.
+Decision: Exclude from "Swift advantage" scenarios. Discuss as a limitation.
 
 ================================================================================
 7. VALIDATED LARK ADVANTAGE SCENARIOS (suitable for paper)
 ================================================================================
-Scenarios where Lark genuinely outperforms or matches NR/CUBIC:
+Scenarios where Swift genuinely outperforms or matches NR/CUBIC:
 
   A) HIGH-SPEED DC (throughput match + major delay reduction):
      - intra_rack_10g: TP=-0.01%, Delay -83.2%, zero loss
@@ -149,8 +149,8 @@ RECOMMENDATION FOR PAPER
 1. Use 9 COMPLETE scenarios with all 4 protocols for main comparison tables
 2. Focus on Groups A, B, C (DC + wireless) as primary advantage scenarios
 3. Honestly report delay regression in medium/low-speed and WAN scenarios
-4. Highlight zero-loss property as a unique Lark advantage
-5. Discuss BBR collapse as known limitation, not Lark-specific finding
+4. Highlight zero-loss property as a unique Swift advantage
+5. Discuss BBR collapse as known limitation, not Swift-specific finding
 6. Report throughput as aggregate (summary.csv) for consistency, note scaling
 7. Recompute bandwidth utilization using correct bottleneck bandwidth / 3
 
@@ -174,30 +174,30 @@ Aggregate impact across the 17 scenarios that have all 4 protocols in BOTH files
 
   Protocol        avg ΔTput%   med ΔTput%   avg ΔDelay%   max ΔLoss   #zero-loss
   ----------      ----------   ----------   -----------   ---------   ----------
-  TcpLark          19.78%      23.75%       +12.32%        0.000%      17/17
+  TcpSwift          19.78%      23.75%       +12.32%        0.000%      17/17
   TcpNewReno       24.37%      23.75%        +3.27%       +0.300%       7/17
   TcpCubic         21.36%      23.74%        +2.39%       +3.450%       9/17
   TcpBbr           55.55%      64.06%       +39.95%       +1.580%      10/17
 
 Key observations:
-  - Lark preserves 0.00% loss in ALL 17 complete scenarios under UDP-Burst;
+  - Swift preserves 0.00% loss in ALL 17 complete scenarios under UDP-Burst;
     CUBIC adds up to +3.45% loss (lte_poor), BBR up to +1.58% (wifi_legacy).
-  - Lark shows the smallest throughput drop (19.78%), while BBR collapses by
+  - Swift shows the smallest throughput drop (19.78%), while BBR collapses by
     ~55% due to bandwidth-probing noise under cross-traffic.
-  - Lark's DC delay advantage is PRESERVED under UDP-Burst:
+  - Swift's DC delay advantage is PRESERVED under UDP-Burst:
       intra_rack_10g: delay -82.28% vs NR/CUBIC mean (even under burst)
       intra_rack_25g: delay -92.91% vs NR/CUBIC mean (even under burst)
       leaf_spine_20g: delay -91.02% vs NR/CUBIC mean (even under burst)
-  - satellite_geo UNDER BURST: Lark 5.80 Mbps vs NR/CUBIC mean 3.10 Mbps
+  - satellite_geo UNDER BURST: Swift 5.80 Mbps vs NR/CUBIC mean 3.10 Mbps
     => +86.80% throughput advantage (LARGER than the no-burst +28.8% gap),
     because NR/CUBIC's loss-recovery penalty is amplified by the UDP burst.
-  - Lark's delay under burst slightly increases on wan_metro (+24.86% delta
+  - Swift's delay under burst slightly increases on wan_metro (+24.86% delta
     vs no-burst) — root cause: alpha*BDP target inflates aggressively when
     queue-occupancy signal is noisier due to UDP jitter.
 
 Decision:
   - Paper and patent MUST report UDP-Burst results explicitly, both as a
-    robustness claim (Lark's zero-loss under cross-traffic stress) and as an
+    robustness claim (Swift's zero-loss under cross-traffic stress) and as an
     honest disclosure of delay inflation in some medium-RTT scenarios.
   - The 9 headline scenarios in the paper should be annotated with BOTH
     no-burst and with-burst metrics. The headline comparison table stays on
@@ -205,21 +205,21 @@ Decision:
     with-burst column.
 
 ================================================================================
-8. CODE OPTIMIZATION ROUND (added 2026-05-01)  --  TcpLark v2 + Reward Reshaping
+8. CODE OPTIMIZATION ROUND (added 2026-05-01)  --  TcpSwift v2 + Reward Reshaping
 ================================================================================
 Source of changes:
-  - contrib/opengym/examples/lark-tcp/tcp_lark.py          (rewritten v2)
-  - contrib/opengym/examples/lark-tcp/tcp-lark-env.cc      (reward reshape only)
+  - contrib/opengym/examples/swift-tcp/tcp_swift.py          (rewritten v2)
+  - contrib/opengym/examples/swift-tcp/tcp-swift-env.cc      (reward reshape only)
 
 Design intent vs. observation-space dimension (IMPORTANT CLARIFICATION):
   - The ns-3/Python interface carries a 15-element box (parameterNum=15 at
-    tcp-lark-env.cc L60 & L72). The first 4 are metadata channels
+    tcp-swift-env.cc L60 & L72). The first 4 are metadata channels
     (socketUuid, envType, simTime_us, nodeId).
   - The EFFECTIVE RL observation subspace is 11-dimensional and corresponds
     to indices [4..14]: ssThresh, cWnd, segmentSize, segmentsAcked,
     bytesInFlight, lastRtt_us, minRtt_us, calledFunc, caState, caEvent,
     ecnState  (11 channels).  This matches the rule assertion
-    "Lark 算法是 11 维观测空间" at tcp_lark.py#L413-416.
+    "Swift 算法是 11 维观测空间" at tcp_swift.py#L413-416.
   - Documents must report the observation space consistently as
     "11-D effective RL observation subspace embedded in a 15-element transport
     container (4 metadata channels + 11 stateful protocol channels)."
@@ -240,7 +240,7 @@ Algorithm delta for v2:
   (g) Max cwnd cap: 10*BDP -> 4*BDP.
   (h) Fix dead-code bug: new_ssThresh = new_cwnd no longer overwritten.
 
-tcp-lark-env.cc reward reshape:
+tcp-swift-env.cc reward reshape:
   GetSsThresh:
     ECN_path          : -3.0  (was -5)
     TCP_LOSS timeout  : -20.0 (was -15)
@@ -277,7 +277,7 @@ EXCLUSIONS APPENDED (ISO-8601 | source | scenario | protocol | reason | metric)
 2026-05-01T00:00:00+08:00 | logs/plots/summary.csv        | oversub_4to1_10g   | TcpNewReno | missing protocol row                 | all
 2026-05-01T00:00:00+08:00 | logs/plots/summary.csv        | rdma_like_25g      | *    | incomplete: only TcpBbr                    | all
 2026-05-01T00:00:00+08:00 | logs/plots/summary.csv        | rdma_like_50g      | *    | incomplete: only TcpBbr                    | all
-2026-05-01T00:00:00+08:00 | logs/plots/summary.csv        | wan_longhaul       | TcpCubic,TcpBbr | incomplete: only Lark+NewReno    | all
+2026-05-01T00:00:00+08:00 | logs/plots/summary.csv        | wan_longhaul       | TcpCubic,TcpBbr | incomplete: only Swift+NewReno    | all
 2026-05-01T00:00:00+08:00 | logs/plots/summary.csv        | intra_rack_10g     | TcpBbr | known BBR microRTT collapse (§3)        | Throughput
 2026-05-01T00:00:00+08:00 | logs/plots/summary.csv        | intra_rack_25g     | TcpBbr | known BBR microRTT collapse (§3)        | Throughput
 2026-05-01T00:00:00+08:00 | logs/plots-udp/summary.csv    | congested_light    | *    | incomplete under burst                     | all

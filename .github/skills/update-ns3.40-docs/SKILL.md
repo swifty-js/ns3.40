@@ -1,23 +1,23 @@
 ---
 name: update-ns3.40-docs
-description: Guide an agent through the ordered refresh of the TcpLark ns-3.40 / ns3-gym documentation artifacts, the CCF Class-A style conference paper at `docs/thesis.tex`, the NJUPT graduate thesis project at `docs/NJUPT_Professional_Thesis_draft1`, and the Chinese invention patent at `docs/patent.md`. Use this skill whenever the user asks to update, synchronize, rewrite, validate, or polish TcpLark documentation, experiment tables, motivation, claims, patent language, or thesis sections based on ns-3.40 simulations, ns3-gym reinforcement learning, `contrib/opengym/examples/lark-tcp`, `Gemini.pdf`, or `logs/`. This skill must be used proactively for requests involving TcpLark vs. TcpCubic/TcpNewReno/TcpBbr results, anomaly filtering in logs, or removal of the incorrect data-center-only motivation.
+description: Guide an agent through the ordered refresh of the TcpSwift ns-3.40 / ns3-gym documentation artifacts, the CCF Class-A style conference paper at `docs/thesis.tex`, the NJUPT graduate thesis project at `docs/NJUPT_Professional_Thesis_draft1`, and the Chinese invention patent at `docs/patent.md`. Use this skill whenever the user asks to update, synchronize, rewrite, validate, or polish TcpSwift documentation, experiment tables, motivation, claims, patent language, or thesis sections based on ns-3.40 simulations, ns3-gym reinforcement learning, `contrib/opengym/examples/swift-tcp`, `Gemini.pdf`, or `logs/`. This skill must be used proactively for requests involving TcpSwift vs. TcpCubic/TcpNewReno/TcpBbr results, anomaly filtering in logs, or removal of the incorrect data-center-only motivation.
 ---
 
 # update-ns3.40-docs
 
-You are a senior computer-networking and congestion-control research assistant. Your job is to help an agent update the TcpLark documentation artifacts in a rigorous, reproducible, and publication-ready order.
+You are a senior computer-networking and congestion-control research assistant. Your job is to help an agent update the TcpSwift documentation artifacts in a rigorous, reproducible, and publication-ready order.
 
 The skill itself is written in professional English. The target artifacts may be Chinese academic or patent documents; preserve the language, tone, format, and local conventions of each artifact unless the user explicitly requests otherwise.
 
 ## Project context
 
-TcpLark is a new TCP congestion-control protocol built on:
+TcpSwift is a new TCP congestion-control protocol built on:
 
 - ns-3 version 3.40: `https://www.nsnam.org/releases/ns-3-40/`
 - ns-3.40 source tree: `https://gitlab.com/nsnam/ns-3-dev/-/tree/ns-3.40?ref_type=tags`
 - ns3-gym reinforcement-learning integration: `https://github.com/tkn-tub/ns3-gym`
 
-TcpLark is benchmarked against:
+TcpSwift is benchmarked against:
 
 - `TcpCubic`
 - `TcpNewReno`
@@ -25,7 +25,7 @@ TcpLark is benchmarked against:
 
 Important local inputs:
 
-- TcpLark implementation: `contrib/opengym/examples/lark-tcp`
+- TcpSwift implementation: `contrib/opengym/examples/swift-tcp`
 - Primary reference paper: `Gemini.pdf`
 - Experimental results: `logs/`
 - Conference paper: `docs/thesis.tex`
@@ -40,9 +40,9 @@ Apply these requirements before editing any artifact.
 
 ### Correct the motivation
 
-The current motivation in the conference paper, graduate thesis, and patent is wrong if it states or implies that TcpLark is designed specifically for data-center networks.
+The current motivation in the conference paper, graduate thesis, and patent is wrong if it states or implies that TcpSwift is designed specifically for data-center networks.
 
-TcpLark must be framed as a congestion-control method for broader end-to-end network transmission scenarios, especially:
+TcpSwift must be framed as a congestion-control method for broader end-to-end network transmission scenarios, especially:
 
 - long-distance transmission;
 - heterogeneous terminal devices, including phones, laptops, desktops, and other endpoint classes;
@@ -66,13 +66,13 @@ Derive the final 2-3 innovations from the implementation, `Gemini.pdf`, and the 
 2. ns3-gym-based reinforcement-learning decision support for adaptive congestion-window or sending-behavior adjustment;
 3. stability and safety mechanisms that prevent aggressive degradation under uncertain RTT, loss, ECN, timeout, or bandwidth-delay conditions.
 
-Treat the list above as a candidate framing, not a license to invent features. Verify each claim against `contrib/opengym/examples/lark-tcp` before using it.
+Treat the list above as a candidate framing, not a license to invent features. Verify each claim against `contrib/opengym/examples/swift-tcp` before using it.
 
 ### Preserve scientific integrity
 
 - Never invent experimental data.
 - Never promote a number unless it can be traced to `logs/` or a verified post-processing output.
-- Prefer scenarios where TcpLark performs better, but describe mixed or negative results honestly.
+- Prefer scenarios where TcpSwift performs better, but describe mixed or negative results honestly.
 - If a result is anomalous, missing, contradictory, or untraceable, exclude it from headline claims and record the exclusion in `logs/error.txt`.
 - Patent text must not expose concrete experimental data unless the user explicitly asks for data-bearing patent examples.
 
@@ -89,11 +89,11 @@ Read or inspect these sources as needed:
 2. ns3-gym integration:
    - how observations, actions, rewards, and environment stepping are implemented;
    - how the Python training or evaluation scripts interact with the ns-3 simulation.
-3. TcpLark code under `contrib/opengym/examples/lark-tcp`:
+3. TcpSwift code under `contrib/opengym/examples/swift-tcp`:
    - scenario driver, usually `sim.cc`;
-   - congestion-control implementation, commonly `tcp-lark.h` and `tcp-lark.cc`;
-   - ns3-gym environment files, commonly `tcp-lark-env.h` and `tcp-lark-env.cc`;
-   - Python helpers such as `tcp_base.py`, `tcp_lark.py`, and `test_lark.py` when present.
+   - congestion-control implementation, commonly `tcp-swift.h` and `tcp-swift.cc`;
+   - ns3-gym environment files, commonly `tcp-swift-env.h` and `tcp-swift-env.cc`;
+   - Python helpers such as `tcp_base.py`, `tcp_swift.py`, and `test_swift.py` when present.
 4. Experiments under `logs/`:
    - summary CSV files;
    - raw FlowMonitor XML files;
@@ -155,8 +155,8 @@ If the same anomaly is already recorded, do not append a duplicate. If new evide
 After filtering:
 
 - build a cleaned KPI view for the remaining updates;
-- identify scenarios where TcpLark clearly outperforms at least one baseline on throughput, delay, loss, fairness, robustness, or stability;
-- identify scenarios where TcpLark does not win or has mixed behavior;
+- identify scenarios where TcpSwift clearly outperforms at least one baseline on throughput, delay, loss, fairness, robustness, or stability;
+- identify scenarios where TcpSwift does not win or has mixed behavior;
 - use winning or representative scenarios for headline narrative;
 - keep mixed scenarios in extended discussion only when they improve scientific honesty.
 
@@ -179,8 +179,8 @@ Target standard: a precise, rigorous, and well-scoped Chinese computer-science c
 ### Required actions
 
 1. Read `docs/thesis.tex` before editing.
-2. Read `Gemini.pdf` enough to understand the comparison point, algorithmic framing, and terminology that may influence TcpLark's presentation.
-3. Inspect `contrib/opengym/examples/lark-tcp` and the cleaned experiment results under `logs/`.
+2. Read `Gemini.pdf` enough to understand the comparison point, algorithmic framing, and terminology that may influence TcpSwift's presentation.
+3. Inspect `contrib/opengym/examples/swift-tcp` and the cleaned experiment results under `logs/`.
 4. Remove or rewrite the incorrect data-center-only motivation throughout the paper.
 5. Reframe the motivation around long-distance transmission and heterogeneous terminal devices.
 6. Consolidate the core innovations into 2-3 points and use them consistently in the abstract, introduction, method, and conclusion.
@@ -190,8 +190,8 @@ Target standard: a precise, rigorous, and well-scoped Chinese computer-science c
    - loss;
    - fairness;
    - robustness under UDP burst or other stress conditions when available;
-   - representative scenarios where TcpLark is better than one or more baselines.
-8. Prefer TcpLark-favorable experiment groups in headline tables and narrative, while keeping claims truthful and traceable.
+   - representative scenarios where TcpSwift is better than one or more baselines.
+8. Prefer TcpSwift-favorable experiment groups in headline tables and narrative, while keeping claims truthful and traceable.
 9. Keep LaTeX layout safe for conference format:
    - avoid over-wide tables;
    - reuse existing packages when possible;
@@ -202,11 +202,11 @@ Target standard: a precise, rigorous, and well-scoped Chinese computer-science c
 
 The conference paper should answer:
 
-- What network problem does TcpLark address outside a data-center-only framing?
+- What network problem does TcpSwift address outside a data-center-only framing?
 - Why do long-distance transmission and heterogeneous endpoints make congestion control difficult?
-- How does TcpLark use ns3-gym reinforcement learning and ns-3.40 simulation evidence?
+- How does TcpSwift use ns3-gym reinforcement learning and ns-3.40 simulation evidence?
 - What are the 2-3 core technical contributions?
-- Under which scenarios does TcpLark outperform TcpCubic, TcpNewReno, and/or TcpBbr?
+- Under which scenarios does TcpSwift outperform TcpCubic, TcpNewReno, and/or TcpBbr?
 - Which scenarios are mixed, and what do they imply for future work?
 
 ### Conference-paper validation
@@ -240,7 +240,7 @@ Target standard: a coherent, detailed, and professionally written graduate thesi
 8. Expand explanations where appropriate:
    - ns-3.40 simulation model and assumptions;
    - ns3-gym observation/action/reward loop;
-   - TcpLark design rationale;
+   - TcpSwift design rationale;
    - comparison protocols;
    - experiment scenarios and metrics;
    - limitations and failure modes.
@@ -252,7 +252,7 @@ Target standard: a coherent, detailed, and professionally written graduate thesi
 The thesis should be more explanatory than the conference paper. It should provide enough detail for a committee reader to understand:
 
 - why the problem matters;
-- how TcpLark is implemented in ns-3.40;
+- how TcpSwift is implemented in ns-3.40;
 - how reinforcement learning is connected through ns3-gym;
 - why the selected state/action/reward design is reasonable;
 - how scenarios map to long-distance and heterogeneous endpoint conditions;
@@ -279,7 +279,7 @@ Target standard: a professional Chinese mainland invention patent draft with cle
 
 1. Read `docs/patent.md` before editing.
 2. Reuse the corrected technical story from the paper and thesis, but translate it into patent language rather than academic paper language.
-3. Do not identify the protocol as Lark or TcpLark in the patent body unless the user explicitly requests it.
+3. Do not identify the protocol as Swift or TcpSwift in the patent body unless the user explicitly requests it.
 4. Use neutral phrasing such as:
    - the proposed congestion-control protocol;
    - the proposed TCP congestion-control method;
@@ -307,7 +307,7 @@ The patent should answer:
 
 Before leaving Step 3:
 
-- search `docs/patent.md` for `Lark`, `TcpLark`, and similar brand identifiers;
+- search `docs/patent.md` for `Swift`, `TcpSwift`, and similar brand identifiers;
 - search for concrete experiment numbers and remove them unless explicitly requested;
 - search for data-center-only positioning and remove it;
 - verify that the claims reflect no more than 2-3 central invention ideas;
@@ -335,13 +335,13 @@ When updating changelogs:
 
 Before reporting completion, verify:
 
-1. The conference paper, graduate thesis, and patent no longer claim TcpLark is designed specifically for data-center networks.
+1. The conference paper, graduate thesis, and patent no longer claim TcpSwift is designed specifically for data-center networks.
 2. The motivation consistently emphasizes long-distance transmission and heterogeneous terminal devices.
 3. The core innovations are limited to 2-3 points and are consistent across artifacts.
 4. Conference-paper and graduate-thesis numbers are traceable to cleaned `logs/` data.
 5. Anomalies are appended to `logs/error.txt` without deleting historical records.
-6. TcpLark-favorable experiment groups are highlighted without fabricating or overstating results.
-7. The patent does not expose the Lark/TcpLark name unless explicitly requested.
+6. TcpSwift-favorable experiment groups are highlighted without fabricating or overstating results.
+7. The patent does not expose the Swift/TcpSwift name unless explicitly requested.
 8. The patent does not expose concrete experimental data unless explicitly requested.
 9. Build or validation commands were run where feasible, and any skipped validation is explained.
 10. The final response lists changed files, anomaly count, promoted scenarios, validation commands, and remaining assumptions.

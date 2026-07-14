@@ -3,7 +3,7 @@ ninja: no work to do.
 Ns3Env parameters:
 --openGymPort: 5555
 --seed: 42
---Tcp version: ns3::TcpLark
+--Tcp version: ns3::TcpSwift
 --Queue size: 1100 packets (1650000 bytes), BDP=550000 bytes
 Simulation process id: 62295 (parent (waf shell) id: 62289)
 Waiting for Python process to connect on port: tcp://localhost:5555

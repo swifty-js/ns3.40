@@ -18,8 +18,8 @@
 
 结合 ns3-gym 强化学习 `https://github.com/tkn-tub/ns3-gym`
 
-我提出了一个新的拥塞控制协议 TcpLark, 对标 TcpCubic, TcpNewReno, TcpBBr
-新的拥塞控制协议 TcpLark 的代码 `contrib/opengym/examples/lark-tcp`
+我提出了一个新的拥塞控制协议 TcpSwift, 对标 TcpCubic, TcpNewReno, TcpBBr
+新的拥塞控制协议 TcpSwift 的代码 `contrib/opengym/examples/swift-tcp`
 主要的参考论文 `Gemini.pdf`
 
 实验结果 `logs`
@@ -34,13 +34,13 @@
 
 研究 ns3 仿真器, 版本 3.40, ns3-gym 强化学习
 
-- 理解我提出的新的拥塞控制协议的代码 `contrib/opengym/examples/lark-tcp`
+- 理解我提出的新的拥塞控制协议的代码 `contrib/opengym/examples/swift-tcp`
 - 查看全部实验结果 `logs`
 - 阅读主要的参考论文 `Gemini.pdf` 和会议论文 `docs/thesis.tex`
 
 ## MUST 阅读的前置要求
 
-1. 目前会议论文、研究生毕业论文、发明专利中的 motivation 动机错误, TcpLark 不是专为数据中心网络设计, 而是:
+1. 目前会议论文、研究生毕业论文、发明专利中的 motivation 动机错误, TcpSwift 不是专为数据中心网络设计, 而是:
 
 - 远距离传输
 - 终端设备的多模态: 手机、电脑、..., 考虑到终端设备的复杂性, 引入强化学习辅助拥塞控制
@@ -51,7 +51,7 @@
 ## 第一步: 更新会议论文
 
 - 请 MUST 过滤 `logs` 中异常的数据, 并将异常的数据记录到 `logs/error.txt`
-- 重点关注 TcpLark 表现更优秀的实验组
+- 重点关注 TcpSwift 表现更优秀的实验组
 
 优化会议论文的表述, 以方便投递到中国计算机学会 A 类会议
 
@@ -60,7 +60,7 @@
 基于以上的研究和修改, 同步更新研究生毕业论文
 
 - 请 MUST 过滤 `logs` 中异常的数据, 并将异常的数据记录到 `logs/error.txt`
-- 重点关注 TcpLark 表现更优秀的实验组
+- 重点关注 TcpSwift 表现更优秀的实验组
 
 优化研究生毕业论文的表述, 以符合优秀研究生毕业论文要求
 
@@ -68,7 +68,7 @@
 
 基于以上的研究和修改, 同步更新中国大陆发明专利
 
-- 发明专利中不需要指出是 Lark 协议, 可以描述为: 提出的新的拥塞控制协议
+- 发明专利中不需要指出是 Swift 协议, 可以描述为: 提出的新的拥塞控制协议
 - 发明专利中不需要透出具体的实验数据
 
 优化发明专利的表述, 以符合优秀中国大陆发明专利要求

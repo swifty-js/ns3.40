@@ -1,10 +1,10 @@
-\chapter{Lark算法设计与实现}\label{Chap:chap3}
+\chapter{Swift算法设计与实现}\label{Chap:chap3}
 
-本章详细介绍Lark算法的设计与实现，包括系统架构概述、强化学习问题建模、11维观测空间设计、多信号融合拥塞检测算法、差异化拥塞响应机制、强化学习驱动的自适应参数调优、融合控制策略以及每流独立状态管理机制。
+本章详细介绍Swift算法的设计与实现，包括系统架构概述、强化学习问题建模、11维观测空间设计、多信号融合拥塞检测算法、差异化拥塞响应机制、强化学习驱动的自适应参数调优、融合控制策略以及每流独立状态管理机制。
 
 \section{系统架构概述}
 
-Lark算法的系统架构如图\ref{fig:architecture}所示，由四个核心模块组成：网络仿真模块、拥塞控制环境模块、智能决策模块和进程间通信模块。
+Swift算法的系统架构如图\ref{fig:architecture}所示，由四个核心模块组成：网络仿真模块、拥塞控制环境模块、智能决策模块和进程间通信模块。
 
 \begin{figure}[htbp]
 \centering
@@ -27,14 +27,14 @@ Lark算法的系统架构如图\ref{fig:architecture}所示，由四个核心模
 \node[comm] (zmq) at (5.5, -0.8) {\textbf{IPC}\\\rotatebox{90}{ZeroMQ}\\~\\Req/Rep\\ProtoBuf};
 
 % 智能决策模块
-\node[module, fill=green!12] (agent) at (11,0) {\textbf{智能决策模块}\\(Python TcpLark)};
+\node[module, fill=green!12] (agent) at (11,0) {\textbf{智能决策模块}\\(Python TcpSwift)};
 \node[submod, below=0.1cm of agent] (a1) {多信号融合拥塞检测};
 \node[submod, below=0.05cm of a1] (a2) {差异化拥塞响应};
 \node[submod, below=0.05cm of a2] (a3) {自适应$\alpha$调优};
 \node[submod, below=0.05cm of a3] (a4) {融合控制策略};
 
 % 环境模块（底部跨越）
-\node[module, fill=orange!12, minimum width=13cm] (env) at (5.5, -4.5) {\textbf{拥塞控制环境模块}（OpenGym / TcpLarkEnv）——11维观测空间采集 + 动作应用 + 奖励计算};
+\node[module, fill=orange!12, minimum width=13cm] (env) at (5.5, -4.5) {\textbf{拥塞控制环境模块}（OpenGym / TcpSwiftEnv）——11维观测空间采集 + 动作应用 + 奖励计算};
 
 % 箭头
 \draw[arrow, blue!70] (sim3.east) -- ++(1.0,0) |- node[above, font=\scriptsize, pos=0.25] {11维观测} (zmq.west);
@@ -50,13 +50,13 @@ Lark算法的系统架构如图\ref{fig:architecture}所示，由四个核心模
 \node[rectangle, draw, dashed, fill=gray!5, font=\scriptsize, minimum width=3cm, align=center] at (11, -3.2) {每流独立状态 (HashMap)\\socketUuid → FlowState};
 
 \end{tikzpicture}
-\caption{Lark系统架构}
+\caption{Swift系统架构}
 \label{fig:architecture}
 \end{figure}
 
 \textbf{网络仿真模块}基于ns-3（Network Simulator 3）离散事件仿真平台构建，实现完整的TCP/IP协议栈。ns-3是目前学术界和工业界广泛使用的网络仿真工具，提供了丰富的网络协议模型和灵活的可扩展架构。网络仿真模块负责构建哑铃型等可控拓扑、模拟数据包传输过程、执行离散事件驱动的仿真调度，并通过FlowMonitor等工具记录吞吐量、时延、丢包和公平性指标。
 
-本研究中的Lark实验采用ns3-gym提供的OpenGym接口与Python智能决策模块交互。仿真进程在TCP回调处同步发送观测向量，Python侧根据观测向量返回慢启动阈值和拥塞窗口动作。由于OpenGym/ZeroMQ采用同步请求-应答交互路径，本文实现未将该路径与MTP多线程并行仿真机制结合使用。
+本研究中的Swift实验采用ns3-gym提供的OpenGym接口与Python智能决策模块交互。仿真进程在TCP回调处同步发送观测向量，Python侧根据观测向量返回慢启动阈值和拥塞窗口动作。由于OpenGym/ZeroMQ采用同步请求-应答交互路径，本文实现未将该路径与MTP多线程并行仿真机制结合使用。
 
 \textbf{拥塞控制环境模块}基于OpenGym框架实现，负责在TCP协议栈与强化学习智能体之间建立桥梁。OpenGym是ns3-gym项目提供的强化学习环境接口，遵循OpenAI Gym的标准API规范。拥塞控制环境模块在TCP协议栈的关键回调点采集状态参数，构建11维观测空间，并将智能体的决策动作应用于TCP连接。
 
@@ -70,13 +70,13 @@ Lark算法的系统架构如图\ref{fig:architecture}所示，由四个核心模
     \item \texttt{CwndEvent()}：拥塞窗口事件回调，用于捕获ECN标记等事件
 \end{itemize}
 
-\textbf{智能决策模块}采用Python实现，负责执行Lark算法的核心逻辑：多信号融合拥塞检测、差异化拥塞响应、自适应参数调优和融合控制策略计算。智能决策模块维护每个TCP连接的独立状态，包括历史度量缓冲区、ECN事件跟踪数据、性能指标数据和自适应参数数据。
+\textbf{智能决策模块}采用Python实现，负责执行Swift算法的核心逻辑：多信号融合拥塞检测、差异化拥塞响应、自适应参数调优和融合控制策略计算。智能决策模块维护每个TCP连接的独立状态，包括历史度量缓冲区、ECN事件跟踪数据、性能指标数据和自适应参数数据。
 
 \textbf{进程间通信模块}采用ZeroMQ（ZMQ）消息队列实现仿真进程和决策进程之间的高效通信。通信协议采用请求-应答（Request-Reply）模式：仿真进程在每个回调点发送观测数据请求，决策进程返回控制动作应答。消息格式采用Protocol Buffers序列化，保证了通信效率和跨语言兼容性。
 
 \section{强化学习问题建模}
 
-Lark算法将网络拥塞控制问题建模为马尔可夫决策过程（Markov Decision Process，MDP）。MDP是强化学习的标准数学框架，由五元组$\langle S, A, P, R, \gamma \rangle$定义：
+Swift算法将网络拥塞控制问题建模为马尔可夫决策过程（Markov Decision Process，MDP）。MDP是强化学习的标准数学框架，由五元组$\langle S, A, P, R, \gamma \rangle$定义：
 
 \begin{itemize}
     \item $S$：状态空间，表示所有可能的网络状态
@@ -96,53 +96,53 @@ Lark算法将网络拥塞控制问题建模为马尔可夫决策过程（Markov 
 P(s_{t+1}, r_{t+1} | s_t, a_t, s_{t-1}, a_{t-1}, ..., s_0, a_0) = P(s_{t+1}, r_{t+1} | s_t, a_t)
 \end{equation}
 
-在网络拥塞控制场景中，完全满足马尔可夫性是困难的，因为网络状态可能依赖于较长的历史。Lark通过在状态中包含ECN状态、CA状态等协议栈内部状态，在实际应用中近似满足马尔可夫性。
+在网络拥塞控制场景中，完全满足马尔可夫性是困难的，因为网络状态可能依赖于较长的历史。Swift通过在状态中包含ECN状态、CA状态等协议栈内部状态，在实际应用中近似满足马尔可夫性。
 
-\textbf{信息充分性（Information Sufficiency）}：状态应包含做出最优决策所需的充分信息。信息不足会导致智能体无法区分需要不同动作的情况，从而影响学习效果。Lark的11维状态空间涵盖了TCP协议栈提供的所有关键信息，保证了信息充分性。
+\textbf{信息充分性（Information Sufficiency）}：状态应包含做出最优决策所需的充分信息。信息不足会导致智能体无法区分需要不同动作的情况，从而影响学习效果。Swift的11维状态空间涵盖了TCP协议栈提供的所有关键信息，保证了信息充分性。
 
-\textbf{维度可扩展性（Dimensional Scalability）}：状态空间的维度不应过高，否则会导致维度灾难（Curse of Dimensionality）问题。Lark的11维状态空间在现有方案中属于较高维度，但仍在可处理范围内。基于规则的决策机制避免了维度灾难问题。
+\textbf{维度可扩展性（Dimensional Scalability）}：状态空间的维度不应过高，否则会导致维度灾难（Curse of Dimensionality）问题。Swift的11维状态空间在现有方案中属于较高维度，但仍在可处理范围内。基于规则的决策机制避免了维度灾难问题。
 
-\textbf{可观测性（Observability）}：状态应能够从环境中直接或间接观测获得。Lark的15个状态参数均可从ns-3 TCP模块的标准回调接口直接获取，满足可观测性要求。
+\textbf{可观测性（Observability）}：状态应能够从环境中直接或间接观测获得。Swift的15个状态参数均可从ns-3 TCP模块的标准回调接口直接获取，满足可观测性要求。
 
 \subsection{动作空间设计理论}
 
-动作空间的设计决定了智能体能够执行的控制操作范围。Lark采用连续动作空间，直接输出新的ssthresh和cwnd值。这种设计的理论考量如下：
+动作空间的设计决定了智能体能够执行的控制操作范围。Swift采用连续动作空间，直接输出新的ssthresh和cwnd值。这种设计的理论考量如下：
 
 \textbf{控制粒度（Control Granularity）}：连续动作空间提供了最细的控制粒度，允许智能体精确调整控制参数。相比之下，离散动作空间（如"增加10\%"、"减少10\%"）限制了控制的精确性。
 
-\textbf{探索效率（Exploration Efficiency）}：连续动作空间的探索效率取决于动作的参数化形式。Lark通过直接输出绝对值而非增量，避免了累积误差问题。
+\textbf{探索效率（Exploration Efficiency）}：连续动作空间的探索效率取决于动作的参数化形式。Swift通过直接输出绝对值而非增量，避免了累积误差问题。
 
-\textbf{约束满足（Constraint Satisfaction）}：动作应满足TCP协议的约束条件。Lark通过在动作输出后应用边界约束，保证输出的控制参数始终有效。
+\textbf{约束满足（Constraint Satisfaction）}：动作应满足TCP协议的约束条件。Swift通过在动作输出后应用边界约束，保证输出的控制参数始终有效。
 
 \subsection{奖励函数设计理论}
 
 奖励函数是强化学习的核心组件，决定了智能体的优化目标。奖励函数设计的理论要求包括：
 
-\textbf{稀疏性问题（Sparsity Problem）}：如果奖励只在特定事件（如完成文件传输）时给出，智能体可能难以学习中间步骤的价值。Lark采用即时奖励（每次决策都给出奖励），避免了稀疏性问题。
+\textbf{稀疏性问题（Sparsity Problem）}：如果奖励只在特定事件（如完成文件传输）时给出，智能体可能难以学习中间步骤的价值。Swift采用即时奖励（每次决策都给出奖励），避免了稀疏性问题。
 
-\textbf{多目标权衡（Multi-objective Trade-off）}：网络拥塞控制需要平衡多个目标（吞吐量、延迟、公平性、丢包率）。Lark的奖励函数将吞吐量和延迟结合，通过权重参数控制优化偏好。
+\textbf{多目标权衡（Multi-objective Trade-off）}：网络拥塞控制需要平衡多个目标（吞吐量、延迟、公平性、丢包率）。Swift的奖励函数将吞吐量和延迟结合，通过权重参数控制优化偏好。
 
 \textbf{奖励塑形（Reward Shaping）}：适当的奖励塑形可以使奖励信号既反映吞吐收益，也反映排队和拥塞代价。当前实现中，正常确认事件的奖励由确认段数带来的吞吐收益减去RTT膨胀惩罚组成；ECN、普通丢包和超时丢包分别施加不同强度的负奖励。Python侧再通过奖励EMA参与$\alpha$微调。
 
 \subsection{策略表示理论}
 
-策略（Policy）定义了状态到动作的映射。Lark采用基于规则的确定性策略，而非随机策略或神经网络策略。这种选择的理论考量如下：
+策略（Policy）定义了状态到动作的映射。Swift采用基于规则的确定性策略，而非随机策略或神经网络策略。这种选择的理论考量如下：
 
 \textbf{确定性 vs. 随机性}：确定性策略在给定状态下总是执行相同的动作，具有更好的可预测性和可解释性。随机策略可以提供更好的探索能力，但在部署阶段通常不需要探索。
 
-\textbf{参数化 vs. 非参数化}：神经网络策略是参数化策略，具有强大的表示能力，但训练和推理有计算开销。基于规则的策略是非参数化策略，计算效率高但表示能力有限。Lark选择基于规则的策略，牺牲部分表示能力换取实时性和可解释性。
+\textbf{参数化 vs. 非参数化}：神经网络策略是参数化策略，具有强大的表示能力，但训练和推理有计算开销。基于规则的策略是非参数化策略，计算效率高但表示能力有限。Swift选择基于规则的策略，牺牲部分表示能力换取实时性和可解释性。
 
-\textbf{在线学习 vs. 离线设计}：Lark的规则是离线设计的，不需要在线学习过程。这避免了在线学习可能带来的不稳定性，但也限制了算法对未知环境的适应能力。
+\textbf{在线学习 vs. 离线设计}：Swift的规则是离线设计的，不需要在线学习过程。这避免了在线学习可能带来的不稳定性，但也限制了算法对未知环境的适应能力。
 
 \section{11维观测空间详细设计}
 
-本节详细描述Lark算法的11维观测空间设计，这是Lark区别于现有方案的核心创新之一。
+本节详细描述Swift算法的11维观测空间设计，这是Swift区别于现有方案的核心创新之一。
 
-\textbf{记法约定}：为与ns-3侧OpenGym实现（\texttt{contrib/opengym/examples/lark-tcp/tcp-lark-env.cc}中\texttt{parameterNum = 15}）保持一致，每次回调实际通过\texttt{Box}跨进程传输的是15个元素，其中前4个（socketUuid、envType、simTime、nodeId）为跨进程路由用的元数据通道，不参与AIMD/ECN响应/$\alpha$自适应等窗口决策；后11个（ssthresh、cwnd、segSize、segmentsAcked、bytesInFlight、lastRtt、minRtt、callbackType、caState、caEvent、ecnState）构成参与决策的有效RL观测子空间。故下文所称"11维观测空间"特指该有效RL子空间；表~\ref{tab:observation}同时列出元数据通道以便审阅者核对完整布局。
+\textbf{记法约定}：为与ns-3侧OpenGym实现（\texttt{contrib/opengym/examples/swift-tcp/tcp-swift-env.cc}中\texttt{parameterNum = 15}）保持一致，每次回调实际通过\texttt{Box}跨进程传输的是15个元素，其中前4个（socketUuid、envType、simTime、nodeId）为跨进程路由用的元数据通道，不参与AIMD/ECN响应/$\alpha$自适应等窗口决策；后11个（ssthresh、cwnd、segSize、segmentsAcked、bytesInFlight、lastRtt、minRtt、callbackType、caState、caEvent、ecnState）构成参与决策的有效RL观测子空间。故下文所称"11维观测空间"特指该有效RL子空间；表~\ref{tab:observation}同时列出元数据通道以便审阅者核对完整布局。
 
 \begin{table}[htbp]
 \centering
-\caption{Lark 11维观测空间参数定义}
+\caption{Swift 11维观测空间参数定义}
 \label{tab:observation}
 \begin{tabular}{|c|l|l|l|}
 \hline
@@ -256,15 +256,15 @@ callbackType是多信号融合拥塞检测的关键输入之一。当callbackTyp
     \item ECN\_CWR\_SENT（值为5）：已发送CWR标志
 \end{itemize}
 
-这三个拥塞控制状态参数是Lark观测空间的核心创新。现有强化学习拥塞控制方案通常不包含这些协议栈内部状态，导致智能体对网络拥塞状况的感知不完整。Lark通过将caState、caEvent、ecnState纳入观测空间，使智能体能够感知TCP协议栈的完整状态信息，从而做出更精准的控制决策。
+这三个拥塞控制状态参数是Swift观测空间的核心创新。现有强化学习拥塞控制方案通常不包含这些协议栈内部状态，导致智能体对网络拥塞状况的感知不完整。Swift通过将caState、caEvent、ecnState纳入观测空间，使智能体能够感知TCP协议栈的完整状态信息，从而做出更精准的控制决策。
 
 \section{多信号融合拥塞检测算法}
 
-Lark算法的核心创新之一是多信号融合拥塞检测方法。该方法综合利用丢包回调、ECN状态和TCP拥塞状态机信息，采用显式信号优先级判断拥塞类型，并将RTT膨胀保留给参数自适应调节，而不把RTT膨胀作为独立降窗触发条件。
+Swift算法的核心创新之一是多信号融合拥塞检测方法。该方法综合利用丢包回调、ECN状态和TCP拥塞状态机信息，采用显式信号优先级判断拥塞类型，并将RTT膨胀保留给参数自适应调节，而不把RTT膨胀作为独立降窗触发条件。
 
 \subsection{拥塞信号分类}
 
-Lark将拥塞信号分为四个类别：
+Swift将拥塞信号分为四个类别：
 
 \textbf{（1）显式丢包信号}：当callbackType为0（GetSsThresh回调）时，表明检测到了丢包事件。丢包是最明确的拥塞信号，通常意味着网络缓冲区已经溢出。
 
@@ -276,7 +276,7 @@ Lark将拥塞信号分为四个类别：
 
 \subsection{分层优先级机制}
 
-不同类型的拥塞信号具有不同的可靠性和紧迫程度，Lark采用分层优先级机制进行处理：
+不同类型的拥塞信号具有不同的可靠性和紧迫程度，Swift采用分层优先级机制进行处理：
 
 \textbf{第一优先级：显式丢包检测}
 
@@ -296,7 +296,7 @@ Lark将拥塞信号分为四个类别：
 \end{algorithmic}
 \end{algorithm}
 
-当callbackType为0时，明确判定发生丢包。Lark进一步区分快速重传检测到的丢包（caState $\neq$ CA\_LOSS）和超时导致的丢包（caState = CA\_LOSS），分别采用不同的响应策略。这是最高优先级的拥塞信号，一旦检测到丢包，无需进一步检查其他信号。
+当callbackType为0时，明确判定发生丢包。Swift进一步区分快速重传检测到的丢包（caState $\neq$ CA\_LOSS）和超时导致的丢包（caState = CA\_LOSS），分别采用不同的响应策略。这是最高优先级的拥塞信号，一旦检测到丢包，无需进一步检查其他信号。
 
 \textbf{第二优先级：ECN拥塞经历信号检测}
 
@@ -316,7 +316,7 @@ Lark将拥塞信号分为四个类别：
 
 \subsection{信号优先级与误判抑制策略}
 
-Lark的拥塞检测采用显式信号优先级，而不是将所有协议栈状态都作为独立拥塞触发条件。当前实现中，显式丢包回调具有最高优先级；ECN CE/ECE状态是第二优先级的早期拥塞信号；RTT膨胀、CA\_CWR和CA\_RECOVERY等状态不直接触发降窗，而用于解释网络状态或影响后续参数调节。
+Swift的拥塞检测采用显式信号优先级，而不是将所有协议栈状态都作为独立拥塞触发条件。当前实现中，显式丢包回调具有最高优先级；ECN CE/ECE状态是第二优先级的早期拥塞信号；RTT膨胀、CA\_CWR和CA\_RECOVERY等状态不直接触发降窗，而用于解释网络状态或影响后续参数调节。
 
 \textbf{（1）显式丢包优先}：当回调类型为GetSsThresh时，算法认为TCP协议栈已经进入丢包相关处理路径，并根据CA状态区分普通丢包和超时丢包。
 
@@ -328,7 +328,7 @@ Lark的拥塞检测采用显式信号优先级，而不是将所有协议栈状�
 
 \subsection{完整拥塞检测算法}
 
-综合上述机制，Lark的完整多信号融合拥塞检测算法如下：
+综合上述机制，Swift的完整多信号融合拥塞检测算法如下：
 
 \begin{algorithm}[htbp]
 \caption{多信号融合拥塞检测算法}
@@ -356,7 +356,7 @@ Lark的拥塞检测采用显式信号优先级，而不是将所有协议栈状�
 
 \section{差异化拥塞响应机制}
 
-Lark算法针对不同类型的拥塞信号采用差异化的响应策略，核心是差异化窗口保留因子（Window Retention Factor）机制。
+Swift算法针对不同类型的拥塞信号采用差异化的响应策略，核心是差异化窗口保留因子（Window Retention Factor）机制。
 
 \subsection{窗口保留因子设计}
 
@@ -368,7 +368,7 @@ new\_cwnd = \rho \cdot cwnd
 
 传统算法（如TCP Reno、CUBIC）对所有拥塞信号采用统一的窗口保留因子（通常为0.5，即窗口减半）。这种"一刀切"的策略无法区分不同类型和程度的拥塞，在轻度拥塞时响应过度，在严重拥塞时响应不足。
 
-Lark根据拥塞类型设计了差异化的窗口保留因子：
+Swift根据拥塞类型设计了差异化的窗口保留因子：
 
 \begin{table}[htbp]
 \centering
@@ -392,7 +392,7 @@ ECN标记（ECN） & 0.75 & ECN是早期信号，提前释放队列压力 \\超�
 
 ECN标记是最早的拥塞信号，通常在队列长度超过低阈值时触发，此时网络可能只是轻度拥塞。丢包是较晚的拥塞信号，通常在队列溢出时发生，表明网络已经严重拥塞。超时丢包是最晚也最严重的拥塞信号，通常意味着多个数据包连续丢失或网络路径严重中断，需要最大力度的窗口缩减。
 
-根据时序关系和严重程度，Lark设计了三级差异化响应：ECN标记采用早期预警响应（保留因子0.75），丢包采用较激进的响应（保留因子0.70），超时采用最激进的响应（保留因子0.50）。这种阶梯式的响应力度设计用于匹配不同严重程度的拥塞信号，同时通过降窗后冻结机制抑制窗口立即反弹。
+根据时序关系和严重程度，Swift设计了三级差异化响应：ECN标记采用早期预警响应（保留因子0.75），丢包采用较激进的响应（保留因子0.70），超时采用最激进的响应（保留因子0.50）。这种阶梯式的响应力度设计用于匹配不同严重程度的拥塞信号，同时通过降窗后冻结机制抑制窗口立即反弹。
 
 \textbf{（2）信号可靠性分析}
 
@@ -400,7 +400,7 @@ ECN标记是最早的拥塞信号，通常在队列长度超过低阈值时触�
 
 \textbf{（3）吞吐量-延迟权衡}
 
-较低的窗口保留因子能够更快地缓解拥塞、降低延迟，但会导致吞吐量下降。较高的窗口保留因子能够维持较高的吞吐量，但可能延长拥塞持续时间。Lark的差异化设计试图在吞吐量和延迟之间取得最优平衡。
+较低的窗口保留因子能够更快地缓解拥塞、降低延迟，但会导致吞吐量下降。较高的窗口保留因子能够维持较高的吞吐量，但可能延长拥塞持续时间。Swift的差异化设计试图在吞吐量和延迟之间取得最优平衡。
 
 \subsection{慢启动阈值更新}
 
@@ -416,7 +416,7 @@ new\_ssthresh = \max(\rho \times ref, W_{min}, new\_cwnd)
 
 该设计避免在队列已膨胀时把慢启动阈值设置到过高水平，同时保证阈值不低于新的拥塞窗口，防止拥塞恢复阶段出现窗口停滞。
 
-此外，Lark引入连续缩减保护和降窗后冻结机制。每次拥塞响应后连续缩减计数器递增；当连续缩减次数超过3次时，算法保持当前窗口不再继续缩减，避免窗口死亡螺旋。任一显式降窗后，算法冻结后续4个ACK事件中的窗口增长，使队列有时间排空。
+此外，Swift引入连续缩减保护和降窗后冻结机制。每次拥塞响应后连续缩减计数器递增；当连续缩减次数超过3次时，算法保持当前窗口不再继续缩减，避免窗口死亡螺旋。任一显式降窗后，算法冻结后续4个ACK事件中的窗口增长，使队列有时间排空。
 
 \subsection{差异化拥塞响应算法}
 
@@ -453,11 +453,11 @@ new\_ssthresh = \max(\rho \times ref, W_{min}, new\_cwnd)
 
 \section{强化学习驱动的自适应参数调优}
 
-Lark算法实现了强化学习驱动的自适应参数调优机制，根据多种因素动态调整乘性增加因子（Multiplicative Increase Factor，$\alpha$）。
+Swift算法实现了强化学习驱动的自适应参数调优机制，根据多种因素动态调整乘性增加因子（Multiplicative Increase Factor，$\alpha$）。
 
 \subsection{乘性增加因子的作用}
 
-在Lark的融合控制策略中，乘性增加因子$\alpha$控制拥塞避免阶段的窗口增长速度：
+在Swift的融合控制策略中，乘性增加因子$\alpha$控制拥塞避免阶段的窗口增长速度：
 
 \begin{equation}
 target\_ref = \alpha \times BDP + \gamma \times MSS
@@ -467,7 +467,7 @@ $\alpha$的取值决定了窗口围绕BDP目标的激进程度：较大的$\alph
 
 \subsection{多因素调整机制}
 
-Lark根据以下因素动态调整$\alpha$：
+Swift根据以下因素动态调整$\alpha$：
 
 \textbf{（1）基于RTT膨胀比的路径感知调整}
 
@@ -492,7 +492,7 @@ s = 0.3 + 0.15\sqrt{\max(0, RTT_{min,ms}-1)}
 
 \textbf{（2）基于奖励信号的趋势调整}
 
-Lark利用环境反馈的奖励信号（Reward）进行策略效果评估。采用指数移动平均（Exponential Moving Average，EMA）对奖励信号进行平滑处理：
+Swift利用环境反馈的奖励信号（Reward）进行策略效果评估。采用指数移动平均（Exponential Moving Average，EMA）对奖励信号进行平滑处理：
 
 \begin{equation}
 R_{ema} \leftarrow (1 - \eta) \times R_{ema} + \eta \times reward
@@ -504,7 +504,7 @@ R_{ema} \leftarrow (1 - \eta) \times R_{ema} + \eta \times reward
     \item 当$R_{ema} < -2.0$时，表明当前策略效果不佳，减小$\alpha$：$\alpha \leftarrow \alpha - 0.01$
 \end{itemize}
 
-奖励信号的引入使得Lark能够从全局控制效果的角度评估参数调整的方向，弥补了仅依赖RTT膨胀比等局部指标的不足。
+奖励信号的引入使得Swift能够从全局控制效果的角度评估参数调整的方向，弥补了仅依赖RTT膨胀比等局部指标的不足。
 
 \textbf{（3）基于连续增长趋势的调整}
 
@@ -565,7 +565,7 @@ $\alpha$的默认初始值为1.10。下界0.85为无线、蜂窝或浅缓冲路�
 
 \section{融合控制策略}
 
-Lark采用融合控制策略计算目标拥塞窗口，将基于带宽延迟积（BDP）估计的速率控制与基于当前窗口的保守控制相结合。
+Swift采用融合控制策略计算目标拥塞窗口，将基于带宽延迟积（BDP）估计的速率控制与基于当前窗口的保守控制相结合。
 
 \subsection{带宽延迟积估计}
 
@@ -575,7 +575,7 @@ Lark采用融合控制策略计算目标拥塞窗口，将基于带宽延迟积�
 BDP = Bandwidth \times RTT
 \end{equation}
 
-Lark通过以下方式估计BDP：
+Swift通过以下方式估计BDP：
 
 \begin{equation}
 BDP = \max_{i \in W}(delivery\_rate_i) \times minRtt
@@ -597,7 +597,7 @@ throughput\_ema = 0.9 \times throughput\_ema + 0.1 \times delivery\_rate
 
 \subsection{慢启动阶段策略}
 
-在慢启动阶段（$cwnd < ssthresh$），Lark采用指数增长策略以快速探测可用带宽：
+在慢启动阶段（$cwnd < ssthresh$），Swift采用指数增长策略以快速探测可用带宽：
 
 \begin{equation}
 target\_cwnd = 2 \times BDP
@@ -617,7 +617,7 @@ increment = segmentsAcked \times MSS
 
 \subsection{拥塞避免阶段策略}
 
-在拥塞避免阶段（$cwnd \geq ssthresh$），Lark采用稳健的窗口增长策略：
+在拥塞避免阶段（$cwnd \geq ssthresh$），Swift采用稳健的窗口增长策略：
 
 \begin{equation}
 target\_ref = \alpha \times BDP + \gamma \times MSS
@@ -642,7 +642,7 @@ utilization = \frac{bytesInFlight}{cwnd}
 
 \subsection{窗口边界约束}
 
-为保证窗口大小的合理性，Lark对计算结果应用边界约束：
+为保证窗口大小的合理性，Swift对计算结果应用边界约束：
 
 \begin{equation}
 cwnd \in [4 \times MSS, \max(4 \times BDP, 200 \times MSS)]
@@ -705,7 +705,7 @@ cwnd \in [4 \times MSS, \max(4 \times BDP, 200 \times MSS)]
 
 \section{每流独立状态管理}
 
-Lark设计了每流独立的状态管理机制，为每个TCP连接维护独立的状态数据结构，支持多流并发场景下的差异化控制。
+Swift设计了每流独立的状态管理机制，为每个TCP连接维护独立的状态数据结构，支持多流并发场景下的差异化控制。
 
 \subsection{状态数据结构}
 
@@ -721,7 +721,7 @@ Lark设计了每流独立的状态管理机制，为每个TCP连接维护独立�
 
 \subsection{状态查找与更新}
 
-Lark使用socketUuid作为键，通过哈希表实现$O(1)$时间复杂度的状态查找和更新。哈希表的选择基于查找效率、动态扩展和内存效率三方面考量。
+Swift使用socketUuid作为键，通过哈希表实现$O(1)$时间复杂度的状态查找和更新。哈希表的选择基于查找效率、动态扩展和内存效率三方面考量。
 
 \begin{algorithm}[htbp]
 \caption{流状态查找与更新}
@@ -750,7 +750,7 @@ Lark使用socketUuid作为键，通过哈希表实现$O(1)$时间复杂度的状
 
 \subsection{状态生命周期管理}
 
-TCP连接的生命周期包括建立、传输和关闭三个阶段。Lark的状态管理遵循延迟初始化、增量更新、垃圾回收和状态持久化四个原则。
+TCP连接的生命周期包括建立、传输和关闭三个阶段。Swift的状态管理遵循延迟初始化、增量更新、垃圾回收和状态持久化四个原则。
 
 \begin{algorithm}[htbp]
 \caption{流状态垃圾回收}
@@ -774,17 +774,17 @@ TCP连接的生命周期包括建立、传输和关闭三个阶段。Lark的状�
 
 \section{实现细节与优化技术}
 
-本节详细介绍Lark算法的具体实现细节和优化技术。
+本节详细介绍Swift算法的具体实现细节和优化技术。
 
 \subsection{系统架构设计}
 
-Lark算法的系统架构遵循模块化设计原则，采用分层结构实现各功能模块的解耦。整体架构分为仿真层、环境层、决策层和通信层四个层次。仿真层负责网络拓扑构建和数据包传输仿真；环境层作为强化学习与网络仿真的桥梁；决策层实现Lark算法的核心逻辑，遵循状态隔离、分层决策和实时性原则；通信层负责仿真进程和决策进程之间的数据交换。
+Swift算法的系统架构遵循模块化设计原则，采用分层结构实现各功能模块的解耦。整体架构分为仿真层、环境层、决策层和通信层四个层次。仿真层负责网络拓扑构建和数据包传输仿真；环境层作为强化学习与网络仿真的桥梁；决策层实现Swift算法的核心逻辑，遵循状态隔离、分层决策和实时性原则；通信层负责仿真进程和决策进程之间的数据交换。
 
 \begin{algorithm}[htbp]
-\caption{Lark系统初始化流程}
+\caption{Swift系统初始化流程}
 \begin{algorithmic}[1]
 \Require 网络拓扑配置 $topology$，仿真参数 $params$
-\Ensure 初始化完成的Lark系统
+\Ensure 初始化完成的Swift系统
 \State $simulator \leftarrow$ CreateSimulator($params.duration$)
 \State $network \leftarrow$ BuildTopology($topology$)
 \State ConfigureQueues($network$, $params.queue\_size$)
@@ -792,7 +792,7 @@ Lark算法的系统架构遵循模块化设计原则，采用分层结构实现�
 \State RegisterCallbacks($env$, $network.tcp\_sockets$)
 \State ConfigureObservationSpace($env$, $15$)
 \State ConfigureActionSpace($env$, $2$) \Comment{ssthresh和cwnd}
-\State $agent \leftarrow$ CreateLarkAgent()
+\State $agent \leftarrow$ CreateSwiftAgent()
 \State $agent.flow\_states \leftarrow$ EmptyHashMap()
 \State $agent.\alpha_{default} \leftarrow 1.10$
 \State $channel \leftarrow$ CreateMessageChannel()
@@ -803,10 +803,10 @@ Lark算法的系统架构遵循模块化设计原则，采用分层结构实现�
 
 \subsection{核心算法伪代码}
 
-Lark智能体的主控制循环负责协调各功能模块，处理来自环境的观测并输出控制动作。
+Swift智能体的主控制循环负责协调各功能模块，处理来自环境的观测并输出控制动作。
 
 \begin{algorithm}[htbp]
-\caption{Lark主控制循环}
+\caption{Swift主控制循环}
 \begin{algorithmic}[1]
 \Require 环境接口 $env$，最大迭代次数 $max\_iterations$
 \Ensure 控制结果序列
@@ -832,11 +832,11 @@ Lark智能体的主控制循环负责协调各功能模块，处理来自环境�
 
 \subsection{数据结构设计}
 
-Lark算法采用高效的数据结构支持其核心功能。\textbf{循环队列（Circular Buffer）}用于存储带宽与RTT历史样本，具有固定内存占用、$O(1)$时间复杂度的插入和删除操作、自动保持时间局部性等优势。\textbf{每流状态字典}以socketUuid为键隔离不同TCP连接的$\alpha$、BDP、拥塞事件计数、连续缩减计数和降窗后冻结计数，避免不同流之间的控制状态相互污染。
+Swift算法采用高效的数据结构支持其核心功能。\textbf{循环队列（Circular Buffer）}用于存储带宽与RTT历史样本，具有固定内存占用、$O(1)$时间复杂度的插入和删除操作、自动保持时间局部性等优势。\textbf{每流状态字典}以socketUuid为键隔离不同TCP连接的$\alpha$、BDP、拥塞事件计数、连续缩减计数和降窗后冻结计数，避免不同流之间的控制状态相互污染。
 
 \subsection{性能优化技术}
 
-为了提高Lark算法的执行效率，满足实时决策的要求，本文采用了多种性能优化技术：
+为了提高Swift算法的执行效率，满足实时决策的要求，本文采用了多种性能优化技术：
 
 \textbf{（1）延迟初始化策略}：流状态采用延迟初始化策略，只在首次访问时创建状态数据结构。
 
@@ -869,15 +869,15 @@ Lark算法采用高效的数据结构支持其核心功能。\textbf{循环队�
 
 \subsection{OpenGym/ZeroMQ同步交互路径}
 
-TcpLark当前实验采用ns3-gym提供的OpenGym/ZeroMQ同步请求-响应路径：ns-3仿真进程在TCP回调处生成观测，Python决策进程返回慢启动阈值和拥塞窗口动作。该路径便于逐ACK解释窗口决策、复现实验数据并与\texttt{tcp\_lark.py}中的真实策略保持一致。由于OpenGym路径依赖同步消息交互，本文实验未将该路径与MTP并行仿真结合，也不报告MTP加速数据。
+TcpSwift当前实验采用ns3-gym提供的OpenGym/ZeroMQ同步请求-响应路径：ns-3仿真进程在TCP回调处生成观测，Python决策进程返回慢启动阈值和拥塞窗口动作。该路径便于逐ACK解释窗口决策、复现实验数据并与\texttt{tcp\_swift.py}中的真实策略保持一致。由于OpenGym路径依赖同步消息交互，本文实验未将该路径与MTP并行仿真结合，也不报告MTP加速数据。
 
 \subsection{正确性保证机制}
 
-Lark算法的实现包含参数边界检查、状态一致性检查和异常处理机制三种正确性保证机制。所有控制参数都经过边界检查，确保输出值在有效范围内；在每次决策后检查TCP状态的一致性；在检测到异常情况时能够安全地回退到保守策略。
+Swift算法的实现包含参数边界检查、状态一致性检查和异常处理机制三种正确性保证机制。所有控制参数都经过边界检查，确保输出值在有效范围内；在每次决策后检查TCP状态的一致性；在检测到异常情况时能够安全地回退到保守策略。
 
 \section{本章小结}
 
-本章详细介绍了Lark算法的设计与实现，包括：
+本章详细介绍了Swift算法的设计与实现，包括：
 
 （1）系统架构：由网络仿真模块、拥塞控制环境模块、智能决策模块和进程间通信模块组成，实现了基于ns-3和OpenGym的端到端强化学习拥塞控制框架。
 
@@ -893,4 +893,4 @@ Lark算法的实现包含参数边界检查、状态一致性检查和异常处�
 
 （7）每流独立状态管理：为每个TCP连接维护独立的状态数据，支持多流并发场景下的差异化控制。
 
-这些设计共同构成了Lark算法的完整技术方案，为实现"高吞吐、低延迟"的设计目标奠定了基础。
+这些设计共同构成了Swift算法的完整技术方案，为实现"高吞吐、低延迟"的设计目标奠定了基础。

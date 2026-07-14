@@ -9,10 +9,10 @@
 
 namespace ns3 {
 
-class TcpLarkEnv : public TcpGymEnv {
+class TcpSwiftEnv : public TcpGymEnv {
 public:
-  TcpLarkEnv();
-  virtual ~TcpLarkEnv();
+  TcpSwiftEnv();
+  virtual ~TcpSwiftEnv();
   static TypeId GetTypeId(void);
   virtual void DoDispose();
 

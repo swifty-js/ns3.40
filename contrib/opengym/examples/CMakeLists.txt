@@ -1,83 +1,83 @@
 build_lib_example(
   NAME interference-pattern
   SOURCE_FILES interference-pattern/mygym.cc
-               interference-pattern/sim.cc
+  interference-pattern/sim.cc
   LIBRARIES_TO_LINK
-    ${libcore}
-    ${libinternet}
-    ${libopengym}
-    ${libwifi}
+  ${libcore}
+  ${libinternet}
+  ${libopengym}
+  ${libwifi}
 )
 
 build_lib_example(
   NAME linear-mesh
   SOURCE_FILES linear-mesh/sim.cc
   LIBRARIES_TO_LINK
-    ${libapplications}
-    ${libcore}
-    ${libinternet}
-    ${libopengym}
-    ${libwifi}
+  ${libapplications}
+  ${libcore}
+  ${libinternet}
+  ${libopengym}
+  ${libwifi}
 )
 
 build_lib_example(
   NAME linear-mesh-2
   SOURCE_FILES linear-mesh-2/sim.cc
-               linear-mesh-2/mygym.cc
+  linear-mesh-2/mygym.cc
   LIBRARIES_TO_LINK
-    ${libapplications}
-    ${libcore}
-    ${libinternet}
-    ${libopengym}
-    ${libwifi}
+  ${libapplications}
+  ${libcore}
+  ${libinternet}
+  ${libopengym}
+  ${libwifi}
 )
 
 build_lib_example(
   NAME opengym
   SOURCE_FILES opengym/sim.cc
   LIBRARIES_TO_LINK
-    ${libcore}
-    ${libopengym}
+  ${libcore}
+  ${libopengym}
 )
 
 build_lib_example(
   NAME opengym-2
   SOURCE_FILES opengym-2/sim.cc
-               opengym-2/mygym.cc
+  opengym-2/mygym.cc
   LIBRARIES_TO_LINK
-    ${libcore}
-    ${libopengym}
+  ${libcore}
+  ${libopengym}
 )
 
 build_lib_example(
   NAME rl-tcp
   SOURCE_FILES rl-tcp/sim.cc
-               rl-tcp/tcp-rl-env.cc
-               rl-tcp/tcp-rl.cc
+  rl-tcp/tcp-rl-env.cc
+  rl-tcp/tcp-rl.cc
   LIBRARIES_TO_LINK
-    ${libapplications}
-    ${libcore}
-    ${libflow-monitor}
-    ${libinternet}
-    ${libopengym}
-    ${libpoint-to-point-layout}
-    ${libptp}
+  ${libapplications}
+  ${libcore}
+  ${libflow-monitor}
+  ${libinternet}
+  ${libopengym}
+  ${libpoint-to-point-layout}
+  ${libptp}
 )
 
 build_lib_example(
-  NAME lark-tcp
-  SOURCE_FILES lark-tcp/sim.cc
-               lark-tcp/tcp-lark-env.cc
-               lark-tcp/tcp-lark.cc
-               rl-tcp/tcp-rl-env.cc
-               rl-tcp/tcp-rl.cc
+  NAME swift-tcp
+  SOURCE_FILES swift-tcp/sim.cc
+  swift-tcp/tcp-swift-env.cc
+  swift-tcp/tcp-swift.cc
+  rl-tcp/tcp-rl-env.cc
+  rl-tcp/tcp-rl.cc
   LIBRARIES_TO_LINK
-    ${libapplications}
-    ${libcore}
-    ${libflow-monitor}
-    ${libinternet}
-    ${libopengym}
-    ${libpoint-to-point-layout}
-    ${libptp}
-    ${libmtp}
+  ${libapplications}
+  ${libcore}
+  ${libflow-monitor}
+  ${libinternet}
+  ${libopengym}
+  ${libpoint-to-point-layout}
+  ${libptp}
+  ${libmtp}
 )

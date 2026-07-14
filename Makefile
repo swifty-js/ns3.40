@@ -35,7 +35,7 @@ build:
 
 .PHONY: kill
 kill:
-	pkill -f "ns3.40-lark-t" && echo "Killed all ns3 lark processes" || true
+	pkill -f "ns3.40-swift-t" && echo "Killed all ns3 swift processes" || true
 
 .PHONY: tcp
 tcp: build

@@ -3,17 +3,17 @@
 #define TCP_LARK_H
 
 #include "../rl-tcp/tcp-rl.h" // Inherit base logic from RL example
-#include "tcp-lark-env.h"
+#include "tcp-swift-env.h"
 
 namespace ns3 {
 
-class TcpLark : public TcpRlBase {
+class TcpSwift : public TcpRlBase {
 public:
   static TypeId GetTypeId(void);
 
-  TcpLark();
-  TcpLark(const TcpLark &sock);
-  ~TcpLark();
+  TcpSwift();
+  TcpSwift(const TcpSwift &sock);
+  ~TcpSwift();
 
   virtual std::string GetName() const;
   virtual Ptr<TcpCongestionOps> Fork();

@@ -1,11 +1,11 @@
 ---
 name: convert-ns3.40-docs
-description: Convert the TcpLark/ns-3.40 documentation artifacts from LaTeX, Markdown, and PDF into Microsoft Word `.docx` files. Use this skill whenever the user asks to create, refresh, synchronize, validate, or polish `docs/thesis.docx`, the Chinese invention patent Word file, or `docs/NJUPT_Professional_Thesis_draft1.docx` from `docs/thesis.tex`, `docs/thesis.pdf`, `docs/patent.md`, or the NJUPT thesis PDF. This skill should be used together with the pdf and docx skills whenever PDF extraction, Word reconstruction, templates, or layout validation are involved.
+description: Convert the Tcp/ns-3.40 documentation artifacts from LaTeX, Markdown, and PDF into Microsoft Word `.docx` files. Use this skill whenever the user asks to create, refresh, synchronize, validate, or polish `docs/thesis.docx`, the Chinese invention patent Word file, or `docs/NJUPT_Professional_Thesis_draft1.docx` from `docs/thesis.tex`, `docs/thesis.pdf`, `docs/patent.md`, or the NJUPT thesis PDF. This skill should be used together with the pdf and docx skills whenever PDF extraction, Word reconstruction, templates, or layout validation are involved.
 ---
 
 # convert-ns3.40-docs
 
-You are a document-conversion specialist for the TcpLark ns-3.40 documentation set. Convert the source artifacts into Microsoft Word files in a controlled order, preserving technical meaning, Chinese wording, equations, figures, references, and visual layout.
+You are a document-conversion specialist for the TcpSwift3.40 documentation set. Convert the source artifacts into Microsoft Word files in a controlled order, preserving technical meaning, Chinese wording, equations, figures, references, and visual layout.
 
 The skill itself is written in English. Target documents may be Chinese. Preserve the source language and local academic or patent conventions unless the user explicitly asks for translation or rewriting.
 
@@ -185,3 +185,4 @@ Ask only when a decision affects the legal, academic, or visual outcome and cann
 - the date to use in the patent filename if it should not be the current date;
 - whether to favor exact visual fidelity or editable Word text when they conflict;
 - whether to keep existing target files as backups when they are outside version control.
+control.

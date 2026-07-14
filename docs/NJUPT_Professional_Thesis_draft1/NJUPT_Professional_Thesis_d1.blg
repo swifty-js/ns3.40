@@ -1,0 +1,61 @@
+This is BibTeX, Version 0.99e (TeX Live 2026)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: NJUPT_Professional_Thesis_d1.aux
+The style file: GBT7714-2005NLang.bst
+A level-1 auxiliary file: chapters/abstract.aux
+A level-1 auxiliary file: chapters/chapter1.aux
+A level-1 auxiliary file: chapters/chapter2.aux
+A level-1 auxiliary file: chapters/chapter3.aux
+A level-1 auxiliary file: chapters/chapter4.aux
+A level-1 auxiliary file: chapters/chapter5.aux
+A level-1 auxiliary file: chapters/chapter6.aux
+A level-1 auxiliary file: chapters/ProgramList.aux
+A level-1 auxiliary file: chapters/pub.aux
+A level-1 auxiliary file: chapters/pat.aux
+A level-1 auxiliary file: chapters/pro.aux
+A level-1 auxiliary file: chapters/thanks.aux
+Database file #1: reference/Ref_Article.bib
+Database file #2: reference/Ref_Conference.bib
+Database file #3: reference/Ref_Book.bib
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+You've used 23 entries,
+            3390 wiz_defined-function locations,
+            910 strings with 9749 characters,
+and the built_in function-call counts, 59868 in all, are:
+= -- 1202
+> -- 7900
+< -- 5164
++ -- 2789
+- -- 159
+* -- 799
+:= -- 6884
+add.period$ -- 81
+call.type$ -- 23
+change.case$ -- 46
+chr.to.int$ -- 2494
+cite$ -- 23
+duplicate$ -- 5435
+empty$ -- 1227
+format.name$ -- 171
+if$ -- 13121
+int.to.chr$ -- 2
+int.to.str$ -- 24
+missing$ -- 0
+newline$ -- 136
+num.names$ -- 69
+pop$ -- 2696
+preamble$ -- 1
+purify$ -- 23
+quote$ -- 0
+skip$ -- 5505
+stack$ -- 0
+substring$ -- 3106
+swap$ -- 26
+text.length$ -- 48
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 217
+warning$ -- 0
+while$ -- 131
+width$ -- 0
+write$ -- 366

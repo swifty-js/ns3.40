@@ -1,6 +1,6 @@
 [0/2] Re-checking globbed directories...
-[1/2] Building CXX object contrib/opengym/examples/CMakeFiles/lark-tcp.dir/lark-tcp/tcp-lark-env.cc.o
-[2/2] Linking CXX executable contrib/opengym/examples/ns3.40-lark-tcp-debug
+[1/2] Building CXX object contrib/opengym/examples/CMakeFiles/swift-tcp.dir/swift-tcp/tcp-swift-env.cc.o
+[2/2] Linking CXX executable contrib/opengym/examples/ns3.40-swift-tcp-debug
 Ns3Env parameters:
 --openGymPort: No OpenGym
 --seed: 42

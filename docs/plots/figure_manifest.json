@@ -3,41 +3,41 @@
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig01_tcp_throughput_representative.png",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig02_udp_burst_throughput_retention.png",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig03_delay_loss_tradeoff.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig04_lark_advantage_heatmap.png",
+    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig04_swift_advantage_heatmap.png",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig05_flowmonitor_fairness_distribution.png",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig06_scenario_family_summary.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig07_lark_system_architecture.png",
+    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig07_swift_system_architecture.png",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig08_multi_signal_decision_flow.png",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig09_patent_method_steps.png",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig10_experiment_dumbbell_topology.png",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig11_logs_inventory_audit.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig12_lark_advantage_ranked_scenarios.png",
+    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig12_swift_advantage_ranked_scenarios.png",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig13_protocol_metric_scorecard.png",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig01_tcp_throughput_representative.pdf",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig02_udp_burst_throughput_retention.pdf",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig03_delay_loss_tradeoff.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig04_lark_advantage_heatmap.pdf",
+    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig04_swift_advantage_heatmap.pdf",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig05_flowmonitor_fairness_distribution.pdf",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig06_scenario_family_summary.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig07_lark_system_architecture.pdf",
+    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig07_swift_system_architecture.pdf",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig08_multi_signal_decision_flow.pdf",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig09_patent_method_steps.pdf",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig10_experiment_dumbbell_topology.pdf",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig11_logs_inventory_audit.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig12_lark_advantage_ranked_scenarios.pdf",
+    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig12_swift_advantage_ranked_scenarios.pdf",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig13_protocol_metric_scorecard.pdf",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig01_tcp_throughput_representative.svg",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig02_udp_burst_throughput_retention.svg",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig03_delay_loss_tradeoff.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig04_lark_advantage_heatmap.svg",
+    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig04_swift_advantage_heatmap.svg",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig05_flowmonitor_fairness_distribution.svg",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig06_scenario_family_summary.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig07_lark_system_architecture.svg",
+    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig07_swift_system_architecture.svg",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig08_multi_signal_decision_flow.svg",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig09_patent_method_steps.svg",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig10_experiment_dumbbell_topology.svg",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig11_logs_inventory_audit.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig12_lark_advantage_ranked_scenarios.svg",
+    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig12_swift_advantage_ranked_scenarios.svg",
     "/Users/hangtiancheng/github/ns3.40/docs/plots/fig13_protocol_metric_scorecard.svg"
   ],
   "logs_inventory": {
@@ -51,7 +51,7 @@
   "flowmonitor_flow_records": 3744,
   "text_log_records": 361,
   "existing_log_png_records": 32,
-  "lark_advantage_top_scenarios": [
+  "swift_advantage_top_scenarios": [
     {
       "scenario": "satellite_geo",
       "score": 110.66838806811859,
@@ -61,8 +61,8 @@
       "tcp_loss_reduction_pp": 2.34,
       "udp_retention_gain_pct": 30.436521403140016,
       "udp_loss_reduction_pp": 2.6033333333333335,
-      "tcp_lark_mbps": 8.71,
-      "udp_lark_mbps": 5.8
+      "tcp_swift_mbps": 8.71,
+      "udp_swift_mbps": 5.8
     },
     {
       "scenario": "dc_100g",
@@ -73,8 +73,8 @@
       "tcp_loss_reduction_pp": 0.0,
       "udp_retention_gain_pct": -0.13094677315175218,
       "udp_loss_reduction_pp": 0.0,
-      "tcp_lark_mbps": 101703.75,
-      "udp_lark_mbps": 101305.27
+      "tcp_swift_mbps": 101703.75,
+      "udp_swift_mbps": 101305.27
     },
     {
       "scenario": "rdma_like_50g",
@@ -85,8 +85,8 @@
       "tcp_loss_reduction_pp": 0.0,
       "udp_retention_gain_pct": -0.26415800385355404,
       "udp_loss_reduction_pp": 0.0,
-      "tcp_lark_mbps": 51064.7,
-      "udp_lark_mbps": 50662.17
+      "tcp_swift_mbps": 51064.7,
+      "udp_swift_mbps": 50662.17
     },
     {
       "scenario": "intra_rack_25g",
@@ -97,8 +97,8 @@
       "tcp_loss_reduction_pp": 0.0,
       "udp_retention_gain_pct": -0.5295350168881385,
       "udp_loss_reduction_pp": 0.0,
-      "tcp_lark_mbps": 25532.34,
-      "udp_lark_mbps": 25131.0
+      "tcp_swift_mbps": 25532.34,
+      "udp_swift_mbps": 25131.0
     },
     {
       "scenario": "rdma_like_25g",
@@ -109,8 +109,8 @@
       "tcp_loss_reduction_pp": 0.0,
       "udp_retention_gain_pct": -0.5295481367813437,
       "udp_loss_reduction_pp": 0.0,
-      "tcp_lark_mbps": 25532.35,
-      "udp_lark_mbps": 25131.01
+      "tcp_swift_mbps": 25532.35,
+      "udp_swift_mbps": 25131.01
     },
     {
       "scenario": "oversub_4to1_10g",
@@ -121,8 +121,8 @@
       "tcp_loss_reduction_pp": 0.023333333333333334,
       "udp_retention_gain_pct": 39.257961594849064,
       "udp_loss_reduction_pp": 0.02666666666666667,
-      "tcp_lark_mbps": 2552.7,
-      "udp_lark_mbps": 2169.06
+      "tcp_swift_mbps": 2552.7,
+      "udp_swift_mbps": 2169.06
     },
     {
       "scenario": "cross_pod_20g",
@@ -133,8 +133,8 @@
       "tcp_loss_reduction_pp": 0.0,
       "udp_retention_gain_pct": -0.7432506355917412,
       "udp_loss_reduction_pp": 0.0,
-      "tcp_lark_mbps": 20406.44,
-      "udp_lark_mbps": 20004.72
+      "tcp_swift_mbps": 20406.44,
+      "udp_swift_mbps": 20004.72
     },
     {
       "scenario": "intra_rack_10g",
@@ -145,8 +145,8 @@
       "tcp_loss_reduction_pp": 0.0033333333333333335,
       "udp_retention_gain_pct": -1.1980463652803697,
       "udp_loss_reduction_pp": 0.0033333333333333335,
-      "tcp_lark_mbps": 10212.94,
-      "udp_lark_mbps": 9811.36
+      "tcp_swift_mbps": 10212.94,
+      "udp_swift_mbps": 9811.36
     },
     {
       "scenario": "mixed_small_flow",
@@ -157,8 +157,8 @@
       "tcp_loss_reduction_pp": 0.0033333333333333335,
       "udp_retention_gain_pct": 39.63506836974264,
       "udp_loss_reduction_pp": 0.0033333333333333335,
-      "tcp_lark_mbps": 2042.24,
-      "udp_lark_mbps": 1719.72
+      "tcp_swift_mbps": 2042.24,
+      "udp_swift_mbps": 1719.72
     },
     {
       "scenario": "congested_medium",
@@ -169,8 +169,8 @@
       "tcp_loss_reduction_pp": 0.0033333333333333335,
       "udp_retention_gain_pct": 39.46935663679021,
       "udp_loss_reduction_pp": 0.0033333333333333335,
-      "tcp_lark_mbps": 2042.24,
-      "udp_lark_mbps": 1719.72
+      "tcp_swift_mbps": 2042.24,
+      "udp_swift_mbps": 1719.72
     },
     {
       "scenario": "cross_pod_10g",
@@ -181,8 +181,8 @@
       "tcp_loss_reduction_pp": 0.0033333333333333335,
       "udp_retention_gain_pct": -1.2405911833829109,
       "udp_loss_reduction_pp": 0.0033333333333333335,
-      "tcp_lark_mbps": 10212.68,
-      "udp_lark_mbps": 9811.11
+      "tcp_swift_mbps": 10212.68,
+      "udp_swift_mbps": 9811.11
     },
     {
       "scenario": "leaf_spine_50g",
@@ -193,8 +193,8 @@
       "tcp_loss_reduction_pp": 0.0,
       "udp_retention_gain_pct": -0.29677324356316426,
       "udp_loss_reduction_pp": 0.0,
-      "tcp_lark_mbps": 51064.54,
-      "udp_lark_mbps": 50662.01
+      "tcp_swift_mbps": 51064.54,
+      "udp_swift_mbps": 50662.01
     }
   ],
   "anomalies_excluded": []

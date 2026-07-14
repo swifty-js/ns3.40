@@ -1,5 +1,5 @@
 """
-Lark TCP Congestion Control Algorithm - Optimized Implementation (v2.1)
+Swift TCP Congestion Control Algorithm - Optimized Implementation (v2.1)
 
 Optimization priority:
   1. Maximize throughput (primary)
@@ -42,11 +42,11 @@ logging.basicConfig(
     format="[%(asctime)s] %(levelname)s - %(message)s",
     datefmt="%H:%M:%S",
 )
-logger = logging.getLogger("TcpLark")
+logger = logging.getLogger("TcpSwift")
 logger.setLevel(logging.WARNING)
 
 
-class TcpLark(TcpEventBased):
+class TcpSwift(TcpEventBased):
     # ECN State Constants
     ECN_DISABLED = 0
     ECN_IDLE = 1
@@ -75,7 +75,7 @@ class TcpLark(TcpEventBased):
     FUNC_INCREASE_WINDOW = 1
 
     def __init__(self):
-        super(TcpLark, self).__init__()
+        super(TcpSwift, self).__init__()
 
         # --- Core parameters (throughput + delay balanced) ---
         # v2.1: alpha_max lowered (1.45 -> 1.30) to cap chronic queue build-up
@@ -406,7 +406,7 @@ class TcpLark(TcpEventBased):
         # ---------- Congestion avoidance ----------
         state["in_slow_start"] = False
 
-        # v2 Lark formula: target = alpha * BDP + gamma * MSS
+        # v2 Swift formula: target = alpha * BDP + gamma * MSS
         #   (CRITICAL FIX: cWnd no longer appears in max(); this was the root
         #    cause of monotonic queue inflation identified in error.txt #5.)
         target_rate = int(alpha * bdp) if bdp > 0 else cWnd

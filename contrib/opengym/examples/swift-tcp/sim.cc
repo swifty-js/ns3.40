@@ -31,11 +31,11 @@
 
 /* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
 
-// TcpLark uses the OpenGym/ZeroMQ interaction path in this example. The ns3-gym
-// synchronous request/reply loop is not combined with MTP parallel simulation
-// here.
+// TcpSwift uses the OpenGym/ZeroMQ interaction path in this example. The
+// ns3-gym synchronous request/reply loop is not combined with MTP parallel
+// simulation here.
 
-#include "./tcp-lark.h"
+#include "./tcp-swift.h"
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -60,7 +60,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("TcpLarkSimulator");
+NS_LOG_COMPONENT_DEFINE("TcpSwiftSimulator");
 
 static std::vector<uint32_t> rxPkts;
 
@@ -84,13 +84,13 @@ int main(int argc, char *argv[]) {
   uint32_t nLeaf = 3;
   uint16_t tcpTrafficPort = 5000;
   uint16_t udpTrafficPort = 7000;
-  std::string transport_prot = "TcpLark";
+  std::string transport_prot = "TcpSwift";
   double error_p = 0.0;
   std::string bottleneck_bandwidth = "2Gbps";
   std::string bottleneck_delay = "5us";
   std::string access_bandwidth = "10Gbps";
   std::string access_delay = "2us";
-  std::string prefix_file_name = "TcpLarkSimulator";
+  std::string prefix_file_name = "TcpSwiftSimulator";
   uint64_t data_mbytes = 0;
   uint32_t mtu_bytes = 1500;
   double duration = 10.0;
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
       "Transport protocol to use: TcpNewReno, "
       "TcpHybla, TcpHighSpeed, TcpHtcp, TcpVegas, TcpScalable, TcpVeno, "
       "TcpBic, TcpYeah, TcpIllinois, TcpWestwoodPlus, TcpLedbat, "
-      "TcpLp, TcpLark",
+      "TcpLp, TcpSwift",
       transport_prot);
   cmd.AddValue("error_p", "Packet error rate", error_p);
   cmd.AddValue("bottleneck_bandwidth", "Bottleneck bandwidth",
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
 
   transport_prot = std::string("ns3::") + transport_prot;
 
-  // OpenGym uses a ZMQ-based synchronous request/reply loop. TcpLark keeps
+  // OpenGym uses a ZMQ-based synchronous request/reply loop. TcpSwift keeps
   // this path single-threaded so each reinforcement-learning action is applied
   // in the same discrete-event order as the observation that produced it.
 
@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
   SeedManager::SetRun(run);
 
   NS_LOG_UNCOND("Ns3Env parameters:");
-  if (transport_prot.compare("ns3::TcpLark") == 0) {
+  if (transport_prot.compare("ns3::TcpSwift") == 0) {
     NS_LOG_UNCOND("--openGymPort: " << openGymPort);
   } else {
     NS_LOG_UNCOND("--openGymPort: No OpenGym");
@@ -162,12 +162,12 @@ int main(int argc, char *argv[]) {
 
   // OpenGym Env --- has to be created before any other thing
   Ptr<OpenGymInterface> openGymInterface;
-  if (transport_prot.compare("ns3::TcpLark") == 0) {
+  if (transport_prot.compare("ns3::TcpSwift") == 0) {
     openGymInterface = OpenGymInterface::Get(openGymPort);
-    // Config::SetDefault("ns3::TcpLark::Reward",
+    // Config::SetDefault("ns3::TcpSwift::Reward",
     //                    DoubleValue(2.0)); // Reward when increasing
     //                    congestion window
-    // Config::SetDefault("ns3::TcpLark::Penalty",
+    // Config::SetDefault("ns3::TcpSwift::Penalty",
     //                    DoubleValue(-30.0)); // Penalty when decreasing
     //                    congestion window
   }
@@ -203,8 +203,8 @@ int main(int argc, char *argv[]) {
   Config::SetDefault("ns3::TcpL4Protocol::SocketType",
                      TypeIdValue(TypeId::LookupByName(transport_prot)));
 
-  // Enable ECN only when using TcpLark with Python agent
-  if (transport_prot.compare("ns3::TcpLark") == 0) {
+  // Enable ECN only when using TcpSwift with Python agent
+  if (transport_prot.compare("ns3::TcpSwift") == 0) {
     Config::SetDefault("ns3::TcpSocketBase::UseEcn",
                        EnumValue(TcpSocketState::On));
   } else {
@@ -401,7 +401,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (transport_prot.compare("ns3::TcpLark") == 0) {
+  if (transport_prot.compare("ns3::TcpSwift") == 0) {
     openGymInterface->NotifySimulationEnd();
   }
 

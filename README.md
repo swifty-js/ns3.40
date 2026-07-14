@@ -1,4 +1,4 @@
-# Lark (ns3.40)
+# Swift (ns3.40)
 
 - [Hang Tiancheng](https://github.com/hangtiancheng)
 
@@ -22,11 +22,11 @@ pip3 install matplotlib pandoc pdf2image pdfplumber pillow pypdf ruff
 ./ns3 run "rl-tcp --transport_prot=TcpRl" &> ./logs/rl-tcp-ns3.log
 python ./contrib/opengym/examples/rl-tcp/test_tcp.py --start=0 &> ./logs/rl-tcp-agent.log
 
-./ns3 run "lark-tcp --transport_prot=TcpLark" &> ./logs/lark-tcp-ns3.log
-python ./contrib/opengym/examples/lark-tcp/test_lark.py --start=0 &> ./logs/lark-tcp-agent.log
-python ./contrib/opengym/examples/lark-tcp/test_lark.py --start=0 --verbose &> ./logs/lark-tcp-agent.log
+./ns3 run "swift-tcp --transport_prot=TcpSwift" &> ./logs/swift-tcp-ns3.log
+python ./contrib/opengym/examples/swift-tcp/test_swift.py --start=0 &> ./logs/swift-tcp-agent.log
+python ./contrib/opengym/examples/swift-tcp/test_swift.py --start=0 --verbose &> ./logs/swift-tcp-agent.log
 
-./ns3 run "lark-tcp --transport_prot=TcpNewReno" &> ./logs/lark-tcp-new-reno.log
+./ns3 run "swift-tcp --transport_prot=TcpNewReno" &> ./logs/swift-tcp-new-reno.log
 ```
 
 ## Install

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NS-3 Lark TCP Simulation Management Tool
+NS-3 Swift TCP Simulation Management Tool
 Features: Simulation (sim) / Plotting (draw) / Summary Report (summary)
 """
 
@@ -28,8 +28,8 @@ plt.rcParams["axes.unicode_minus"] = False
 DEFAULT_DURATION = 20
 DEFAULT_N_LEAF = 3
 DEFAULT_SIM_SEED = 42
-DEFAULT_PROTOCOLS = ["TcpLark", "TcpNewReno", "TcpCubic", "TcpBbr"]
-AGENT_SCRIPT = "./contrib/opengym/examples/lark-tcp/test_lark.py"
+DEFAULT_PROTOCOLS = ["TcpSwift", "TcpNewReno", "TcpCubic", "TcpBbr"]
+AGENT_SCRIPT = "./contrib/opengym/examples/swift-tcp/test_swift.py"
 
 # 36 scenario definitions: (name, access_bw, bottleneck_bw, access_delay, bottleneck_delay)
 SCENARIOS: List[Tuple[str, str, str, str, str]] = [
@@ -117,7 +117,7 @@ def run_sim(
     )
 
     ns3_cmd = (
-        f"lark-tcp"
+        f"swift-tcp"
         f" --transport_prot={protocol}"
         f" --access_bandwidth={access_bw}"
         f" --bottleneck_bandwidth={bottleneck_bw}"
@@ -135,8 +135,8 @@ def run_sim(
     start_time = time.time()
 
     try:
-        if protocol == "TcpLark":
-            # TcpLark: launch ns-3 in background, start Python agent after RL env is ready
+        if protocol == "TcpSwift":
+            # TcpSwift: launch ns-3 in background, start Python agent after RL env is ready
             with open(ns3_log, "w") as log_f:
                 ns3_proc = subprocess.Popen(
                     ["./ns3", "run", ns3_cmd],
@@ -176,7 +176,7 @@ def run_sim(
                             agent_log = f"{prefix}_agent.log"
                             with open(agent_log, "w") as af:
                                 # cwd must be set to the agent script directory,
-                                # otherwise "from tcp_lark import TcpLark" will fail
+                                # otherwise "from tcp_swift import TcpSwift" will fail
                                 agent_cwd = os.path.dirname(
                                     os.path.abspath(AGENT_SCRIPT)
                                 )
@@ -287,9 +287,9 @@ def cmd_sim(args):
 def cmd_summary(args):
     """Extract metrics from existing logs and generate a CSV report (TCP and UDP)."""
     search_dirs = [
-        "./logs/lark",
+        "./logs/swift",
         "./logs/comparison",
-        "./logs/lark-udp",
+        "./logs/swift-udp",
         "./logs/comparison-udp",
     ]
 
@@ -497,17 +497,17 @@ def load_all_results(logs_dir: str) -> List[ScenarioResult]:
 # =============================================================================
 PROTOCOL_COLORS_BAR = ["#2ecc71", "#3498db", "#e74c3c", "#9b59b6"]
 PROTOCOL_COLORS_MAP = {
-    "TcpLark": "#2ecc71",
+    "TcpSwift": "#2ecc71",
     "TcpNewReno": "#3498db",
     "TcpCubic": "#e74c3c",
     "TcpBbr": "#9b59b6",
 }
-PROTOCOL_ORDER = ["TcpLark", "TcpNewReno", "TcpCubic", "TcpBbr"]
+PROTOCOL_ORDER = ["TcpSwift", "TcpNewReno", "TcpCubic", "TcpBbr"]
 FLOW_COLORS = {
     "TcpNewReno": "#1f77b4",
     "TcpCubic": "#ff7f0e",
     "TcpBbr": "#2ca02c",
-    "TcpLark": "#d62728",
+    "TcpSwift": "#d62728",
 }
 
 
@@ -643,36 +643,36 @@ def plot_protocol_comparison(results: List[ScenarioResult], output_dir: str):
     print(f"Protocol comparison charts saved to: {output_dir}")
 
 
-def plot_lark_scenarios(results: List[ScenarioResult], output_dir: str):
+def plot_swift_scenarios(results: List[ScenarioResult], output_dir: str):
     os.makedirs(output_dir, exist_ok=True)
     scenario_order = {scenario[0]: index for index, scenario in enumerate(SCENARIOS)}
-    lark = sorted(
-        [r for r in results if r.protocol == "TcpLark"],
+    swift = sorted(
+        [r for r in results if r.protocol == "TcpSwift"],
         key=lambda r: (scenario_order.get(r.scenario, len(scenario_order)), r.scenario),
     )
-    if not lark:
-        print("No TcpLark data found")
+    if not swift:
+        print("No TcpSwift data found")
         return
 
-    old_combined_chart = os.path.join(output_dir, "lark_scenarios.png")
+    old_combined_chart = os.path.join(output_dir, "swift_scenarios.png")
     if os.path.exists(old_combined_chart):
         os.remove(old_combined_chart)
 
-    for stale_part in glob.glob(os.path.join(output_dir, "lark_scenarios_part*.png")):
+    for stale_part in glob.glob(os.path.join(output_dir, "swift_scenarios_part*.png")):
         os.remove(stale_part)
 
     target_parts = 3
-    base_size, remainder = divmod(len(lark), target_parts)
+    base_size, remainder = divmod(len(swift), target_parts)
     chunks: List[List[ScenarioResult]] = []
     start_index = 0
     for part_index in range(target_parts):
         chunk_size = base_size + (1 if part_index < remainder else 0)
         if chunk_size <= 0:
             continue
-        chunks.append(lark[start_index : start_index + chunk_size])
+        chunks.append(swift[start_index : start_index + chunk_size])
         start_index += chunk_size
 
-    all_names = [r.scenario for r in lark]
+    all_names = [r.scenario for r in swift]
     all_colors = plt.get_cmap("viridis")(np.linspace(0.2, 0.8, len(all_names)))
     scenario_colors = dict(zip(all_names, all_colors))
     outputs = []
@@ -681,19 +681,19 @@ def plot_lark_scenarios(results: List[ScenarioResult], output_dir: str):
         (
             "throughput",
             "Throughput (Mbps)",
-            "TcpLark Throughput by Scenario",
+            "TcpSwift Throughput by Scenario",
             lambda r: r.total_throughput_mbps,
         ),
         (
             "delay",
             "Average Delay (ms)",
-            "TcpLark Delay by Scenario",
+            "TcpSwift Delay by Scenario",
             lambda r: r.avg_delay_ms,
         ),
         (
             "jitter",
             "Average Jitter (ms)",
-            "TcpLark Jitter by Scenario",
+            "TcpSwift Jitter by Scenario",
             lambda r: r.avg_jitter_ms,
         ),
     ]
@@ -704,7 +704,7 @@ def plot_lark_scenarios(results: List[ScenarioResult], output_dir: str):
         figure_height = max(9, len(chunk) * 0.55 + 4)
         fig, axes = plt.subplots(3, 1, figsize=(14, figure_height))
         fig.suptitle(
-            f"TcpLark Scenario Metrics (Part {part_index}/{len(chunks)})",
+            f"TcpSwift Scenario Metrics (Part {part_index}/{len(chunks)})",
             fontsize=14,
             fontweight="bold",
         )
@@ -732,14 +732,14 @@ def plot_lark_scenarios(results: List[ScenarioResult], output_dir: str):
                 )
 
         plt.tight_layout(rect=(0, 0, 1, 0.96))
-        output_path = os.path.join(output_dir, f"lark_scenarios_part{part_index}.png")
+        output_path = os.path.join(output_dir, f"swift_scenarios_part{part_index}.png")
         plt.savefig(output_path, dpi=180)
         plt.close()
         outputs.append(output_path)
-        print(f"Lark scenario chart page saved to: {output_path}")
+        print(f"Swift scenario chart page saved to: {output_path}")
 
     print(
-        "Lark scenario chart pages saved to: "
+        "Swift scenario chart pages saved to: "
         + ", ".join(os.path.basename(path) for path in outputs)
     )
 
@@ -859,7 +859,7 @@ def plot_flow_throughput_comparison(log_dir: str, output_dir: str):
         data.setdefault(scenario, {})[proto] = flow_map
 
     scenarios = sorted(data.keys())
-    protos = ["TcpNewReno", "TcpCubic", "TcpBbr", "TcpLark"]
+    protos = ["TcpNewReno", "TcpCubic", "TcpBbr", "TcpSwift"]
     avail = set()
     for s in scenarios:
         avail.update(data[s].keys())
@@ -998,7 +998,7 @@ def cmd_draw(args):
         if not results:
             print(f"Warning: No flowmonitor files found in {cdir}")
             continue
-        plot_lark_scenarios(results, odir)
+        plot_swift_scenarios(results, odir)
         plot_protocol_comparison(results, odir)
         plot_radar_chart(results, odir)
         generate_summary_table(results, odir)
@@ -1013,7 +1013,7 @@ def cmd_draw(args):
 # =============================================================================
 def main():
     parser = argparse.ArgumentParser(
-        description="NS-3 Lark TCP Simulation Management Tool",
+        description="NS-3 Swift TCP Simulation Management Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""\
 Usage examples:
@@ -1039,7 +1039,7 @@ Usage examples:
         "--protocols",
         nargs="+",
         default=None,
-        help="Protocol list (default: TcpLark TcpNewReno TcpCubic TcpBbr)",
+        help="Protocol list (default: TcpSwift TcpNewReno TcpCubic TcpBbr)",
     )
     p_sim.add_argument(
         "--duration",

@@ -3,14 +3,14 @@
 
 import argparse
 from ns3gym import ns3env
-from tcp_lark import TcpLark
+from tcp_swift import TcpSwift
 
 __author__ = "Tiancheng Hang"
 __copyright__ = "Copyright (c) 2025, Tiancheng Hang"
 __version__ = "0.0.1"
 __email__ = "161043261@qq.com"
 
-parser = argparse.ArgumentParser(description="Start Lark Simulation")
+parser = argparse.ArgumentParser(description="Start Swift Simulation")
 parser.add_argument(
     "--start", type=int, default=1, help="Start python script 0/1, Default: 1"
 )
@@ -40,7 +40,7 @@ simTime = 20  # Seconds
 stepTime = 0.5
 seed = 12
 # Important: Ensure sim.cc is compiled and available in path or specified
-simArgs = {"--duration": simTime, "--transport_prot": "TcpLark"}
+simArgs = {"--duration": simTime, "--transport_prot": "TcpSwift"}
 debug = True
 
 # Create Environment
@@ -60,17 +60,17 @@ ac_space = env.action_space
 print("Observation space: ", ob_space)
 print("Action space: ", ac_space)
 
-# Map to store Lark agents for multiple flows
-lark_agents = {}
+# Map to store Swift agents for multiple flows
+swift_agents = {}
 
 
 def get_agent(obs):
     socketUuid = obs[0]
-    if socketUuid not in lark_agents:
-        print(f"Creating Lark Fusion Agent for Socket {socketUuid}")
-        agent = TcpLark()
-        lark_agents[socketUuid] = agent
-    return lark_agents[socketUuid]
+    if socketUuid not in swift_agents:
+        print(f"Creating Swift Fusion Agent for Socket {socketUuid}")
+        agent = TcpSwift()
+        swift_agents[socketUuid] = agent
+    return swift_agents[socketUuid]
 
 
 try:
@@ -78,7 +78,7 @@ try:
     while currIt < iterationNum:
         print(f"--- Iteration {currIt} Start ---")
         obs = env.reset()
-        lark_agents.clear()
+        swift_agents.clear()
 
         stepIdx = 0
         reward = 0
@@ -98,7 +98,7 @@ try:
             stepIdx += 1
             agent = get_agent(obs)
 
-            # Lark Fusion: Calculate CWND/SSThresh based on observation (obs)
+            # Swift Fusion: Calculate CWND/SSThresh based on observation (obs)
             action = agent.get_action(obs, reward, done, info)
 
             # Execute Action in NS-3
