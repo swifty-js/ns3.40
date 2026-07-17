@@ -9,14 +9,9 @@ sudo apt update && sudo apt full-upgrade
 sudo apt install libzmq5 libzmq3-dev libprotobuf-dev protobuf-compiler
 sudo apt autoclean && sudo apt autoremove
 
-uv python install
-uv venv
-source .venv/bin/activate
-
+uv sync --no-install-project
 ./ns3 configure --enable-mtp --enable-examples
 ./ns3 build
-
-uv sync --no-install-project
 uv pip install ./contrib/opengym/model/ns3gym
 
 ./ns3 run "rl-tcp --transport_prot=TcpRl" &> ./logs/rl-tcp-ns3.log
