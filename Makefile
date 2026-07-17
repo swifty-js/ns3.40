@@ -28,9 +28,9 @@ format:
 
 .PHONY: build
 build:
-	test -d ./.venv || conda create -p ./.venv python=3.13
-	conda activate ./.venv || source ./.venv/bin/activate || true
-	./ns3 configure --enable-mtp --enable-examples
+	test -d ./.venv || uv venv
+	. .venv/bin/activate && \
+	./ns3 configure --enable-mtp --enable-examples && \
 	./ns3 build
 
 .PHONY: kill

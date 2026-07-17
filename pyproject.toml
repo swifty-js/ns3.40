@@ -12,6 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+[project]
+name = "ns3.40"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "matplotlib",
+    "pandoc",
+    "pdf2image",
+    "pdfplumber",
+    "pillow",
+    "pypdf",
+    "ruff",
+]
+
 [build-system]
 build-backend = "setuptools.build_meta"
 requires = [
