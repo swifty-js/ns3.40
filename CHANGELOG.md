@@ -4,6 +4,71 @@ All notable changes to the swift-tcp example and its experiment tooling.
 Format follows [Keep a Changelog](https://keepachangelog.com/); versions refer
 to the TcpSwift agent (`contrib/opengym/examples/swift-tcp/tcp_swift.py`).
 
+## [Unreleased] - Documentation refresh (2026-08-20)
+
+Refresh of the documentation artifacts against the v3.0.0 implementation and a
+re-audited experiment dataset. No source code was changed by this entry.
+
+### Added
+
+- `logs/summary/kpi_forward.csv`: derived KPI view recomputed from all 288
+  `.flowmonitor` artifacts using **forward-direction TCP flows only**
+  (`10.1.x -> 10.2.x`), with a Jain fairness column and a `Source` column
+  pointing at the originating artifact. This supersedes the throughput and
+  delay columns of `logs/plots/summary.csv` and `logs/plots-udp/summary.csv`,
+  which aggregate over all TCP flows and therefore mix the reverse ACK stream
+  into both metrics: the reported delay is approximately
+  `(data_delay + one_way_propagation) / 2` and the throughput is inflated by
+  roughly the 1.7% ACK rate.
+
+### Changed
+
+- `logs/error.txt`: appended an `AUDIT PASS 2026-08-20` block with 47 new
+  anomaly records under six rules - (A) the metric-definition defect above,
+  (B) 27 `(setting, scenario)` groups that mix two `sim.cc` revisions across
+  protocols (sink port 5000 vs 50000), (C) duplicate configurations
+  (`dc_oversub_10to1` = `congested_heavy`, `satellite_leo` = `lte_good`, with
+  byte-identical artifacts), (D) the degenerate TcpBbr baseline on
+  microsecond-RTT high-rate paths, (E) the `TcpLark` label provenance, and
+  (F) the pre-v3.0.0 revision boundary. A later clarification records the
+  maintainer's `TcpLark -> TcpSwift` artifact rename and confirms every KPI
+  column is byte-identical after regeneration. Historical records were not
+  modified. Clean sets: 19 scenarios (TCP-only) and 15 (UDP-burst).
+- `docs/NJUPT_Professional_Thesis_draft1/`: algorithm descriptions in
+  chapters 3, 5 and 6 aligned with v3.0.0 (time-window delivery rate,
+  three-way classification inside the window-reduction callback,
+  baseline-relative reward adaptation, freeze counter-reset ordering, stale
+  action invalidation, RED/ECN signal path, MSS 1440). Chapter 4 rebuilt from
+  the clean KPI view; all 450 table cells verified programmatically against
+  the CSV with zero mismatches.
+- `docs/thesis.tex`: same alignment and the same data source, with the
+  contribution list consolidated to three points.
+- `docs/patent.md`: technical description corrected to the v3.0.0 algorithm
+  (two-stage time-window BDP estimation, baseline-relative reward adaptation,
+  three-way classification in the window-reduction callback, `min(cwnd, BDP)`
+  ssthresh anchoring, `max(4*BDP, 200*MSS)` window bound, freeze counter-reset
+  ordering). Brand identifiers, simulator/tooling references and all
+  quantitative results were removed so the draft stays implementation-neutral
+  and data-free; beneficial effects are stated qualitatively. Claim set is 19
+  claims covering the same three core ideas plus system, storage-medium and
+  device claims.
+- **Corrected causal attribution.** The archived runs used
+  `PfifoFastQueueDisc` with ECN enabled only for TcpSwift, so the ECN branch
+  and its `beta_ecn = 0.75` never fired. Every "zero loss thanks to ECN"
+  claim was rewritten to credit the mechanism that was actually active: the
+  window bounded by `alpha * BDP` and `max(4*BDP, 200*MSS)`, the drain-by-half
+  above target, the consecutive-decrease guard and the post-decrease freeze.
+  The documents now state that zero loss and the queueing-delay penalty are
+  two faces of the same behaviour - the window parks at a level that fills but
+  does not overflow the buffer - and that evaluating the ECN path requires the
+  pending rerun.
+- **Removed all LEO-satellite claims**, because the only scenario carrying
+  that label was configured as a 50 Mbps / 30 ms one-way link and is a
+  byte-identical duplicate of `lte_good`. GEO satellite claims are unaffected.
+- Disclosed that the archived dataset has **one run per
+  `(scenario, protocol, setting)`** with no `_s<seed>` suffix, so no
+  cross-seed confidence intervals are reported.
+
 ## [3.0.0] - 2026-08-20
 
 Fixes for the findings of the 2026-08-20 code review (C1-C5 plus secondary

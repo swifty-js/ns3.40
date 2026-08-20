@@ -56,6 +56,10 @@ Swift算法的系统架构如图\ref{fig:architecture}所示，由四个核心�
 
 \textbf{网络仿真模块}基于ns-3（Network Simulator 3）离散事件仿真平台构建，实现完整的TCP/IP协议栈。ns-3是目前学术界和工业界广泛使用的网络仿真工具，提供了丰富的网络协议模型和灵活的可扩展架构。网络仿真模块负责构建哑铃型等可控拓扑、模拟数据包传输过程、执行离散事件驱动的仿真调度，并通过FlowMonitor等工具记录吞吐量、时延、丢包和公平性指标。
 
+\textbf{主动队列管理与ECN信号通路}。仿真器\path{contrib/opengym/examples/swift-tcp/sim.cc}将瓶颈两侧网关的默认队列规则设为\texttt{ns3::RedQueueDisc}，并按队列容量的比例配置标记门限：$MinTh = 0.3 \times Q$、$MaxTh = 0.9 \times Q$，其中$Q = \max(BDP \times n_{leaf} / MTU, 100)$为按带宽延迟积自动定尺的队列长度（单位为数据包）。同时置\texttt{RedQueueDisc::UseEcn}为真，使RED在队列长度进入$[MinTh, MaxTh]$区间时对ECT数据包置CE码点而非直接丢弃。
+
+该配置对本文的算法评估具有决定性意义。ns-3默认的\texttt{PfifoFastQueueDisc}是纯FIFO丢尾队列，永不设置CE码点；若沿用该默认值，则协议栈上报的ecnState将始终停留在ECN\_IDLE，第~\ref{sec:multi-signal}节所述ECN分支及其0.75保留因子在整个仿真过程中都不会被触发，算法退化为纯丢包驱动，ECN早期预警的作用也就无从验证。第~\ref{Chap:chap4}章说明，本文归档实验正是在该默认值下生成的，因此其结论仅刻画纯丢包信号条件下的算法行为。此外，\texttt{ns3::TcpSocketBase::UseEcn}被统一置为\texttt{On}并作用于全部四种被比较协议，而不是仅对Swift开启：ECN协商能力直接影响拥塞信号的到达时刻，若仅令待评估算法具备该能力，则对照实验中观测到的延迟与丢包差异将无法区分算法设计的贡献与信号通路配置的差异。统一开启ECN是保证四协议对照公平性的必要条件。
+
 本研究中的Swift实验采用ns3-gym提供的OpenGym接口与Python智能决策模块交互。仿真进程在TCP回调处同步发送观测向量，Python侧根据观测向量返回慢启动阈值和拥塞窗口动作。由于OpenGym/ZeroMQ采用同步请求-应答交互路径，本文实现未将该路径与MTP多线程并行仿真机制结合使用。
 
 \textbf{拥塞控制环境模块}基于OpenGym框架实现，负责在TCP协议栈与强化学习智能体之间建立桥梁。OpenGym是ns3-gym项目提供的强化学习环境接口，遵循OpenAI Gym的标准API规范。拥塞控制环境模块在TCP协议栈的关键回调点采集状态参数，构建11维观测空间，并将智能体的决策动作应用于TCP连接。
@@ -138,7 +142,7 @@ P(s_{t+1}, r_{t+1} | s_t, a_t, s_{t-1}, a_{t-1}, ..., s_0, a_0) = P(s_{t+1}, r_{
 
 本节详细描述Swift算法的11维观测空间设计，这是Swift区别于现有方案的核心创新之一。
 
-\textbf{记法约定}：为与ns-3侧OpenGym实现（\texttt{contrib/opengym/examples/swift-tcp/tcp-swift-env.cc}中\texttt{parameterNum = 15}）保持一致，每次回调实际通过\texttt{Box}跨进程传输的是15个元素，其中前4个（socketUuid、envType、simTime、nodeId）为跨进程路由用的元数据通道，不参与AIMD/ECN响应/$\alpha$自适应等窗口决策；后11个（ssthresh、cwnd、segSize、segmentsAcked、bytesInFlight、lastRtt、minRtt、callbackType、caState、caEvent、ecnState）构成参与决策的有效RL观测子空间。故下文所称"11维观测空间"特指该有效RL子空间；表~\ref{tab:observation}同时列出元数据通道以便审阅者核对完整布局。
+\textbf{记法约定}：为与ns-3侧OpenGym实现（\path{contrib/opengym/examples/swift-tcp/tcp-swift-env.cc}中\texttt{parameterNum = 15}）保持一致，每次回调实际通过\texttt{Box}跨进程传输的是15个元素，其中前4个（socketUuid、envType、simTime、nodeId）为跨进程路由用的元数据通道，不参与AIMD/ECN响应/$\alpha$自适应等窗口决策；后11个（ssthresh、cwnd、segSize、segmentsAcked、bytesInFlight、lastRtt、minRtt、callbackType、caState、caEvent、ecnState）构成参与决策的有效RL观测子空间。故下文所称"11维观测空间"特指该有效RL子空间；表~\ref{tab:observation}同时列出元数据通道以便审阅者核对完整布局。
 
 \begin{table}[htbp]
 \centering
@@ -187,7 +191,7 @@ P(s_{t+1}, r_{t+1} | s_t, a_t, s_{t-1}, a_{t-1}, ..., s_0, a_0) = P(s_{t+1}, r_{
 
 \subsection{传输性能参数（索引6、7、8）}
 
-\textbf{segSize（索引6）}是TCP报文段大小（Maximum Segment Size，MSS），单位为字节。典型值为1460字节（以太网MTU 1500字节减去IP报头20字节和TCP报头20字节）。segSize用于将字节为单位的度量转换为报文段为单位的度量。
+\textbf{segSize（索引6）}是TCP报文段大小（Maximum Segment Size，MSS），单位为字节。本文仿真器按\texttt{mtu\_bytes} $-\;20\;-$ (IPv4首部 $+$ TCP首部)计算应用层数据单元，在MTU为1500字节、IPv4与TCP首部各20字节的默认配置下得到1440字节，其中额外扣除的20字节为仿真器为TCP选项字段预留的余量。segSize用于将以字节为单位的窗口度量换算为以报文段为单位的度量，并且是慢启动增量、加性递增步长以及窗口上下界的共同基准单位，因此该值的准确性直接决定全部窗口计算的量纲一致性。
 
 \textbf{segmentsAcked（索引7）}是本次确认的报文段数量。在收到累积确认（Cumulative ACK）或选择性确认（Selective ACK，SACK）时，segmentsAcked表示新确认的报文段数量。segmentsAcked用于计算窗口增长量，例如在慢启动阶段，窗口增长量为$segmentsAcked \times MSS$。
 
@@ -258,45 +262,47 @@ callbackType是多信号融合拥塞检测的关键输入之一。当callbackTyp
 
 这三个拥塞控制状态参数是Swift观测空间的核心创新。现有强化学习拥塞控制方案通常不包含这些协议栈内部状态，导致智能体对网络拥塞状况的感知不完整。Swift通过将caState、caEvent、ecnState纳入观测空间，使智能体能够感知TCP协议栈的完整状态信息，从而做出更精准的控制决策。
 
-\section{多信号融合拥塞检测算法}
+\section{多信号融合拥塞检测算法}\label{sec:multi-signal}
 
 Swift算法的核心创新之一是多信号融合拥塞检测方法。该方法综合利用丢包回调、ECN状态和TCP拥塞状态机信息，采用显式信号优先级判断拥塞类型，并将RTT膨胀保留给参数自适应调节，而不把RTT膨胀作为独立降窗触发条件。
 
 \subsection{拥塞信号分类}
 
-Swift将拥塞信号分为四个类别：
+Swift将拥塞信号分为四个类别，每一类信号在"发生时刻—可靠性—语义粒度"三个维度上具有不同特征，这构成了后续差异化响应的判据基础。
 
-\textbf{（1）显式丢包信号}：当callbackType为0（GetSsThresh回调）时，表明检测到了丢包事件。丢包是最明确的拥塞信号，通常意味着网络缓冲区已经溢出。
+\textbf{（1）显式降窗信号}：当callbackType为0（GetSsThresh回调）时，表明ns-3的TCP协议栈已经自行判定需要缩减发送窗口并向拥塞控制算法索取新的慢启动阈值。该回调是协议栈内部唯一的"权威降窗入口"，其触发条件包含快速重传检测到的丢包、重传超时以及ECN回显驱动的CWR进入三种情形，因此不能笼统地等同于"丢包"。Swift在该回调内部再依据caState和ecnState做二次判别，这是本文与既有方案在信号解释粒度上的关键差异。
 
-\textbf{（2）ECN拥塞经历信号}：当ecnState为ECN\_CE\_RCVD（值为2）或caEvent为CA\_EVENT\_ECN\_IS\_CE（值为5）时，表明数据包被网络设备标记为拥塞经历。ECN信号是早期拥塞信号，表明网络设备的队列已经超过阈值，但尚未溢出。
+\textbf{（2）ECN拥塞经历信号}：当ecnState取值为ECN\_CE\_RCVD（值为2，本端收到被标记CE的数据包）或ECN\_ECE\_RCVD（值为4，本端收到对端回显的ECE标志）时，表明路径上的队列长度已经越过AQM的标记门限，但尚未溢出。ECN是唯一由网络设备主动生成、且不依赖丢包或RTT推断的拥塞证据，其时序显著早于丢包，因此适合作为早期预警。Swift直接读取协议栈的ECN状态字段，而不维护标记事件的时间戳队列与标记率统计，从而避免了标记率阈值这一额外的敏感参数。
 
-\textbf{（3）拥塞控制状态机信号}：当caState为CA\_CWR、CA\_RECOVERY或CA\_LOSS时，表明TCP协议栈的拥塞控制状态机已经检测到拥塞迹象并进入相应状态。
+\textbf{（3）拥塞控制状态机信号}：caState刻画了协议栈当前所处的恢复阶段。其中CA\_LOSS（值为4）指示重传超时，是严重程度最高的信号；CA\_CWR（值为2）指示协议栈正因ECN回显而缩减窗口，在语义上属于ECN响应而非丢包响应；CA\_DISORDER与CA\_RECOVERY则指示乱序或快速恢复过程，不构成独立的降窗触发条件。将caState纳入观测使智能体能够在同一个GetSsThresh回调内区分"超时""ECN驱动的CWR"与"普通丢包"三条语义完全不同的路径。
 
-\textbf{（4）延迟膨胀信号}：当RTT膨胀比（lastRtt/minRtt）超过阈值时，表明网络存在显著的排队延迟，可能处于拥塞状态。
+\textbf{（4）延迟膨胀信号}：RTT膨胀比（lastRtt/minRtt）反映瓶颈队列的驻留程度。该信号连续可微、采样密度高，适合驱动参数的渐进调节；但它同时混杂了无线调度抖动、ACK压缩、路径切换和终端侧处理延迟等非拥塞因素，在远距离与异构终端场景中误判概率明显高于前三类信号。因此Swift不将其用作独立的乘性递减触发条件，而仅用于$\alpha$自适应与慢启动退出判定。
 
 \subsection{分层优先级机制}
 
 不同类型的拥塞信号具有不同的可靠性和紧迫程度，Swift采用分层优先级机制进行处理：
 
-\textbf{第一优先级：显式丢包检测}
+\textbf{第一优先级：显式降窗回调的三路语义判别}
 
 \begin{algorithm}[htbp]
-\caption{显式丢包检测}
+\caption{显式降窗回调的三路语义判别}
 \begin{algorithmic}[1]
-\Require 回调类型 $callbackType$，拥塞算法状态 $caState$
+\Require 回调类型 $callbackType$，拥塞算法状态 $caState$，ECN状态 $ecnState$
 \If{$callbackType = 0$} \Comment{GetSsThresh回调}
     \State $is\_congested \leftarrow True$
     \If{$caState = CA\_LOSS$}
-        \State $congestion\_type \leftarrow TIMEOUT$
+        \State $congestion\_type \leftarrow TIMEOUT$ \Comment{重传超时}
+    \ElsIf{$ecnState \in \{ECN\_CE\_RCVD, ECN\_ECE\_RCVD\}$ \textbf{or} $caState = CA\_CWR$}
+        \State $congestion\_type \leftarrow ECN$ \Comment{ECN回显驱动的CWR}
     \Else
-        \State $congestion\_type \leftarrow LOSS$
+        \State $congestion\_type \leftarrow LOSS$ \Comment{快速重传丢包}
     \EndIf
     \State \Return $(is\_congested, congestion\_type)$
 \EndIf
 \end{algorithmic}
 \end{algorithm}
 
-当callbackType为0时，明确判定发生丢包。Swift进一步区分快速重传检测到的丢包（caState $\neq$ CA\_LOSS）和超时导致的丢包（caState = CA\_LOSS），分别采用不同的响应策略。这是最高优先级的拥塞信号，一旦检测到丢包，无需进一步检查其他信号。
+GetSsThresh回调本身只说明"协议栈决定降窗"，并不说明降窗的原因。ns-3的\texttt{TcpSocketBase}在三种情形下都会进入该回调：快速重传确认丢包、重传定时器超时（此时caState被置为CA\_LOSS）、以及收到ECE回显后调用\texttt{EnterCwr}（此时caState被置为CA\_CWR）。若不加区分地把整个回调映射为"丢包"，则ECN提供的早期预警在响应环节会被当作队列已溢出处理，从而抵消ECN机制本应带来的时序优势——这正是本算法早期版本存在的语义缺陷。当前实现在回调内部按"超时优先、ECN次之、普通丢包兜底"的顺序完成三路判别：CA\_LOSS对应最严重的路径级异常；ecnState处于CE\_RCVD或ECE\_RCVD、或caState已进入CA\_CWR的情形归入ECN类；其余情形归入普通丢包类。三类判别结果分别驱动0.50、0.75、0.70三个窗口保留因子，使响应力度与信号严重程度保持单调一致。
 
 \textbf{第二优先级：ECN拥塞经历信号检测}
 
@@ -335,16 +341,20 @@ Swift的拥塞检测采用显式信号优先级，而不是将所有协议栈状
 \begin{algorithmic}[1]
 \Require 观测状态 $obs$，流状态 $state$
 \Ensure 是否拥塞 $is\_congested$，拥塞类型 $type$
-\State \Comment{第一优先级：显式丢包检测}
+\State \Comment{第一优先级：显式降窗回调的三路语义判别}
 \If{$obs.callbackType = 0$} \Comment{GetSsThresh回调}
-    \State $state.loss\_count \leftarrow state.loss\_count + 1$
     \If{$obs.caState = CA\_LOSS$}
-        \State \Return $(True, TIMEOUT)$ \Comment{超时丢包}
-    \Else
-        \State \Return $(True, LOSS)$ \Comment{快速重传丢包}
+        \State $state.loss\_count \leftarrow state.loss\_count + 1$
+        \State \Return $(True, TIMEOUT)$ \Comment{重传超时}
     \EndIf
+    \If{$obs.ecnState \in \{ECN\_CE\_RCVD, ECN\_ECE\_RCVD\}$ \textbf{or} $obs.caState = CA\_CWR$}
+        \State $state.ecn\_count \leftarrow state.ecn\_count + 1$
+        \State \Return $(True, ECN)$ \Comment{ECN回显驱动的CWR}
+    \EndIf
+    \State $state.loss\_count \leftarrow state.loss\_count + 1$
+    \State \Return $(True, LOSS)$ \Comment{快速重传丢包}
 \EndIf
-\State \Comment{第二优先级：ECN拥塞经历检测}
+\State \Comment{第二优先级：IncreaseWindow路径上的ECN状态巡检}
 \If{$obs.ecnState \in \{ECN\_CE\_RCVD, ECN\_ECE\_RCVD\}$}
     \State $state.ecn\_count \leftarrow state.ecn\_count + 1$
     \State \Return $(True, ECN)$
@@ -353,6 +363,8 @@ Swift的拥塞检测采用显式信号优先级，而不是将所有协议栈状
 \State \Return $(False, NONE)$
 \end{algorithmic}
 \end{algorithm}
+
+该算法的时间复杂度为$O(1)$，仅涉及常数次整型比较，不引入任何队列扫描或统计窗口维护开销，因此可以在每个ACK事件上无条件执行。算法的两级结构也决定了拥塞类型判定的互斥性：一次回调最多产生一个拥塞类型，不存在多个信号同时触发导致窗口被重复缩减的情形。
 
 \section{差异化拥塞响应机制}
 
@@ -416,7 +428,13 @@ new\_ssthresh = \max(\rho \times ref, W_{min}, new\_cwnd)
 
 该设计避免在队列已膨胀时把慢启动阈值设置到过高水平，同时保证阈值不低于新的拥塞窗口，防止拥塞恢复阶段出现窗口停滞。
 
-此外，Swift引入连续缩减保护和降窗后冻结机制。每次拥塞响应后连续缩减计数器递增；当连续缩减次数超过3次时，算法保持当前窗口不再继续缩减，避免窗口死亡螺旋。任一显式降窗后，算法冻结后续4个ACK事件中的窗口增长，使队列有时间排空。
+此外，Swift引入连续缩减保护和降窗后冻结两项稳定性机制，二者作用于不同的时间尺度且相互配合。
+
+\textbf{连续缩减保护}针对的是"窗口死亡螺旋"：在突发拥塞或无线批量误码期间，协议栈可能在很短时间内连续触发多次降窗回调，若每次都执行乘性递减，窗口将以指数速度塌缩至下界，随后需要数十个RTT才能重新填满管道。算法为每条流维护连续缩减计数器$d$，每次执行拥塞响应时$d$自增；当$d$超过$D_{max} = 3$时，响应退化为"保持当前窗口"而不再继续缩减。取$D_{max} = 3$的依据是：连续三次丢包响应后窗口仅余$0.70^3 \approx 34.3\%$，已经低于传统算法单次窗口减半的结果，继续缩减的边际收益迅速递减而恢复代价持续上升。
+
+\textbf{降窗后冻结}针对的是"降窗即反弹"：乘性递减只减小了发送窗口，瓶颈队列中已经排队的数据仍需一段时间才能排空；若在此期间立即恢复窗口增长，新注入的数据会与残留队列叠加，导致排队延迟不降反升，并可能诱发第二次拥塞事件。因此任一显式降窗后，算法冻结后续4个ACK事件中的窗口增长，为队列排空留出时间窗口。
+
+两项机制的交互存在一个容易被忽视的细节：连续缩减计数器$d$的清零时机。当前实现只在"窗口确实发生增长"时才把$d$置零，即清零动作位于冻结判断\emph{之后}；若把清零动作前置到冻结判断之前，则冻结期内每个被冻结的ACK事件都会误将$d$清零，$D_{max}$计数被反复复位，连续缩减保护实际失效——这恰是本算法早期版本存在的语义缺陷。将清零动作与真实的窗口增长绑定，保证了"只有当算法确认网络已经恢复到可以增窗的状态时，才认为连续拥塞序列已经结束"。
 
 \subsection{差异化拥塞响应算法}
 
@@ -490,21 +508,33 @@ s = 0.3 + 0.15\sqrt{\max(0, RTT_{min,ms}-1)}
 
 这种路径感知响应机制能够避免固定阈值在远距离路径上过早收紧窗口，同时保留低RTT路径中对排队增长的敏感性。
 
-\textbf{（2）基于奖励信号的趋势调整}
+\textbf{（2）基于奖励信号基线相对趋势的调整}
 
-Swift利用环境反馈的奖励信号（Reward）进行策略效果评估。采用指数移动平均（Exponential Moving Average，EMA）对奖励信号进行平滑处理：
+Swift利用环境反馈的奖励信号（Reward）评估当前控制策略的相对优劣。环境侧奖励在每个正常确认事件上由确认段数带来的吞吐收益减去RTT膨胀惩罚构成，因此在绝大多数ACK事件上取正值。这一分布特征决定了不能用固定的绝对阈值判断"奖励是否变好"：若采用形如$R_{ema} > 0.5$的判据，则该条件在几乎每个ACK事件上都成立，$\alpha$会被持续推向上界$\alpha_{max}$，自适应机制退化为单向棘轮，失去反馈意义。
+
+当前实现改为\textbf{基线相对判据}，即同时维护快、慢两条指数移动平均，用快线相对慢线的偏离量而非绝对水平来判断趋势：
 
 \begin{equation}
-R_{ema} \leftarrow (1 - \eta) \times R_{ema} + \eta \times reward
+R_{fast} \leftarrow (1 - \eta_f) \times R_{fast} + \eta_f \times reward, \quad \eta_f = 0.15
 \end{equation}
 
-其中EMA平滑系数为0.15。根据奖励趋势调整$\alpha$：
+\begin{equation}
+R_{base} \leftarrow (1 - \eta_b) \times R_{base} + \eta_b \times reward, \quad \eta_b = 0.02
+\end{equation}
+
+其中$R_{fast}$为快线，反映最近若干次决策的即时效果；$R_{base}$为慢线基线，反映当前网络条件下的长期奖励水平。两条EMA在收到首个奖励时用同一数值初始化，避免冷启动阶段的虚假偏离。判定容差按基线幅值自适应缩放：
+
+\begin{equation}
+m = \max(0.25,\; 0.1 \times |R_{base}|)
+\end{equation}
+
+调整规则为：
 \begin{itemize}
-    \item 当$R_{ema} > 0.5$时，表明当前策略效果较好，增大$\alpha$：$\alpha \leftarrow \alpha + 0.01$
-    \item 当$R_{ema} < -2.0$时，表明当前策略效果不佳，减小$\alpha$：$\alpha \leftarrow \alpha - 0.01$
+    \item 当$R_{fast} > R_{base} + m$时，表明近期决策相对该路径的常态水平确有改善，适度提高激进度：$\alpha \leftarrow \alpha + 0.01$。
+    \item 当$R_{fast} < R_{base} - 4m$时，表明近期决策显著劣于常态水平，回退激进度：$\alpha \leftarrow \alpha - 0.01$。
 \end{itemize}
 
-奖励信号的引入使得Swift能够从全局控制效果的角度评估参数调整的方向，弥补了仅依赖RTT膨胀比等局部指标的不足。
+下调阈值取$4m$而上调阈值取$m$，构成有意的非对称设计：奖励序列的负向尖峰主要由单次丢包或超时惩罚引起，而这类事件已经由差异化拥塞响应机制单独处理，若在$\alpha$层面再次同步收缩会造成响应叠加；采用较宽的下调死区可以把$\alpha$的收缩限定在持续性劣化而非瞬时惩罚上。基线相对判据的另一优点是与路径无关：不同带宽和RTT的路径其奖励绝对幅值相差可达数个数量级，而相对偏离量是无量纲的，因此同一组超参数可以直接跨场景复用，无需按链路类型重新标定。
 
 \textbf{（3）基于连续增长趋势的调整}
 
@@ -546,11 +576,17 @@ $\alpha$的默认初始值为1.10。下界0.85为无线、蜂窝或浅缓冲路�
     \State $\alpha \leftarrow \alpha - step$
     \State $history.consecutive\_growth \leftarrow 0$
 \EndIf
-\State \Comment{因素2：基于奖励信号EMA的趋势调整}
-\State $R_{ema} \leftarrow 0.85 \times R_{ema} + 0.15 \times reward$
-\If{$R_{ema} > 0.5$}
+\State \Comment{因素2：基于奖励信号基线相对偏离的趋势调整}
+\If{首次收到奖励}
+    \State $R_{fast} \leftarrow reward$, $R_{base} \leftarrow reward$
+\Else
+    \State $R_{fast} \leftarrow 0.85 \times R_{fast} + 0.15 \times reward$
+    \State $R_{base} \leftarrow 0.98 \times R_{base} + 0.02 \times reward$
+\EndIf
+\State $m \leftarrow \max(0.25, 0.1 \times |R_{base}|)$
+\If{$R_{fast} > R_{base} + m$}
     \State $\alpha \leftarrow \alpha + 0.01$
-\ElsIf{$R_{ema} < -2.0$}
+\ElsIf{$R_{fast} < R_{base} - 4 \times m$}
     \State $\alpha \leftarrow \alpha - 0.01$
 \EndIf
 \State \Comment{因素3：基于连续稳定增长的奖励}
@@ -575,25 +611,69 @@ Swift采用融合控制策略计算目标拥塞窗口，将基于带宽延迟积
 BDP = Bandwidth \times RTT
 \end{equation}
 
-Swift通过以下方式估计BDP：
+Swift采用"时间窗口投递速率采样 + 窗口化最大值过滤"两级结构估计瓶颈带宽，再与最小RTT相乘得到BDP：
 
 \begin{equation}
-BDP = \max_{i \in W}(delivery\_rate_i) \times minRtt
+BDP = \max_{i \in W_{bw}}(DR_i) \times RTT_{min}
+\label{eq:bdp}
 \end{equation}
 
-其中，$\max_{i \in W}(delivery\_rate_i)$是窗口化最大值过滤（Windowed Max-filter）方法估计的瓶颈带宽，窗口大小$W = 20$个样本点。单个样本的投递率（Delivery Rate）计算为：
+其中$W_{bw}$为容量40个样本的滑动窗口，$RTT_{min}$为该流历史最小RTT（同时接受协议栈上报的minRtt与本地观测的lastRtt作为候选下界）。
+
+\textbf{时间窗口投递速率采样}。单个投递速率样本由\emph{累计确认字节数在一段时间窗口上的增量}给出。算法为每条流维护累计确认字节数$B(t)$，并在队列中记录二元组$(t, B(t))$；每次收到确认后先更新$B(t)$，再淘汰窗口左端超出时间跨度的样本，最后按下式计算样本：
 
 \begin{equation}
-delivery\_rate = \frac{segmentsAcked \times segSize}{lastRtt}
+DR = \frac{B(t) - B(t - \Delta)}{\Delta}, \quad \Delta = \mathrm{clamp}(2 \times RTT_{min},\; 5~\text{ms},\; 1~\text{s})
+\label{eq:dr}
 \end{equation}
 
-相比简单地使用历史最大吞吐量，窗口化最大值过滤方法的优势在于：（1）通过限制采样窗口大小，能够适应网络带宽的动态变化；（2）取窗口内最大值能够过滤RTT波动导致的低估；（3）计算复杂度为$O(1)$（每次插入新样本时更新最大值）。
+窗口跨度$\Delta$取最小RTT的两倍，是为了让采样区间至少覆盖一个完整的ACK时钟周期：只有当窗口跨度不小于一个RTT时，窗口内的确认字节总量才等于瓶颈在该时段实际排空的数据量，$DR$才具有"瓶颈排空速率"的物理含义。下界5 ms用于抑制微秒级RTT路径上因窗口过短而放大的采样噪声，上界1 s用于保证带宽下降时估计能够及时跟随。
 
-吞吐量的跟踪采用指数移动平均方式：
+\textbf{为何不能按单次确认计算投递速率}。本算法早期版本采用形如$DR = segmentsAcked \times segSize / lastRtt$的单次确认公式。该式的分子只包含\emph{本次}确认的字节数，而分母却是\emph{整个}RTT，因此它实际估计的是"若一个RTT内只到达这一个确认时的速率"，与真实瓶颈速率相差约等于每RTT的确认个数$N_{ack} \approx cwnd/(segSize \times b)$（其中$b$为延迟确认因子）。在高BDP路径上$N_{ack}$可达数百，估计值因而被系统性压低同一量级，式~\eqref{eq:bdp}给出的BDP随之崩塌；此时拥塞避免阶段的目标窗口$\alpha \times BDP$长期低于当前窗口，窗口只能停留在安全下界$200 \times MSS$上，吞吐量被硬性锁定为$200 \times MSS / RTT$。这一失效模式在第~\ref{Chap:chap4}章的跨域WAN场景中留下了可验证的痕迹，也是本文将该估计器整体替换为式~\eqref{eq:dr}的直接原因。式~\eqref{eq:dr}的分子与分母取自同一时间区间，量纲自洽，不再依赖每RTT确认个数。
+
+\textbf{窗口化最大值过滤}。将$DR$样本压入容量40的滑动窗口并取窗口内最大值，其作用有三：（1）投递速率样本天然是瓶颈能力的\emph{下界估计}——确认稀疏、应用层供数不足或跨流量抢占都只会使样本偏小而不会偏大，因此取最大值是对真实瓶颈的一致估计；（2）滑动窗口限制了历史记忆长度，使估计能够跟随带宽的真实下降，避免全局最大值带来的永久性高估；（3）窗口容量取40而非较小值，是为了让长RTT路径在窗口内容纳足够多的采样周期——GEO卫星链路单个RTT可达600 ms，过短的窗口会在瓶颈被充分采样之前就发生淘汰，导致估计值在低位振荡。
+
+此外，流级吞吐量趋势由指数移动平均跟踪，用于状态观察与性能记录：
 
 \begin{equation}
-throughput\_ema = 0.9 \times throughput\_ema + 0.1 \times delivery\_rate
+throughput\_ema \leftarrow 0.9 \times throughput\_ema + 0.1 \times DR
 \end{equation}
+
+BDP估计的完整流程如算法~\ref{alg:bdp-est}所示。当$\max(DR)$尚未建立或$RTT_{min}$无效时，BDP回退为当前拥塞窗口，使算法在连接建立初期退化为常规的窗口驱动行为而非产生无意义的目标值。
+
+\begin{algorithm}[htbp]
+\caption{时间窗口投递速率与BDP估计}
+\label{alg:bdp-est}
+\begin{algorithmic}[1]
+\Require 流状态 $state$，观测状态 $obs$
+\Ensure BDP估计值
+\If{$obs.lastRtt > 0$}
+    \State $state.min\_rtt \leftarrow \min(state.min\_rtt, obs.lastRtt)$
+\EndIf
+\If{$0 < obs.minRtt < state.min\_rtt$}
+    \State $state.min\_rtt \leftarrow obs.minRtt$
+\EndIf
+\If{$obs.segmentsAcked > 0$ \textbf{and} $obs.segSize > 0$}
+    \State $state.acked\_total \leftarrow state.acked\_total + obs.segmentsAcked \times obs.segSize$
+    \State $state.samples$.Append($(obs.simTime, state.acked\_total)$)
+    \State $\Delta \leftarrow \mathrm{clamp}(2 \times state.min\_rtt,\; 5~\text{ms},\; 1~\text{s})$
+    \While{$|state.samples| \geq 2$ \textbf{and} $obs.simTime - state.samples[0].t > \Delta$}
+        \State $state.samples$.PopFront()
+    \EndWhile
+    \State $span \leftarrow obs.simTime - state.samples[0].t$
+    \State $delivered \leftarrow state.acked\_total - state.samples[0].B$
+    \If{$|state.samples| \geq 2$ \textbf{and} $span > 0$ \textbf{and} $delivered > 0$}
+        \State $DR \leftarrow delivered / span$
+        \State $state.bw\_samples$.Append($DR$) \Comment{容量40的滑动窗口}
+        \State $state.max\_bw \leftarrow \max(state.bw\_samples)$
+    \EndIf
+\EndIf
+\If{$state.max\_bw > 0$ \textbf{and} $state.min\_rtt < \infty$}
+    \State $state.bdp \leftarrow state.max\_bw \times state.min\_rtt$
+\EndIf
+\State \Return $state.bdp > 0$ ? $state.bdp$ : $\max(obs.cwnd, 1)$
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{慢启动阶段策略}
 
@@ -711,7 +791,7 @@ Swift设计了每流独立的状态管理机制，为每个TCP连接维护独立
 
 每个TCP连接维护以下状态数据，采用层次化组织方式：
 
-\textbf{（1）历史度量缓冲区}：带宽估计采用窗口化最大值过滤，维护一个容量为40个样本点的投递率（Delivery Rate）滑动窗口队列，取窗口内最大值作为瓶颈带宽估计。RTT跟踪维护一个容量为40个样本点的最近RTT队列，同时维护全局最小RTT作为传播延迟估计。BDP由最大带宽与最小RTT的乘积得到。
+\textbf{（1）历史度量缓冲区}：带宽估计维护两级队列。第一级是投递速率\emph{采样}队列，记录"仿真时刻—累计确认字节数"二元组，容量上限4096项，用于按时间窗口差分计算单个投递速率样本；每次更新时淘汰左端超出窗口跨度$\Delta = \mathrm{clamp}(2 \times RTT_{min}, 5~\text{ms}, 1~\text{s})$的样本，因此队列的实际长度随路径RTT与确认密度自适应变化。第二级是投递速率\emph{过滤}队列，容量40个样本，取窗口内最大值作为瓶颈带宽估计。RTT跟踪维护容量40个样本的最近RTT队列，同时维护该流的全局最小RTT作为传播延迟估计。BDP由最大带宽与最小RTT的乘积得到，并在估计尚未建立时回退为当前拥塞窗口。
 
 \textbf{（2）拥塞事件计数数据}：状态结构维护丢包事件计数和ECN标记事件计数，用于记录每条流在仿真过程中的拥塞事件分布。
 
@@ -873,7 +953,15 @@ TcpSwift当前实验采用ns3-gym提供的OpenGym/ZeroMQ同步请求-响应路�
 
 \subsection{正确性保证机制}
 
-Swift算法的实现包含参数边界检查、状态一致性检查和异常处理机制三种正确性保证机制。所有控制参数都经过边界检查，确保输出值在有效范围内；在每次决策后检查TCP状态的一致性；在检测到异常情况时能够安全地回退到保守策略。
+Swift实现包含参数边界检查、跨进程动作时效性校验和状态一致性检查三类正确性保证机制。三者共同保证：即使Python决策进程返回了不合理的动作，仿真中的TCP连接仍能维持协议语义的正确性。
+
+\textbf{（1）跨进程动作的时效性校验}。OpenGym采用请求-应答模式，观测的采集时刻与动作的应用时刻之间存在一个消息往返间隔。在此间隔内协议栈的状态可能已经改变——最关键的情形是重传定时器超时。若把基于超时前观测计算出的拥塞窗口应用到已经进入CA\_LOSS的连接上，就会用一个偏大的窗口覆盖协议栈自身的丢包恢复决策，破坏Reno语义并可能立即触发第二轮丢包。因此\texttt{tcp-swift-env.cc}在\texttt{CongestionStateSet}回调中检测到新状态为CA\_LOSS时，主动丢弃尚未生效的待应用窗口（清除\texttt{m\_hasPendingCwnd}标志），使该次决策失效而不是延迟生效。
+
+\textbf{（2）动作边界约束}。所有返回的窗口值在应用前被夹紧到$[4 \times MSS, \max(4 \times BDP, 200 \times MSS)]$区间，慢启动阈值同样受下界约束。该约束的意义不止于"防御非法输入"：BDP估计在带宽突降或跨流量抢占时可能暂时偏大，$4 \times BDP$的上界把这种偏差造成的窗口过冲限制在有界范围内；而$200 \times MSS$的兜底上界保证在BDP尚未建立的连接初期窗口仍可正常增长。
+
+\textbf{（3）状态一致性检查}。每次决策后检查慢启动阈值与拥塞窗口的相对关系，保证不会出现阈值低于窗口下界等不自洽组合；在检测到观测字段异常（如segSize为零）时回退到保守默认值而非直接参与运算。
+
+\textbf{（4）实验可复现性}。批量实验脚本\texttt{main.py}支持\texttt{--num-seeds}参数，对同一(场景, 协议)组合以不同的\texttt{RngRun}重复运行，产物按\texttt{<场景>\_<协议>\_s<种子>}命名，统计阶段按种子求均值。该机制用于降低单次随机实现带来的偶然性，是第~\ref{Chap:chap4}章讨论结论稳健性的前提条件。
 
 \section{本章小结}
 
@@ -883,14 +971,16 @@ Swift算法的实现包含参数边界检查、状态一致性检查和异常处
 
 （2）11维观测空间：涵盖连接标识、时间信息、窗口状态、传输指标、延迟测量、回调类型和拥塞控制状态等多个维度，为强化学习智能体提供完整的环境感知能力。
 
-（3）多信号融合拥塞检测：采用分层优先级机制，综合分析丢包、ECN、超时和拥塞状态等多种信号，判断拥塞状态并区分拥塞类型。
+（3）多信号融合拥塞检测：采用两级优先级机制。第一级在GetSsThresh显式降窗回调内部按caState与ecnState做三路语义判别，区分重传超时、ECN回显驱动的CWR与普通快速重传丢包；第二级在IncreaseWindow路径上巡检ECN状态。RTT膨胀不作为独立降窗触发条件，仅参与参数自适应与慢启动退出判定。
 
-（4）差异化拥塞响应：针对不同拥塞类型采用不同的窗口保留因子（丢包0.70、ECN 0.75、超时0.50），并引入连续缩减保护机制（最多3次连续缩减后保持窗口）和降窗后4个ACK事件冻结机制，实现对拥塞信号的分层响应。
+（4）差异化拥塞响应：针对不同拥塞类型采用不同的窗口保留因子（丢包0.70、ECN 0.75、超时0.50），慢启动阈值以$\min(cwnd, BDP)$为锚定参考以避免奖励队列膨胀；并引入连续缩减保护（$D_{max}=3$）与降窗后4个ACK事件冻结机制，且连续缩减计数器仅在窗口真实增长时清零，保证冻结期内保护计数不被误复位。
 
-（5）自适应参数调优：根据最小RTT感知的RTT膨胀阈值、奖励信号EMA趋势和连续稳定增长动态调整乘性增加因子$\alpha \in [0.85, 1.30]$（基准值1.10），实现控制策略对网络环境的实时适配。
+（5）自适应参数调优：根据最小RTT感知的RTT膨胀阈值、奖励信号的\emph{基线相对}偏离趋势（快线$\eta_f=0.15$与慢线基线$\eta_b=0.02$，容差$m=\max(0.25, 0.1|R_{base}|)$）以及连续稳定增长动态调整乘性增加因子$\alpha \in [0.85, 1.30]$（基准值1.10）。基线相对判据取代了早期版本的固定绝对阈值，后者在奖励恒为正的分布下会退化为单向棘轮。
 
-（6）融合控制策略：拥塞避免阶段以$\alpha \times BDP$为目标，通过有界步长向目标窗口拉升或回落，并在RTT未膨胀时启用管道利用率感知的加性补偿；慢启动阶段以$\max(2 \times BDP, 10 \times MSS)$为目标，并结合HyStart风格RTT膨胀检测退出慢启动。
+（6）融合控制策略：BDP由"时间窗口投递速率采样（窗口跨度$\ge 2 \times RTT_{min}$）$+$容量40的窗口化最大值过滤"两级结构估计，取代了早期版本按单次确认计算投递速率的有偏公式；拥塞避免阶段以$\alpha \times BDP$为目标，通过有界步长向目标窗口拉升或回落，并在RTT未膨胀时启用管道利用率感知的加性补偿；慢启动阶段以$\max(2 \times BDP, 10 \times MSS)$为目标，并结合HyStart风格RTT膨胀检测退出慢启动。
 
-（7）每流独立状态管理：为每个TCP连接维护独立的状态数据，支持多流并发场景下的差异化控制。
+（7）ECN信号通路：瓶颈网关采用RED主动队列管理（$MinTh = 0.3Q$、$MaxTh = 0.9Q$、\texttt{UseEcn}为真），并对全部四种被比较协议统一开启ECN协商，使ECN分支在仿真中真实可达且对照公平。
+
+（8）每流独立状态管理：为每个TCP连接维护独立的状态数据，支持多流并发场景下的差异化控制；结合\texttt{--num-seeds}多随机种子重复实验机制保证结果可复现。
 
 这些设计共同构成了Swift算法的完整技术方案，为实现"高吞吐、低延迟"的设计目标奠定了基础。
