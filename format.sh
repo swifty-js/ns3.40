@@ -32,4 +32,4 @@ git ls-files -z '*.sh' |
 	xargs -0 -r shfmt -l -w
 
 # pnpm add oxfmt -g
-oxfmt --write ./
+pnpm exec oxfmt --write ./

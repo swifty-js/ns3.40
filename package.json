@@ -7,5 +7,9 @@
   },
   "devDependencies": {
     "oxfmt": "^0.54.0"
+  },
+  "scripts": {
+    "git:commit": "git add -A && git commit -m 'feat: Introduce new features'",
+    "git:push": "pnpm git:commit && git push origin main"
   }
 }
