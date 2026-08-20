@@ -45,6 +45,22 @@ v2.1 changes (2026-05-21, informed by logs/plots*/summary.csv audit):
       * Utilization booster degrades on long-RTT (>5 ms) wireless paths:
         +2*MSS -> +1*MSS, suppress booster when utilization >=0.5
       * Alpha ramp-up step 0.03 -> 0.02 on >5 ms paths
+
+v3.0 changes (2026-08-20, review findings C1-C4):
+  - C1 CRITICAL: delivery rate is now measured as cumulative ACKed bytes
+    over a sliding time window (>= 2*min_rtt).  The old per-ACK formula
+    segmentsAcked*segSize/lastRtt under-estimated bandwidth by roughly the
+    number of ACKs per RTT, collapsing the BDP estimate; cwnd then pinned
+    at the 200*MSS safety floor, capping WAN throughput at 200*MSS/RTT
+    (wan_longhaul 45 Mbps, cross_dc_wan 237 Mbps -- both match that
+    ceiling exactly).
+  - C3: ECE/CWR-triggered GetSsThresh callbacks are classified as "ecn"
+    (beta=0.75) instead of falling through to the generic "loss" branch.
+  - C4: reward adaptation is baseline-relative (fast EMA vs slow EMA)
+    instead of fixed thresholds; the per-ACK reward is >= +0.5 on nearly
+    every ACK, so the old "ema > 0.5" test was a constant +0.01 ratchet.
+  - Freeze semantics: the consecutive-decrease counter is no longer reset
+    while the post-decrease freeze is active.
 """
 
 import logging
@@ -141,9 +157,12 @@ class TcpSwift(TcpEventBased):
     def _get_flow_state(self, socket_uuid):
         if socket_uuid not in self.flow_states:
             self.flow_states[socket_uuid] = {
-                # Bandwidth estimation (windowed max-filter)
+                # Bandwidth estimation (windowed max-filter over rate samples)
                 "bw_samples": deque(maxlen=self.bw_window_len),
                 "max_bw": 0.0,
+                # Delivery-rate sampling: (simTime_us, cumulative acked bytes)
+                "ack_samples": deque(maxlen=4096),
+                "acked_bytes_total": 0,
                 # RTT tracking
                 "rtt_samples": deque(maxlen=self.rtt_window_len),
                 "min_rtt_us": float("inf"),
@@ -175,6 +194,7 @@ class TcpSwift(TcpEventBased):
     # Bandwidth / RTT / BDP estimation
     # ------------------------------------------------------------------
     def _update_bandwidth(self, state, obs):
+        simTime_us = obs[2]
         segmentSize = obs[6]
         segmentsAcked = obs[7]
         lastRtt_us = obs[9]
@@ -192,18 +212,35 @@ class TcpSwift(TcpEventBased):
         if 0 < minRtt_us < state["min_rtt_us"]:
             state["min_rtt_us"] = minRtt_us
 
-        # Delivery rate: bytes_delivered / RTT (BBR-style windowed max)
-        if lastRtt_us > 0 and segmentsAcked > 0 and segmentSize > 0:
-            delivery_rate = (segmentsAcked * segmentSize) / (lastRtt_us / 1e6)
-            state["bw_samples"].append(delivery_rate)
-            state["max_bw"] = max(state["bw_samples"])
-            # Throughput EMA
-            if state["throughput_ema"] == 0:
-                state["throughput_ema"] = delivery_rate
+        # Delivery rate: cumulative ACKed bytes over a sliding time window.
+        # The window spans >= 2*min_rtt so the rate reflects the ACK clock
+        # (bottleneck drain rate) rather than a single ACK's payload, which
+        # under-estimated bandwidth by ~the number of ACKs per RTT.
+        if segmentsAcked > 0 and segmentSize > 0:
+            state["acked_bytes_total"] += segmentsAcked * segmentSize
+            samples = state["ack_samples"]
+            samples.append((simTime_us, state["acked_bytes_total"]))
+
+            if state["min_rtt_us"] < float("inf"):
+                window_us = min(max(2 * state["min_rtt_us"], 5_000), 1_000_000)
             else:
-                state["throughput_ema"] = (
-                    0.9 * state["throughput_ema"] + 0.1 * delivery_rate
-                )
+                window_us = 5_000
+            while len(samples) >= 2 and simTime_us - samples[0][0] > window_us:
+                samples.popleft()
+
+            span_us = simTime_us - samples[0][0]
+            delivered = state["acked_bytes_total"] - samples[0][1]
+            if len(samples) >= 2 and span_us > 0 and delivered > 0:
+                delivery_rate = delivered / (span_us / 1e6)  # bytes/s
+                state["bw_samples"].append(delivery_rate)
+                state["max_bw"] = max(state["bw_samples"])
+                # Throughput EMA
+                if state["throughput_ema"] == 0:
+                    state["throughput_ema"] = delivery_rate
+                else:
+                    state["throughput_ema"] = (
+                        0.9 * state["throughput_ema"] + 0.1 * delivery_rate
+                    )
 
         # BDP = max_bw * min_rtt (bytes)
         if state["max_bw"] > 0 and state["min_rtt_us"] < float("inf"):
