@@ -334,11 +334,21 @@ class TcpSwift(TcpEventBased):
         caState = obs[12]
         ecnState = obs[14]
 
-        # Signal 1: explicit loss (GetSsThresh called)
+        # Signal 1: GetSsThresh called -- the stack is reducing the window.
+        # Distinguish WHY before treating it as loss: an ECE-triggered CWR
+        # entry also calls GetSsThresh and must get the ECN response
+        # (beta=0.75), not the loss response (beta=0.70).
         if calledFunc == self.FUNC_GET_SS_THRESH:
-            state["loss_count"] += 1
             if caState == self.CA_LOSS:
+                state["loss_count"] += 1
                 return True, "timeout"
+            if (
+                ecnState in (self.ECN_CE_RCVD, self.ECN_ECE_RCVD)
+                or caState == self.CA_CWR
+            ):
+                state["ecn_count"] += 1
+                return True, "ecn"
+            state["loss_count"] += 1
             return True, "loss"
 
         # Signal 2: ECN CE received during IncreaseWindow
