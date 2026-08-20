@@ -147,9 +147,15 @@ class TcpSwift(TcpEventBased):
         # Per-flow state
         self.flow_states = {}
 
-        # Reward-based adaptation (EMA smoother, thresholds tighter)
+        # Reward-based adaptation: fast EMA compared against a slow baseline
+        # EMA. The per-ACK reward is >= +0.5 on nearly every ACK, so fixed
+        # thresholds degenerated into a constant +0.01 ratchet toward
+        # alpha_max; only a relative signal carries information.
         self.reward_ema = 0.0
-        self.reward_alpha = 0.15  # was 0.1; react slightly faster
+        self.reward_alpha = 0.15
+        self.reward_baseline = 0.0
+        self.reward_baseline_alpha = 0.02
+        self.reward_initialized = False
 
     # ------------------------------------------------------------------
     # Per-flow state
@@ -307,16 +313,26 @@ class TcpSwift(TcpEventBased):
                 alpha = max(alpha - step, self.alpha_min)
                 state["consecutive_increases"] = 0
 
-        # Factor 2: Reward signal from C++ env.
-        # Fixed thresholds (logs/error.txt #5): +2.0 was too strict, alpha
-        # almost never grew from reward. Tighten EMA thresholds.
+        # Factor 2: Reward signal from C++ env, judged RELATIVE to its own
+        # slow baseline. Absolute thresholds carried no information because
+        # the per-ACK reward is almost always positive.
         if reward is not None:
-            self.reward_ema = (
-                1 - self.reward_alpha
-            ) * self.reward_ema + self.reward_alpha * float(reward)
-            if self.reward_ema > 0.5:
+            r = float(reward)
+            if not self.reward_initialized:
+                self.reward_ema = r
+                self.reward_baseline = r
+                self.reward_initialized = True
+            else:
+                self.reward_ema = (
+                    1 - self.reward_alpha
+                ) * self.reward_ema + self.reward_alpha * r
+                self.reward_baseline = (
+                    1 - self.reward_baseline_alpha
+                ) * self.reward_baseline + self.reward_baseline_alpha * r
+            margin = max(0.25, 0.1 * abs(self.reward_baseline))
+            if self.reward_ema > self.reward_baseline + margin:
                 alpha = min(alpha + 0.01, self.alpha_max)
-            elif self.reward_ema < -2.0:
+            elif self.reward_ema < self.reward_baseline - 4.0 * margin:
                 alpha = max(alpha - 0.01, self.alpha_min)
 
         # Factor 3: Stable growth bonus

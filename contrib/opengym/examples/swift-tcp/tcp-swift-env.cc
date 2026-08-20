@@ -242,8 +242,8 @@ void TcpSwiftEnv::IncreaseWindow(Ptr<TcpSocketState> tcb,
   // - throughputBonus: 0.5 per acked segment (clamped to reduce noise)
   // - rttPenalty: triggered earlier (ratio>1.5) but smaller magnitude,
   //   so the reward sign is trust-worthy without overwhelming throughput.
-  // This matches the tighter reward_ema thresholds on the Python side
-  // (+0.5 / -2.0) — see tcp_swift.py _adapt_alpha().
+  // The Python side judges this reward relative to its own slow baseline
+  // EMA (tcp_swift.py _adapt_alpha), so only CHANGES in reward move alpha.
   float throughputBonus =
       std::min(static_cast<float>(segmentsAcked) * 0.5f, 5.0f);
 
