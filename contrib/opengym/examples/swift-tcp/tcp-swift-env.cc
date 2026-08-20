@@ -23,7 +23,7 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE("ns3::TcpSwiftEnv");
+NS_LOG_COMPONENT_DEFINE("TcpSwiftEnv");
 NS_OBJECT_ENSURE_REGISTERED(TcpSwiftEnv);
 
 // Observation space upper bound (1e9 fits uint64_t and matches Python space)
@@ -292,6 +292,14 @@ void TcpSwiftEnv::CongestionStateSet(
   }
 
   m_tcb = tcb;
+
+  // RTO: the stack resets cwnd for slow-start restart; a cwnd cached
+  // before the timeout is stale and must not be applied afterwards.
+  if (newState == TcpSocketState::CA_LOSS && m_hasPendingCwnd) {
+    NS_LOG_INFO("Discarding stale pending cwnd " << m_pendingCwnd
+                                                 << " on CA_LOSS");
+    m_hasPendingCwnd = false;
+  }
 }
 
 void TcpSwiftEnv::CwndEvent(Ptr<TcpSocketState> tcb,

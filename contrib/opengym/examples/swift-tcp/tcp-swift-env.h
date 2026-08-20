@@ -15,8 +15,8 @@
  */
 
 /* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
-#ifndef TCP_LARK_ENV_H
-#define TCP_LARK_ENV_H
+#ifndef TCP_SWIFT_ENV_H
+#define TCP_SWIFT_ENV_H
 
 #include "../rl-tcp/tcp-rl-env.h" // Inherit basic structures
 
@@ -81,4 +81,4 @@ private:
 
 } // namespace ns3
 
-#endif /* TCP_LARK_ENV_H */
+#endif /* TCP_SWIFT_ENV_H */

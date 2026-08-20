@@ -15,8 +15,8 @@
  */
 
 /* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
-#ifndef TCP_LARK_H
-#define TCP_LARK_H
+#ifndef TCP_SWIFT_H
+#define TCP_SWIFT_H
 
 #include "../rl-tcp/tcp-rl.h" // Inherit base logic from RL example
 #include "tcp-swift-env.h"
@@ -40,4 +40,4 @@ private:
 
 } // namespace ns3
 
-#endif /* TCP_LARK_H */
+#endif /* TCP_SWIFT_H */

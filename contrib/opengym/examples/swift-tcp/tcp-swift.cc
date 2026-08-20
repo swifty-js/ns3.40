@@ -20,7 +20,7 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE("ns3::TcpSwift");
+NS_LOG_COMPONENT_DEFINE("TcpSwift");
 NS_OBJECT_ENSURE_REGISTERED(TcpSwift);
 
 TypeId TcpSwift::GetTypeId(void) {

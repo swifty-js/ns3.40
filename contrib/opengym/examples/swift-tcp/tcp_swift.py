@@ -430,9 +430,6 @@ class TcpSwift(TcpEventBased):
         lastRtt_us = obs[9]
         bdp = self._get_bdp(state, cWnd)
 
-        # Reset consecutive-decrease counter only when we actually grow
-        state["consecutive_decreases"] = 0
-
         if segmentSize <= 0:
             segmentSize = 1448
 
@@ -440,6 +437,9 @@ class TcpSwift(TcpEventBased):
         if state["freeze_acks_remaining"] > 0:
             state["freeze_acks_remaining"] -= 1
             return ssThresh, cWnd
+
+        # Reset consecutive-decrease counter only when we actually grow
+        state["consecutive_decreases"] = 0
 
         # ---------- Slow start (with HyStart-style RTT-inflation exit) ----------
         if cWnd < ssThresh and state["in_slow_start"]:

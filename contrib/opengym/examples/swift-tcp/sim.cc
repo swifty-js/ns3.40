@@ -79,7 +79,6 @@ static void PrintRxCount() {
 
 int main(int argc, char *argv[]) {
   uint32_t openGymPort = 5555;
-  double tcpEnvTimeStep = 0.1;
 
   uint32_t nLeaf = 3;
   uint16_t tcpTrafficPort = 5000;
@@ -106,9 +105,6 @@ int main(int argc, char *argv[]) {
   cmd.AddValue("openGymPort", "Port number for OpenGym env. Default: 5555",
                openGymPort);
   cmd.AddValue("simSeed", "Seed for random generator. Default: 1", run);
-  cmd.AddValue("envTimeStep",
-               "Time step interval for time-based TCP env [s]. Default: 0.1s",
-               tcpEnvTimeStep);
   // other parameters
   cmd.AddValue("nLeaf", "Number of left and right side leaf nodes", nLeaf);
   cmd.AddValue(
@@ -167,12 +163,6 @@ int main(int argc, char *argv[]) {
   Ptr<OpenGymInterface> openGymInterface;
   if (transport_prot.compare("ns3::TcpSwift") == 0) {
     openGymInterface = OpenGymInterface::Get(openGymPort);
-    // Config::SetDefault("ns3::TcpSwift::Reward",
-    //                    DoubleValue(2.0)); // Reward when increasing
-    //                    congestion window
-    // Config::SetDefault("ns3::TcpSwift::Penalty",
-    //                    DoubleValue(-30.0)); // Penalty when decreasing
-    //                    congestion window
   }
 
   // Calculate the ADU size
@@ -212,22 +202,26 @@ int main(int argc, char *argv[]) {
   Config::SetDefault("ns3::TcpSocketBase::UseEcn",
                      EnumValue(TcpSocketState::On));
 
-  //// Configure the error model
-  //// Here we use RateErrorModel with packet error rate
-  // Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable>();
-  // uv->SetStream(50);
-  // RateErrorModel error_model;
-  // error_model.SetRandomVariable(uv);
-  // error_model.SetUnit(RateErrorModel::ERROR_UNIT_PACKET);
-  // error_model.SetRate(error_p);
+  // Random packet corruption on the bottleneck receive side (error_p > 0)
+  Ptr<RateErrorModel> errorModel;
+  if (error_p > 0.0) {
+    Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable>();
+    uv->SetStream(50);
+    errorModel = CreateObject<RateErrorModel>();
+    errorModel->SetRandomVariable(uv);
+    errorModel->SetUnit(RateErrorModel::ERROR_UNIT_PACKET);
+    errorModel->SetRate(error_p);
+  }
 
   // Create the point-to-point link helpers
   PointToPointHelper bottleNeckLink;
   bottleNeckLink.SetDeviceAttribute("DataRate",
                                     StringValue(bottleneck_bandwidth));
   bottleNeckLink.SetChannelAttribute("Delay", StringValue(bottleneck_delay));
-  // bottleNeckLink.SetDeviceAttribute  ("ReceiveErrorModel", PointerValue
-  // (&error_model));
+  if (errorModel) {
+    bottleNeckLink.SetDeviceAttribute("ReceiveErrorModel",
+                                      PointerValue(errorModel));
+  }
 
   PointToPointHelper pointToPointLeaf;
   pointToPointLeaf.SetDeviceAttribute("DataRate",
@@ -339,8 +333,8 @@ int main(int argc, char *argv[]) {
     ftp.SetAttribute("MaxBytes", UintegerValue(data_mbytes * 1000000));
 
     ApplicationContainer clientApp = ftp.Install(d.GetLeft(i));
-    clientApp.Start(Seconds(start_time * i)); // Start after sink
-    clientApp.Stop(Seconds(stop_time));       // Stop before the sink
+    clientApp.Start(Seconds(start_time * (i + 1))); // Staggered, after sinks
+    clientApp.Stop(Seconds(stop_time));             // Stop with the sinks
   }
 
   if (enable_udp_burst) {
