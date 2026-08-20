@@ -8,15 +8,6 @@ feat:
 	git commit -m "feat: Introduce new features"
 	git push origin main
 
-.PHONY: init
-init:
-	rm -rf ./.git
-	git init
-	git remote add origin git@github.com:tianchenghang/ns3.40.git
-	git add -A
-	git commit -m "Initial commit"
-	git push -f origin main --set-upstream
-
 .PHONY: clean
 clean:
 	rm -rf ./build ./cmake-cache \
