@@ -52,9 +52,11 @@ export interface DataIndex {
 let indexCache: DataIndex | null = null;
 const detailCache = new Map<string, ScenarioDetail>();
 
+const base = import.meta.env.BASE_URL;
+
 export async function loadIndex(): Promise<DataIndex> {
   if (indexCache) return indexCache;
-  const resp = await fetch("/data/index.json");
+  const resp = await fetch(`${base}data/index.json`);
   indexCache = await resp.json();
   return indexCache!;
 }
@@ -66,7 +68,7 @@ export async function loadScenario(
   const key = `${dataset}/${scenario}`;
   if (detailCache.has(key)) return detailCache.get(key)!;
   const safeName = key.replace(/\//g, "__");
-  const resp = await fetch(`/data/${safeName}.json`);
+  const resp = await fetch(`${base}data/${safeName}.json`);
   const data = await resp.json();
   detailCache.set(key, data);
   return data;

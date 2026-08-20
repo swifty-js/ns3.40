@@ -1,5 +1,19 @@
 import { defineView, useState, useEffect, Router } from "@lark.js/mvc";
 import gsap from "gsap";
+import {
+  Chart,
+  BarController,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  RadarController,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import template from "./scenario.html";
 import {
   loadScenario,
@@ -11,7 +25,22 @@ import {
   formatLoss,
   scenarioCategory,
 } from "../lib/data";
-import type { ScenarioDetail, FlowDetail } from "../lib/data";
+import { icons } from "../lib/icons";
+import type { ScenarioDetail } from "../lib/data";
+
+Chart.register(
+  BarController,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  RadarController,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend,
+);
 
 interface AlgoCardVM {
   algo: string;
@@ -22,14 +51,6 @@ interface AlgoCardVM {
   jitter: string;
   loss: string;
   totalRx: string;
-}
-
-interface ChartBarVM {
-  algo: string;
-  label: string;
-  color: string;
-  valueText: string;
-  height: number;
 }
 
 interface FlowRowVM {
@@ -64,6 +85,13 @@ const METRICS = [
   { key: "loss", label: "Loss" },
 ];
 
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 export default defineView((ctx) => {
   const loc = Router.parse();
   const scenario = loc.get("scenario", "");
@@ -73,6 +101,10 @@ export default defineView((ctx) => {
   const [getLoading, setLoading] = useState("loading", true);
   const [getMetric, setMetric] = useState("metric", "throughput");
 
+  let barChart: Chart | null = null;
+  let radarChart: Chart | null = null;
+  let delayChart: Chart | null = null;
+
   ctx.updater.set({
     scenarioName: scenario.replace(/_/g, " "),
     category: scenarioCategory(scenario),
@@ -80,10 +112,10 @@ export default defineView((ctx) => {
     loading: true,
     dataReady: false,
     algoCards: [] as AlgoCardVM[],
-    chartBars: [] as ChartBarVM[],
     flowTables: [] as FlowTableVM[],
     metricBtns: [] as MetricBtnVM[],
     metricLabel: "Throughput",
+    iconArrowLeft: icons.arrowLeft,
   });
 
   function getMetricValue(algo: string, metric: string): number {
@@ -124,22 +156,6 @@ export default defineView((ctx) => {
     });
   }
 
-  function buildChartBars(): ChartBarVM[] {
-    const d = getData();
-    if (!d) return [];
-    const metric = getMetric();
-    const algos = Object.keys(d.algorithms);
-    const vals = algos.map((a) => getMetricValue(a, metric));
-    const max = Math.max(...vals, 0.001);
-    return algos.map((algo) => ({
-      algo,
-      label: ALGO_LABELS[algo] || algo,
-      color: ALGO_COLORS[algo] || "#888",
-      valueText: formatMetricValue(algo, metric),
-      height: Math.max(2, (getMetricValue(algo, metric) / max) * 100),
-    }));
-  }
-
   function buildFlowTables(): FlowTableVM[] {
     const d = getData();
     if (!d) return [];
@@ -175,6 +191,270 @@ export default defineView((ctx) => {
     }));
   }
 
+  function metricUnit(metric: string): string {
+    if (metric === "throughput") return "Mbps";
+    if (metric === "delay") return "us";
+    if (metric === "jitter") return "us";
+    if (metric === "loss") return "%";
+    return "";
+  }
+
+  function renderBarChart() {
+    const d = getData();
+    if (!d) return;
+    const canvas = document.getElementById("barChart") as HTMLCanvasElement;
+    if (!canvas) return;
+
+    const metric = getMetric();
+    const algos = Object.keys(d.algorithms);
+    const labels = algos.map((a) => ALGO_LABELS[a] || a);
+    const values = algos.map((a) => getMetricValue(a, metric));
+    const colors = algos.map((a) => ALGO_COLORS[a] || "#888");
+
+    if (barChart) barChart.destroy();
+    barChart = new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: METRICS.find((m) => m.key === metric)?.label || metric,
+            data: values,
+            backgroundColor: colors.map((c) => hexToRgba(c, 0.7)),
+            borderColor: colors,
+            borderWidth: 1.5,
+            borderRadius: 6,
+            borderSkipped: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 600, easing: "easeOutQuart" },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#1e293b",
+            titleFont: { family: "Geist Mono, monospace", size: 11 },
+            bodyFont: { family: "Geist Mono, monospace", size: 11 },
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: (item) => formatMetricValue(algos[item.dataIndex], metric),
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: { family: "Geist Mono, monospace", size: 11 },
+              color: "#64748b",
+            },
+          },
+          y: {
+            grid: { color: "#f1f5f9" },
+            ticks: {
+              font: { family: "Geist Mono, monospace", size: 10 },
+              color: "#94a3b8",
+            },
+            title: {
+              display: true,
+              text: metricUnit(metric),
+              font: { size: 10 },
+              color: "#94a3b8",
+            },
+          },
+        },
+      },
+    });
+  }
+
+  function renderRadarChart() {
+    const d = getData();
+    if (!d) return;
+    const canvas = document.getElementById("radarChart") as HTMLCanvasElement;
+    if (!canvas) return;
+
+    const algos = Object.keys(d.algorithms);
+    const metrics = ["throughput", "delay", "jitter", "loss"];
+    const metricLabels = ["Throughput", "Delay", "Jitter", "Loss"];
+
+    const maxVals = metrics.map((m) =>
+      Math.max(...algos.map((a) => getMetricValue(a, m)), 0.001),
+    );
+
+    if (radarChart) radarChart.destroy();
+    radarChart = new Chart(canvas, {
+      type: "radar",
+      data: {
+        labels: metricLabels,
+        datasets: algos.map((algo) => {
+          const color = ALGO_COLORS[algo] || "#888";
+          return {
+            label: ALGO_LABELS[algo] || algo,
+            data: metrics.map((m, i) => getMetricValue(algo, m) / maxVals[i]),
+            borderColor: color,
+            backgroundColor: hexToRgba(color, 0.08),
+            pointBackgroundColor: color,
+            pointRadius: 3,
+            borderWidth: 2,
+          };
+        }),
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 600, easing: "easeOutQuart" },
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              font: { family: "Geist Mono, monospace", size: 10 },
+              color: "#64748b",
+              boxWidth: 12,
+              padding: 12,
+            },
+          },
+          tooltip: {
+            backgroundColor: "#1e293b",
+            titleFont: { family: "Geist Mono, monospace", size: 11 },
+            bodyFont: { family: "Geist Mono, monospace", size: 11 },
+            padding: 10,
+            cornerRadius: 8,
+          },
+        },
+        scales: {
+          r: {
+            grid: { color: "#e2e8f0" },
+            angleLines: { color: "#e2e8f0" },
+            pointLabels: {
+              font: { family: "Geist Mono, monospace", size: 10 },
+              color: "#64748b",
+            },
+            ticks: { display: false },
+            suggestedMin: 0,
+            suggestedMax: 1,
+          },
+        },
+      },
+    });
+  }
+
+  function renderDelayChart() {
+    const d = getData();
+    if (!d) return;
+    const canvas = document.getElementById("delayChart") as HTMLCanvasElement;
+    if (!canvas) return;
+
+    const algos = Object.keys(d.algorithms);
+
+    const allBins = new Set<number>();
+    for (const algo of algos) {
+      const tcpFlows = d.algorithms[algo].flows.filter(
+        (f) => f.type === "tcp-data",
+      );
+      for (const flow of tcpFlows) {
+        for (const bin of flow.delayHist) {
+          allBins.add(bin.start);
+        }
+      }
+    }
+    const sortedBins = [...allBins].sort((a, b) => a - b);
+    if (sortedBins.length === 0) return;
+
+    const labels = sortedBins.map((b) => {
+      if (b >= 1000) return `${(b / 1000).toFixed(1)}ms`;
+      return `${b}us`;
+    });
+
+    if (delayChart) delayChart.destroy();
+    delayChart = new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: algos.map((algo) => {
+          const color = ALGO_COLORS[algo] || "#888";
+          const tcpFlows = d.algorithms[algo].flows.filter(
+            (f) => f.type === "tcp-data",
+          );
+          const binCounts = sortedBins.map((binStart) => {
+            let total = 0;
+            for (const flow of tcpFlows) {
+              const bin = flow.delayHist.find((h) => h.start === binStart);
+              if (bin) total += bin.count;
+            }
+            return total;
+          });
+          return {
+            label: ALGO_LABELS[algo] || algo,
+            data: binCounts,
+            backgroundColor: hexToRgba(color, 0.6),
+            borderColor: color,
+            borderWidth: 1,
+            borderRadius: 3,
+          };
+        }),
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 600, easing: "easeOutQuart" },
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              font: { family: "Geist Mono, monospace", size: 10 },
+              color: "#64748b",
+              boxWidth: 12,
+              padding: 12,
+            },
+          },
+          tooltip: {
+            backgroundColor: "#1e293b",
+            titleFont: { family: "Geist Mono, monospace", size: 11 },
+            bodyFont: { family: "Geist Mono, monospace", size: 11 },
+            padding: 10,
+            cornerRadius: 8,
+            mode: "index",
+            intersect: false,
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: { family: "Geist Mono, monospace", size: 9 },
+              color: "#94a3b8",
+              maxRotation: 45,
+              maxTicksLimit: 20,
+            },
+            title: {
+              display: true,
+              text: "Delay bucket",
+              font: { size: 10 },
+              color: "#94a3b8",
+            },
+          },
+          y: {
+            grid: { color: "#f1f5f9" },
+            ticks: {
+              font: { family: "Geist Mono, monospace", size: 10 },
+              color: "#94a3b8",
+            },
+            title: {
+              display: true,
+              text: "Packet count",
+              font: { size: 10 },
+              color: "#94a3b8",
+            },
+          },
+        },
+      },
+    });
+  }
+
   function refresh() {
     const metric = getMetric();
     const label = METRICS.find((m) => m.key === metric)?.label || "Throughput";
@@ -182,11 +462,18 @@ export default defineView((ctx) => {
       dataReady: !!getData(),
       loading: getLoading(),
       algoCards: buildAlgoCards(),
-      chartBars: buildChartBars(),
       flowTables: buildFlowTables(),
       metricBtns: buildMetricBtns(),
       metricLabel: label,
     });
+  }
+
+  function renderCharts() {
+    setTimeout(() => {
+      renderBarChart();
+      renderRadarChart();
+      renderDelayChart();
+    }, 0);
   }
 
   (async () => {
@@ -196,6 +483,7 @@ export default defineView((ctx) => {
     setLoading(false);
     refresh();
     ctx.updater.digest();
+    renderCharts();
   })();
 
   useEffect(() => {
@@ -218,34 +506,17 @@ export default defineView((ctx) => {
           delay: 0.15,
         },
       );
-    }, 0);
-    return () => {};
-  });
-
-  function animateCharts() {
-    setTimeout(() => {
-      gsap.fromTo(
-        ".chart-bar-anim",
-        { scaleY: 0 },
-        {
-          scaleY: 1,
-          duration: 0.6,
-          stagger: 0.06,
-          ease: "power2.out",
-          transformOrigin: "bottom",
-        },
-      );
       gsap.fromTo(
         ".chart-section",
         { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.4, stagger: 0.1, delay: 0.1 },
+        { opacity: 1, y: 0, duration: 0.4, stagger: 0.1, delay: 0.25 },
       );
     }, 0);
-  }
-
-  useEffect(() => {
-    animateCharts();
-    return () => {};
+    return () => {
+      if (barChart) barChart.destroy();
+      if (radarChart) radarChart.destroy();
+      if (delayChart) delayChart.destroy();
+    };
   });
 
   return {
@@ -256,7 +527,7 @@ export default defineView((ctx) => {
         setMetric(e.params.m as string);
         refresh();
         ctx.updater.digest();
-        animateCharts();
+        renderBarChart();
       },
     },
   };

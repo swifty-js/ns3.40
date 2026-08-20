@@ -10,6 +10,7 @@ import {
   formatLoss,
   scenarioCategory,
 } from "../lib/data";
+import { icons } from "../lib/icons";
 import type { ScenarioIndex } from "../lib/data";
 
 interface AlgoPill {
@@ -65,6 +66,8 @@ export default defineView((ctx) => {
     filteredCount: 0,
     algoCount: 0,
     datasetCount: 0,
+    iconActivity: icons.activity,
+    iconArrowUpRight: icons.arrowUpRight,
   });
 
   function buildPills(): AlgoPill[] {
