@@ -160,6 +160,8 @@ int main(int argc, char *argv[]) {
 
   NS_LOG_UNCOND("--seed: " << run);
   NS_LOG_UNCOND("--Tcp version: " << transport_prot);
+  NS_LOG_UNCOND("AccessBW: " << access_bandwidth);
+  NS_LOG_UNCOND("BottleneckBW: " << bottleneck_bandwidth);
 
   // OpenGym Env --- has to be created before any other thing
   Ptr<OpenGymInterface> openGymInterface;
@@ -392,6 +394,10 @@ int main(int argc, char *argv[]) {
         DynamicCast<Ipv4FlowClassifier>(flowHelper.GetClassifier());
     std::map<FlowId, FlowMonitor::FlowStats> stats = monitor->GetFlowStats();
 
+    double aggThroughput = 0.0;
+    uint64_t aggTxPackets = 0;
+    uint64_t aggLostPackets = 0;
+
     for (const auto &flow : stats) {
       Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow(flow.first);
       NS_LOG_UNCOND("TCP Flow " << flow.first
@@ -418,7 +424,20 @@ int main(int argc, char *argv[]) {
         throughput = flow.second.rxBytes * 8.0 / rxTime / 1e6;
       }
       NS_LOG_UNCOND("Throughput: " << throughput << " Mbps");
+
+      if (t.protocol == 6) { // TCP flows only
+        aggThroughput += throughput;
+        aggTxPackets += flow.second.txPackets;
+        aggLostPackets += flow.second.lostPackets;
+      }
     }
+
+    double aggLossRate = 0.0;
+    if (aggTxPackets > 0) {
+      aggLossRate = (aggLostPackets / (double)aggTxPackets) * 100;
+    }
+    NS_LOG_UNCOND("AggregateThroughput: " << aggThroughput << " Mbps");
+    NS_LOG_UNCOND("AggregateLossRate: " << aggLossRate << " %");
   }
 
   if (transport_prot.compare("ns3::TcpSwift") == 0) {

@@ -61,7 +61,8 @@ SCENARIOS: List[Tuple[str, str, str, str, str]] = [
     # --- Category 4: Congestion Level Gradient ---
     ("congested_light", "10Gbps", "5Gbps", "2us", "5us"),
     ("congested_medium", "10Gbps", "2Gbps", "2us", "5us"),
-    ("congested_heavy", "10Gbps", "1Gbps", "2us", "5us"),
+    # 20:1 -- was 10Gbps/1Gbps, identical to dc_oversub_10to1 (duplicate rows)
+    ("congested_heavy", "10Gbps", "500Mbps", "2us", "5us"),
     # --- Category 5: Cross-Pod / Cross-DC ---
     ("cross_pod_10g", "25Gbps", "10Gbps", "5us", "50us"),
     ("cross_pod_20g", "50Gbps", "20Gbps", "5us", "50us"),
@@ -92,9 +93,22 @@ SCENARIOS: List[Tuple[str, str, str, str, str]] = [
     # --- Category 11: WAN / Satellite ---
     ("wan_metro", "10Gbps", "1Gbps", "100us", "2ms"),
     ("wan_longhaul", "10Gbps", "1Gbps", "500us", "25ms"),
-    ("satellite_leo", "100Mbps", "50Mbps", "5ms", "20ms"),
+    # LEO (Starlink-like) -- was identical to lte_good (duplicate rows)
+    ("satellite_leo", "500Mbps", "150Mbps", "2ms", "25ms"),
     ("satellite_geo", "50Mbps", "10Mbps", "10ms", "300ms"),
 ]
+
+# Run artifacts are named "<scenario>_<Protocol>_s<seed>". Older artifacts
+# without the seed suffix still parse (seed is None then).
+RUN_NAME_RE = re.compile(r"^(.+)_(Tcp[A-Za-z0-9]+)(?:_s(\d+))?$")
+
+
+def parse_run_name(basename: str) -> Optional[Tuple[str, str, Optional[int]]]:
+    m = RUN_NAME_RE.match(basename)
+    if not m:
+        return None
+    seed = int(m.group(3)) if m.group(3) else None
+    return m.group(1), m.group(2), seed
 
 
 # =============================================================================
@@ -116,15 +130,17 @@ def run_sim(
 ) -> bool:
     """Run a single simulation scenario, return True on success."""
     os.makedirs(log_dir, exist_ok=True)
-    prefix = os.path.join(log_dir, f"{scenario}_{protocol}")
+    prefix = os.path.join(log_dir, f"{scenario}_{protocol}_s{sim_seed}")
     flowmon_file = f"{prefix}.flowmonitor"
 
     # Resume support: skip if flowmonitor already exists
     if os.path.isfile(flowmon_file):
-        print(f"[SKIP] {scenario}_{protocol} - flowmonitor already exists")
+        print(f"[SKIP] {scenario}_{protocol}_s{sim_seed} - flowmonitor already exists")
         return True
 
-    print(f"[INFO] Running: Protocol={protocol}, Scenario={scenario}")
+    print(
+        f"[INFO] Running: Protocol={protocol}, Scenario={scenario}, Seed={sim_seed}"
+    )
     print(
         f"[INFO]   Access: {access_bw} @ {access_delay}, "
         f"Bottleneck: {bottleneck_bw} @ {bottleneck_delay}"
@@ -262,9 +278,10 @@ def cmd_sim(args):
             print(f"[ERROR] No matching scenarios: {args.scenario}")
             sys.exit(1)
 
-    total = len(scenarios) * len(protocols)
+    total = len(scenarios) * len(protocols) * args.num_seeds
     done = 0
     failed = 0
+    seeds = [args.sim_seed + k for k in range(args.num_seeds)]
 
     for (
         scenario_name,
@@ -274,24 +291,25 @@ def cmd_sim(args):
         bottleneck_delay,
     ) in scenarios:
         for protocol in protocols:
-            ok = run_sim(
-                protocol=protocol,
-                scenario=scenario_name,
-                access_bw=access_bw,
-                bottleneck_bw=bottleneck_bw,
-                access_delay=access_delay,
-                bottleneck_delay=bottleneck_delay,
-                log_dir=log_dir,
-                duration=args.duration,
-                n_leaf=args.n_leaf,
-                sim_seed=args.sim_seed,
-                enable_udp_burst=enable_udp,
-                open_gym_port=open_gym_port,
-            )
-            done += 1
-            if not ok:
-                failed += 1
-            print(f"[PROGRESS] {done}/{total} (failed: {failed})")
+            for seed in seeds:
+                ok = run_sim(
+                    protocol=protocol,
+                    scenario=scenario_name,
+                    access_bw=access_bw,
+                    bottleneck_bw=bottleneck_bw,
+                    access_delay=access_delay,
+                    bottleneck_delay=bottleneck_delay,
+                    log_dir=log_dir,
+                    duration=args.duration,
+                    n_leaf=args.n_leaf,
+                    sim_seed=seed,
+                    enable_udp_burst=enable_udp,
+                    open_gym_port=open_gym_port,
+                )
+                done += 1
+                if not ok:
+                    failed += 1
+                print(f"[PROGRESS] {done}/{total} (failed: {failed})")
 
     print(f"\n[DONE] {done - failed}/{total} succeeded, {failed} failed")
 
@@ -318,20 +336,22 @@ def cmd_summary(args):
         "Type",
         "AccessBW",
         "BottleneckBW",
+        "Seeds",
         "Throughput_Mbps",
         "LossRate_Pct",
     ]
-    rows = []
+    # (scenario, protocol, type) -> samples across seeds
+    groups: Dict[Tuple[str, str, str], Dict] = {}
     for search_dir in search_dirs:
         if not os.path.isdir(search_dir):
             continue
         tag = "udp" if "udp" in search_dir.lower() else "tcp"
         for flowmon in glob.glob(os.path.join(search_dir, "*.flowmonitor")):
             basename = os.path.basename(flowmon).replace(".flowmonitor", "")
-            parts = basename.rsplit("_", 1)
-            if len(parts) != 2:
+            parsed = parse_run_name(basename)
+            if not parsed:
                 continue
-            scenario, protocol = parts
+            scenario, protocol, _seed = parsed
 
             log_file = flowmon.replace(".flowmonitor", "_ns3.log")
             if not os.path.isfile(log_file):
@@ -340,24 +360,48 @@ def cmd_summary(args):
             with open(log_file, "r") as f:
                 content = f.read()
 
-            throughput = _grep_first(r"Throughput: ([\d.]+)", content) or "N/A"
-            loss_rate = _grep_first(r"Loss Rate: ([\d.]+)", content) or "N/A"
-            access_bw = _grep_first(r"AccessBW:\s*([\d.]+[A-Za-z]*)", content) or "N/A"
-            bottleneck_bw = (
-                _grep_first(r"BottleneckBW:\s*([\d.]+[A-Za-z]*)", content) or "N/A"
-            )
+            # Prefer the TCP aggregate over the first per-flow match
+            throughput = _grep_first(
+                r"AggregateThroughput: ([\d.]+)", content
+            ) or _grep_first(r"Throughput: ([\d.]+)", content)
+            loss_rate = _grep_first(
+                r"AggregateLossRate: ([\d.]+)", content
+            ) or _grep_first(r"Loss Rate: ([\d.]+)", content)
+            access_bw = _grep_first(r"AccessBW:\s*([\d.]+[A-Za-z]*)", content)
+            bottleneck_bw = _grep_first(r"BottleneckBW:\s*([\d.]+[A-Za-z]*)", content)
 
-            rows.append(
-                {
-                    "Scenario": scenario,
-                    "Protocol": protocol,
-                    "Type": tag,
-                    "AccessBW": access_bw,
-                    "BottleneckBW": bottleneck_bw,
-                    "Throughput_Mbps": throughput,
-                    "LossRate_Pct": loss_rate,
-                }
+            g = groups.setdefault(
+                (scenario, protocol, tag),
+                {"throughput": [], "loss": [], "access": "N/A", "bottle": "N/A"},
             )
+            if throughput is not None:
+                g["throughput"].append(float(throughput))
+            if loss_rate is not None:
+                g["loss"].append(float(loss_rate))
+            if access_bw:
+                g["access"] = access_bw
+            if bottleneck_bw:
+                g["bottle"] = bottleneck_bw
+
+    rows = []
+    for (scenario, protocol, tag), g in sorted(groups.items()):
+        seeds = max(len(g["throughput"]), len(g["loss"]))
+        rows.append(
+            {
+                "Scenario": scenario,
+                "Protocol": protocol,
+                "Type": tag,
+                "AccessBW": g["access"],
+                "BottleneckBW": g["bottle"],
+                "Seeds": seeds,
+                "Throughput_Mbps": (
+                    f"{np.mean(g['throughput']):.4f}" if g["throughput"] else "N/A"
+                ),
+                "LossRate_Pct": (
+                    f"{np.mean(g['loss']):.6f}" if g["loss"] else "N/A"
+                ),
+            }
+        )
 
     with open(out_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -499,12 +543,51 @@ def parse_flowmonitor(filepath: str) -> List[FlowData]:
 def load_all_results(logs_dir: str) -> List[ScenarioResult]:
     results = []
     for fp in glob.glob(os.path.join(logs_dir, "**", "*.flowmonitor"), recursive=True):
-        m = re.match(r"(.+)_(Tcp\w+)\.flowmonitor", os.path.basename(fp))
-        if m:
-            results.append(
-                ScenarioResult(m.group(1), m.group(2), parse_flowmonitor(fp))
-            )
+        basename = os.path.basename(fp).replace(".flowmonitor", "")
+        parsed = parse_run_name(basename)
+        if parsed:
+            scenario, protocol, _seed = parsed
+            results.append(ScenarioResult(scenario, protocol, parse_flowmonitor(fp)))
     return results
+
+
+@dataclass
+class AggregatedResult:
+    """Metrics of one (scenario, protocol) averaged across seed repetitions.
+
+    Field names mirror the ScenarioResult properties consumed by the plot
+    and table functions, so both types are interchangeable there.
+    """
+
+    scenario: str
+    protocol: str
+    total_throughput_mbps: float
+    avg_delay_ms: float
+    avg_jitter_ms: float
+    total_loss_rate: float
+    seed_count: int
+
+
+def aggregate_results(results: List[ScenarioResult]) -> List[AggregatedResult]:
+    grouped: Dict[Tuple[str, str], List[ScenarioResult]] = {}
+    for r in results:
+        grouped.setdefault((r.scenario, r.protocol), []).append(r)
+    aggregated = []
+    for (scenario, protocol), runs in sorted(grouped.items()):
+        aggregated.append(
+            AggregatedResult(
+                scenario=scenario,
+                protocol=protocol,
+                total_throughput_mbps=float(
+                    np.mean([r.total_throughput_mbps for r in runs])
+                ),
+                avg_delay_ms=float(np.mean([r.avg_delay_ms for r in runs])),
+                avg_jitter_ms=float(np.mean([r.avg_jitter_ms for r in runs])),
+                total_loss_rate=float(np.mean([r.total_loss_rate for r in runs])),
+                seed_count=len(runs),
+            )
+        )
+    return aggregated
 
 
 # =============================================================================
@@ -859,19 +942,25 @@ def plot_flow_throughput_comparison(log_dir: str, output_dir: str):
         return
 
     data: Dict[str, Dict[str, Dict[int, float]]] = {}
+    samples: Dict[str, Dict[str, Dict[int, List[float]]]] = {}
     for fp in flowmonitor_files:
         name = os.path.basename(fp).replace(".flowmonitor", "")
-        m = re.match(r"(.+)_(Tcp\w+)$", name)
-        if not m:
+        parsed = parse_run_name(name)
+        if not parsed:
             continue
-        scenario, proto = m.group(1), m.group(2)
+        scenario, proto, _seed = parsed
         flows = parse_flowmonitor(fp)
-        flow_map = {
-            flow.flow_id: flow.throughput_mbps
-            for flow in flows
-            if flow.protocol == 6 and flow.flow_id in {1, 3, 5}
-        }
-        data.setdefault(scenario, {})[proto] = flow_map
+        proto_samples = samples.setdefault(scenario, {}).setdefault(proto, {})
+        for flow in flows:
+            if flow.protocol == 6 and flow.flow_id in {1, 3, 5}:
+                proto_samples.setdefault(flow.flow_id, []).append(
+                    flow.throughput_mbps
+                )
+    for scenario, proto_map in samples.items():
+        for proto, flow_samples in proto_map.items():
+            data.setdefault(scenario, {})[proto] = {
+                fid: float(np.mean(vals)) for fid, vals in flow_samples.items()
+            }
 
     scenarios = sorted(data.keys())
     protos = ["TcpNewReno", "TcpCubic", "TcpBbr", "TcpSwift"]
@@ -1007,9 +1096,9 @@ def cmd_draw(args):
         if not os.path.isdir(cdir):
             print(f"Warning: Directory not found: {cdir}")
             continue
-        results = load_all_results(cdir)
+        results = aggregate_results(load_all_results(cdir))
         print(f"\n--- Processing: {cdir} -> {odir} ---")
-        print(f"Loaded {len(results)} test results from {cdir}")
+        print(f"Loaded {len(results)} (scenario, protocol) results from {cdir}")
         if not results:
             print(f"Warning: No flowmonitor files found in {cdir}")
             continue
@@ -1035,6 +1124,7 @@ Usage examples:
   python main.py sim                        # Run all pure TCP simulations
   python main.py sim --udp                  # Run all TCP+UDP simulations
   python main.py sim --scenario wifi_ac     # Run only the wifi_ac scenario
+  python main.py sim --num-seeds 10         # 10 RngRun repetitions per config
   python main.py draw                       # Generate all plots
   python main.py draw --comparison-dir ./logs/comparison
   python main.py summary                    # Generate summary CSV (TCP + UDP)
@@ -1069,7 +1159,14 @@ Usage examples:
         help="Number of leaf nodes per side",
     )
     p_sim.add_argument(
-        "--sim-seed", type=int, default=DEFAULT_SIM_SEED, help="Random seed"
+        "--sim-seed", type=int, default=DEFAULT_SIM_SEED, help="Base random seed"
+    )
+    p_sim.add_argument(
+        "--num-seeds",
+        type=int,
+        default=1,
+        help="Number of RngRun repetitions per scenario/protocol "
+        "(seeds sim-seed .. sim-seed+N-1)",
     )
 
     # --- draw ---
