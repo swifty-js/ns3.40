@@ -365,8 +365,10 @@ export default defineView((ctx) => {
     if (sortedBins.length === 0) return;
 
     const labels = sortedBins.map((b) => {
-      if (b >= 1000) return `${(b / 1000).toFixed(1)}ms`;
-      return `${b}us`;
+      if (b >= 1) return `${b.toFixed(2)}s`;
+      if (b >= 0.001) return `${(b * 1000).toFixed(1)}ms`;
+      if (b > 0) return `${(b * 1e6).toFixed(0)}us`;
+      return "0";
     });
 
     if (delayChart) delayChart.destroy();

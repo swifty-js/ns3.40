@@ -10,7 +10,7 @@ import {
   formatLoss,
   scenarioCategory,
 } from "../lib/data";
-import { icons } from "../lib/icons";
+import { icons, categoryIcons } from "../lib/icons";
 import type { ScenarioIndex } from "../lib/data";
 
 interface AlgoPill {
@@ -32,6 +32,7 @@ interface CardVM {
   dataset: string;
   displayName: string;
   category: string;
+  categoryIcon: string;
   hasSummary: boolean;
   throughputText: string;
   throughputWidth: number;
@@ -96,11 +97,13 @@ export default defineView((ctx) => {
     return list.map((s) => {
       const sum = s.summaries[best];
       const hasSummary = !!sum;
+      const cat = scenarioCategory(s.scenario);
       return {
         scenario: s.scenario,
         dataset: s.dataset,
         displayName: s.scenario.replace(/_/g, " "),
-        category: scenarioCategory(s.scenario),
+        category: cat,
+        categoryIcon: categoryIcons[cat] || categoryIcons["Mixed"],
         hasSummary,
         throughputText: hasSummary ? formatThroughput(sum.throughputMbps) : "",
         throughputWidth: hasSummary

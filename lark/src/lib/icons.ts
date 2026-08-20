@@ -9,9 +9,6 @@ import wifi from "lucide-static/icons/wifi.svg?raw";
 import satellite from "lucide-static/icons/satellite.svg?raw";
 import zap from "lucide-static/icons/zap.svg?raw";
 import layers from "lucide-static/icons/layers.svg?raw";
-import chartBar from "lucide-static/icons/chart-bar.svg?raw";
-import gauge from "lucide-static/icons/gauge.svg?raw";
-import timer from "lucide-static/icons/timer.svg?raw";
 
 function icon(svg: string, size = 18): string {
   return svg
@@ -24,9 +21,6 @@ export const icons = {
   activity: icon(activity),
   arrowLeft: icon(arrowLeft, 16),
   arrowUpRight: icon(arrowUpRight, 14),
-  chartBar: icon(chartBar, 16),
-  gauge: icon(gauge, 16),
-  timer: icon(timer, 16),
 };
 
 export const categoryIcons: Record<string, string> = {

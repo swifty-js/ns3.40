@@ -128,14 +128,3 @@ export function scenarioCategory(name: string): string {
   if (name.startsWith("rdma_")) return "RDMA";
   return "Mixed";
 }
-
-export const CATEGORY_ICONS: Record<string, string> = {
-  "Data Center": "server",
-  "DC Fabric": "network",
-  WAN: "globe",
-  Cellular: "signal",
-  WiFi: "wifi",
-  Satellite: "satellite",
-  RDMA: "zap",
-  Mixed: "layers",
-};

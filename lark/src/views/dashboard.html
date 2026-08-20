@@ -134,15 +134,22 @@
       >
         <!-- Card header -->
         <div class="mb-4 flex items-start justify-between">
-          <div>
-            <h3
-              class="font-mono text-sm font-semibold text-gray-800 transition-colors group-hover:text-gray-900"
+          <div class="flex items-start gap-2.5">
+            <div
+              class="bg-surface-2 mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gray-400"
             >
-              {{=c.displayName}}
-            </h3>
-            <span class="text-[10px] tracking-wider text-gray-400 uppercase"
-              >{{=c.category}} / {{=c.dataset}}</span
-            >
+              {{!c.categoryIcon}}
+            </div>
+            <div>
+              <h3
+                class="font-mono text-sm font-semibold text-gray-800 transition-colors group-hover:text-gray-900"
+              >
+                {{=c.displayName}}
+              </h3>
+              <span class="text-[10px] tracking-wider text-gray-400 uppercase"
+                >{{=c.category}} / {{=c.dataset}}</span
+              >
+            </div>
           </div>
           <div
             class="bg-surface-2 group-hover:text-accent flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors"
