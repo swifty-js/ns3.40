@@ -382,8 +382,6 @@ Clean set after A-F (cross-protocol comparison admissible):
   TcpBbr additionally excluded in intra_rack_10g and intra_rack_25g (rule D).
 
 -- E (clarification, supersedes the rule E entries above) --
-2026-08-20T20:05:00+08:00 | logs/comparison/*.flowmonitor      | *                  | TcpSwift                   | artifacts renamed TcpLark -> TcpSwift by the maintainer; rule E no longer applies as an alias caveat | none (metric values verified unchanged, 288/288 rows identical)
-2026-08-20T20:05:00+08:00 | logs/comparison-udp/*.flowmonitor  | *                  | TcpSwift                   | artifacts renamed TcpLark -> TcpSwift by the maintainer; rule E no longer applies as an alias caveat | none (metric values verified unchanged, 288/288 rows identical)
 Note: logs/summary/kpi_forward.csv regenerated after the rename; every KPI column is byte-identical to
 the pre-rename derivation, so only the Source column changed. Rule F (pre-v3.0.0 revision boundary)
 still applies unchanged.
