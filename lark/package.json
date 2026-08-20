@@ -1,0 +1,26 @@
+{
+  "name": "ns3-flowmonitor",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "parse": "node scripts/parse-flowmonitor.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "format": "prettier -w --experimental-cli ."
+  },
+  "dependencies": {
+    "@lark.js/mvc": "^0.0.26",
+    "gsap": "^3.15.0",
+    "lucide-static": "^1.32.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "prettier": "^3.9.6",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.1"
+  }
+}

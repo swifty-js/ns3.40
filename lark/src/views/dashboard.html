@@ -1,0 +1,243 @@
+<div class="min-h-screen">
+  <!-- Header -->
+  <header
+    class="dash-header sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-2xl"
+  >
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <div class="flex items-center gap-3">
+        <div
+          class="from-accent flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br to-cyan-400"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base font-semibold tracking-tight text-gray-900">
+            FlowMonitor
+          </h1>
+          <p class="font-mono text-[11px] text-gray-400">
+            ns-3.40 TCP Congestion Control Comparison
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="stat-ring text-center">
+          <div class="font-mono text-lg font-semibold text-gray-900">
+            {{=filteredCount}}
+          </div>
+          <div class="text-[10px] tracking-wider text-gray-400 uppercase">
+            Scenarios
+          </div>
+        </div>
+        <div class="stat-ring text-center">
+          <div class="text-algo-swift font-mono text-lg font-semibold">
+            {{=algoCount}}
+          </div>
+          <div class="text-[10px] tracking-wider text-gray-400 uppercase">
+            Algorithms
+          </div>
+        </div>
+        <div class="stat-ring text-center">
+          <div class="text-algo-bbr font-mono text-lg font-semibold">
+            {{=datasetCount}}
+          </div>
+          <div class="text-[10px] tracking-wider text-gray-400 uppercase">
+            Datasets
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-6 py-8">
+    {{if loading}}
+    <div class="flex items-center justify-center py-32">
+      <div class="flex flex-col items-center gap-4">
+        <div
+          class="border-accent/30 border-t-accent h-10 w-10 animate-spin rounded-full border-2"
+        ></div>
+        <p class="text-sm text-gray-400">Loading flow data...</p>
+      </div>
+    </div>
+    {{/if}} {{if !loading}}
+    <!-- Filters -->
+    <div class="mb-8 space-y-4">
+      <!-- Category filter -->
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="mr-1 text-xs tracking-wider text-gray-400 uppercase"
+          >Category</span
+        >
+        <button
+          @click="selectCategory({cat: 'All'})"
+          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium tracking-wide cursor-pointer {{if filter === 'All'}}bg-accent/10 text-accent-soft border border-accent/30{{/if}}{{if filter !== 'All'}}bg-surface-2 text-gray-500 border border-transparent hover:text-gray-700{{/if}}"
+        >
+          All
+        </button>
+        {{forOf categories as cat}}
+        <button
+          @click="selectCategory({cat: '{{=cat}}'})"
+          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium tracking-wide cursor-pointer {{if filter === cat}}bg-accent/10 text-accent-soft border border-accent/30{{/if}}{{if filter !== cat}}bg-surface-2 text-gray-500 border border-transparent hover:text-gray-700{{/if}}"
+        >
+          {{=cat}}
+        </button>
+        {{/forOf}}
+      </div>
+
+      <!-- Dataset + Algo filter row -->
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <span class="mr-1 text-xs tracking-wider text-gray-400 uppercase"
+            >Dataset</span
+          >
+          <button
+            @click="selectDataset({ds: 'All'})"
+            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium tracking-wide cursor-pointer {{if dataset === 'All'}}bg-accent/10 text-accent-soft border border-accent/30{{/if}}{{if dataset !== 'All'}}bg-surface-2 text-gray-500 border border-transparent hover:text-gray-700{{/if}}"
+          >
+            All
+          </button>
+          {{forOf datasets as ds}}
+          <button
+            @click="selectDataset({ds: '{{=ds}}'})"
+            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium tracking-wide cursor-pointer {{if dataset === ds}}bg-accent/10 text-accent-soft border border-accent/30{{/if}}{{if dataset !== ds}}bg-surface-2 text-gray-500 border border-transparent hover:text-gray-700{{/if}}"
+          >
+            {{=ds}}
+          </button>
+          {{/forOf}}
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="mr-1 text-xs tracking-wider text-gray-400 uppercase"
+            >Metric by</span
+          >
+          {{forOf algoPills as pill}}
+          <button
+            @click="selectBestAlgo({algo: '{{=pill.algo}}'})"
+            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium tracking-wide cursor-pointer border {{if !pill.active}}border-transparent opacity-50 hover:opacity-100{{/if}}"
+            style="background: {{=pill.bg}}; color: {{=pill.color}}; {{if pill.active}}border-color: {{=pill.borderColor}};{{/if}}"
+          >
+            <span
+              class="h-2 w-2 rounded-full"
+              style="background: {{=pill.color}}"
+            ></span>
+            {{=pill.label}}
+          </button>
+          {{/forOf}}
+        </div>
+      </div>
+    </div>
+
+    <!-- Scenario Grid -->
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {{forOf cards as c}}
+      <div
+        class="scenario-card hover:border-accent/40 group cursor-pointer rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+        @click="openScenario({scenario: '{{=c.scenario}}', dataset: '{{=c.dataset}}'})"
+      >
+        <!-- Card header -->
+        <div class="mb-4 flex items-start justify-between">
+          <div>
+            <h3
+              class="font-mono text-sm font-semibold text-gray-800 transition-colors group-hover:text-gray-900"
+            >
+              {{=c.displayName}}
+            </h3>
+            <span class="text-[10px] tracking-wider text-gray-400 uppercase"
+              >{{=c.category}} / {{=c.dataset}}</span
+            >
+          </div>
+          <div
+            class="bg-surface-2 group-hover:text-accent flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M7 17l9.2-9.2M17 17V7H7" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Metric bars -->
+        {{if c.hasSummary}}
+        <div class="space-y-3">
+          <div>
+            <div class="mb-1 flex justify-between text-[11px]">
+              <span class="text-gray-400">Throughput</span>
+              <span class="font-mono text-gray-700">{{=c.throughputText}}</span>
+            </div>
+            <div class="bg-surface-3 h-1.5 overflow-hidden rounded-full">
+              <div
+                class="h-full rounded-full transition-all duration-700"
+                style="width: {{=c.throughputWidth}}%; background: {{=c.algoColor}}"
+              ></div>
+            </div>
+          </div>
+          <div>
+            <div class="mb-1 flex justify-between text-[11px]">
+              <span class="text-gray-400">Avg Delay</span>
+              <span class="font-mono text-gray-700">{{=c.delayText}}</span>
+            </div>
+            <div class="bg-surface-3 h-1.5 overflow-hidden rounded-full">
+              <div
+                class="h-full rounded-full bg-amber-500/70 transition-all duration-700"
+                style="width: {{=c.delayWidth}}%"
+              ></div>
+            </div>
+          </div>
+          <div>
+            <div class="mb-1 flex justify-between text-[11px]">
+              <span class="text-gray-400">Packet Loss</span>
+              <span class="font-mono text-gray-700">{{=c.lossText}}</span>
+            </div>
+            <div class="bg-surface-3 h-1.5 overflow-hidden rounded-full">
+              <div
+                class="h-full rounded-full bg-red-500/60 transition-all duration-700"
+                style="width: {{=c.lossWidth}}%"
+              ></div>
+            </div>
+          </div>
+        </div>
+        {{/if}}
+
+        <!-- Algorithm badges -->
+        <div
+          class="mt-4 flex items-center gap-1.5 border-t border-gray-100 pt-3"
+        >
+          {{forOf c.algoDots as dot}}
+          <span
+            class="h-2 w-2 rounded-full"
+            style="background: {{=dot.color}}"
+            title="{{=dot.label}}"
+          ></span>
+          {{/forOf}}
+          <span class="ml-1 text-[10px] text-gray-400"
+            >{{=c.algoCountText}}</span
+          >
+        </div>
+      </div>
+      {{/forOf}}
+    </div>
+
+    {{if filteredCount === 0}}
+    <div class="py-20 text-center">
+      <p class="text-sm text-gray-400">
+        No scenarios match the current filters.
+      </p>
+    </div>
+    {{/if}} {{/if}}
+  </main>
+</div>

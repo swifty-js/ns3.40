@@ -1,0 +1,232 @@
+<div class="min-h-screen">
+  <!-- Header -->
+  <header
+    class="sc-header sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-2xl"
+  >
+    <div class="mx-auto flex max-w-7xl items-center gap-4 px-6 py-4">
+      <button
+        @click="goBack()"
+        class="bg-surface-2 hover:bg-surface-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-all hover:text-gray-900"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <div>
+        <h1
+          class="text-base font-semibold tracking-tight text-gray-900 capitalize"
+        >
+          {{=scenarioName}}
+        </h1>
+        <p class="text-[11px] text-gray-400">{{=category}} / {{=dataset}}</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-6 py-8">
+    {{if loading}}
+    <div class="flex items-center justify-center py-32">
+      <div
+        class="border-accent/30 border-t-accent h-10 w-10 animate-spin rounded-full border-2"
+      ></div>
+    </div>
+    {{/if}} {{if dataReady}}
+
+    <!-- Algorithm Summary Cards -->
+    <div class="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {{forOf algoCards as card}}
+      <div
+        class="algo-summary-card relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+      >
+        <div
+          class="absolute top-0 left-0 h-0.5 w-full"
+          style="background: linear-gradient(90deg, {{=card.color}}, transparent)"
+        ></div>
+        <div class="mb-4 flex items-center gap-2">
+          <span
+            class="h-3 w-3 rounded-full"
+            style="background: {{=card.color}}"
+          ></span>
+          <span class="text-sm font-semibold" style="color: {{=card.color}}"
+            >{{=card.label}}</span
+          >
+        </div>
+        <div class="space-y-3">
+          <div class="flex items-baseline justify-between">
+            <span class="text-[11px] text-gray-400">Throughput</span>
+            <span class="font-mono text-sm text-gray-800"
+              >{{=card.throughput}}</span
+            >
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span class="text-[11px] text-gray-400">Avg Delay</span>
+            <span class="font-mono text-sm text-gray-800">{{=card.delay}}</span>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span class="text-[11px] text-gray-400">Jitter</span>
+            <span class="font-mono text-sm text-gray-800"
+              >{{=card.jitter}}</span
+            >
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span class="text-[11px] text-gray-400">Loss Rate</span>
+            <span class="font-mono text-sm text-gray-800">{{=card.loss}}</span>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span class="text-[11px] text-gray-400">Total RX</span>
+            <span class="font-mono text-sm text-gray-800"
+              >{{=card.totalRx}}</span
+            >
+          </div>
+        </div>
+      </div>
+      {{/forOf}}
+    </div>
+
+    <!-- Comparison Bar Chart -->
+    <div
+      class="chart-section mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+    >
+      <div class="mb-6 flex items-center justify-between">
+        <h2 class="text-lg font-semibold tracking-tight text-gray-900">
+          Algorithm Comparison
+        </h2>
+        <div class="flex items-center gap-1.5">
+          {{forOf metricBtns as btn}}
+          <button
+            @click="switchMetric({m: '{{=btn.key}}'})"
+            class="px-3 py-1.5 rounded-lg text-xs cursor-pointer transition-all {{if btn.active}}bg-accent/10 text-accent-soft{{/if}}{{if !btn.active}}text-gray-400 hover:text-gray-600{{/if}}"
+          >
+            {{=btn.label}}
+          </button>
+          {{/forOf}}
+        </div>
+      </div>
+
+      <!-- Bar chart -->
+      <div class="flex h-56 items-end justify-center gap-8 px-8">
+        {{forOf chartBars as bar}}
+        <div class="flex max-w-30 flex-1 flex-col items-center gap-2">
+          <span class="font-mono text-xs text-gray-600"
+            >{{=bar.valueText}}</span
+          >
+          <div
+            class="flex w-full justify-center"
+            style="height: 160px; align-items: flex-end"
+          >
+            <div
+              class="chart-bar-anim relative w-12 rounded-t-lg"
+              style="height: {{=bar.height}}%; background: linear-gradient(180deg, {{=bar.color}}, {{=bar.color}}99); min-height: 4px;"
+            >
+              <div
+                class="absolute inset-0 rounded-t-lg opacity-20"
+                style="
+                  background: linear-gradient(
+                    180deg,
+                    white 0%,
+                    transparent 40%
+                  );
+                "
+              ></div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span
+              class="h-2 w-2 rounded-full"
+              style="background: {{=bar.color}}"
+            ></span>
+            <span class="text-[11px] text-gray-500">{{=bar.label}}</span>
+          </div>
+        </div>
+        {{/forOf}}
+      </div>
+      <p class="mt-3 text-center text-[11px] text-gray-400">
+        {{=metricLabel}} comparison across congestion control algorithms
+      </p>
+    </div>
+
+    <!-- Per-Flow Detail Tables -->
+    <div
+      class="chart-section rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+    >
+      <h2 class="mb-5 text-lg font-semibold tracking-tight text-gray-900">
+        TCP Flow Details
+      </h2>
+      <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        {{forOf flowTables as tbl}}
+        <div
+          class="bg-surface-0 overflow-hidden rounded-xl border border-gray-100"
+        >
+          <div
+            class="flex items-center gap-2 border-b border-gray-100 px-4 py-3"
+          >
+            <span
+              class="h-2.5 w-2.5 rounded-full"
+              style="background: {{=tbl.color}}"
+            ></span>
+            <span class="text-xs font-semibold" style="color: {{=tbl.color}}"
+              >{{=tbl.label}}</span
+            >
+            <span class="ml-auto text-[10px] text-gray-400"
+              >{{=tbl.flowCountText}}</span
+            >
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-[11px]">
+              <thead>
+                <tr class="border-b border-gray-100 text-gray-400">
+                  <th class="px-4 py-2 text-left font-medium">Flow</th>
+                  <th class="px-3 py-2 text-right font-medium">Throughput</th>
+                  <th class="px-3 py-2 text-right font-medium">Delay</th>
+                  <th class="px-3 py-2 text-right font-medium">Jitter</th>
+                  <th class="px-4 py-2 text-right font-medium">Loss</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{forOf tbl.flows as flow}}
+                <tr
+                  class="hover:bg-surface-2 border-b border-gray-50 transition-colors"
+                >
+                  <td class="px-4 py-2.5">
+                    <span class="font-mono text-gray-700"
+                      >#{{=flow.flowId}}</span
+                    >
+                    <span class="ml-1 text-gray-400"
+                      >{{=flow.src}}:{{=flow.srcPort}}</span
+                    >
+                  </td>
+                  <td class="px-3 py-2.5 text-right font-mono text-gray-700">
+                    {{=flow.throughput}}
+                  </td>
+                  <td class="px-3 py-2.5 text-right font-mono text-gray-700">
+                    {{=flow.delay}}
+                  </td>
+                  <td class="px-3 py-2.5 text-right font-mono text-gray-700">
+                    {{=flow.jitter}}
+                  </td>
+                  <td
+                    class="text-right px-4 py-2.5 font-mono {{if flow.hasLoss}}text-red-500{{/if}}{{if !flow.hasLoss}}text-gray-400{{/if}}"
+                  >
+                    {{=flow.loss}}
+                  </td>
+                </tr>
+                {{/forOf}}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {{/forOf}}
+      </div>
+    </div>
+
+    {{/if}}
+  </main>
+</div>

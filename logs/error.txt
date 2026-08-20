@@ -80,7 +80,7 @@ Swift vs NR/CUBIC where data is consistent (ratio ~3.03x for all).
 For BBR, report summary.csv values but note high variability.
 
 ================================================================================
-5. LARK DELAY REGRESSION SCENARIOS
+5. SWIFT DELAY REGRESSION SCENARIOS
 ================================================================================
 In several scenarios, Swift shows HIGHER delay than NR/CUBIC baseline:
 
@@ -120,7 +120,7 @@ This is a significant throughput deficit. Possible causes:
 Decision: Exclude from "Swift advantage" scenarios. Discuss as a limitation.
 
 ================================================================================
-7. VALIDATED LARK ADVANTAGE SCENARIOS (suitable for paper)
+7. VALIDATED SWIFT ADVANTAGE SCENARIOS (suitable for paper)
 ================================================================================
 Scenarios where Swift genuinely outperforms or matches NR/CUBIC:
 
@@ -303,3 +303,87 @@ Complete scenarios kept (17) — used for UDP-burst aggregate statistics:
 Headline scenarios kept (9) — complete in both settings:
   intra_rack_10g, intra_rack_25g, leaf_spine_20g, nr_5g_embb, wan_metro,
   wifi_ac, wifi_ax, satellite_geo, nr_5g_edge.
+
+================================================================================
+AUDIT PASS 2026-08-20 (v3.0.0 documentation refresh)
+================================================================================
+Newly inspected: logs/comparison/*.flowmonitor (144), logs/comparison-udp/*.flowmonitor (144),
+logs/plots/summary.csv, logs/plots-udp/summary.csv, logs/summary/results_20260611_100706.csv.
+Derived clean view written to logs/summary/kpi_forward.csv (forward-direction TCP flows only).
+
+-- A. metric-definition defect (affects every row of both plot summaries) --
+2026-08-20T19:10:00+08:00 | logs/plots/summary.csv             | *                  | *                          | aggregation includes reverse ACK flows (10.2.x->10.1.x): Delay is mean(data,ACK) ~= (data+owd)/2 and Throughput adds the ~1.7% ACK stream | Throughput,Delay -> superseded by logs/summary/kpi_forward.csv
+2026-08-20T19:10:00+08:00 | logs/plots-udp/summary.csv         | *                  | *                          | aggregation includes reverse ACK flows (10.2.x->10.1.x): Delay is mean(data,ACK) ~= (data+owd)/2 and Throughput adds the ~1.7% ACK stream | Throughput,Delay -> superseded by logs/summary/kpi_forward.csv
+
+-- B. mixed simulator revision inside one scenario (sink port 5000 vs 50000) --
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | congested_light    | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | congested_medium   | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:50000,TcpNewReno:5000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | cross_pod_10g      | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | cross_pod_20g      | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | dc_100g            | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | leaf_spine_50g     | *                          | mixed sink port across protocols (TcpBbr:5000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | mixed_large_flow   | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | mixed_small_flow   | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:50000,TcpNewReno:5000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | oversub_4to1_10g   | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:50000,TcpNewReno:5000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | rdma_like_25g      | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | rdma_like_50g      | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | wan_longhaul       | *                          | mixed sink port across protocols (TcpBbr:5000,TcpCubic:5000,TcpNewReno:50000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | congested_medium   | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:50000,TcpNewReno:5000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | cross_dc_wan       | *                          | mixed sink port across protocols (TcpBbr:5000,TcpCubic:50000,TcpNewReno:50000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | cross_pod_10g      | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | cross_pod_20g      | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | dc_100g            | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | leaf_spine_50g     | *                          | mixed sink port across protocols (TcpBbr:5000,TcpCubic:5000,TcpNewReno:50000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | mixed_large_flow   | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | mixed_small_flow   | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:50000,TcpNewReno:5000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | nr_5g_embb         | *                          | mixed sink port across protocols (TcpBbr:5000,TcpCubic:50000,TcpNewReno:50000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | oversub_4to1_10g   | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:50000,TcpNewReno:5000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | rdma_like_25g      | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | rdma_like_50g      | *                          | mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | wan_longhaul       | *                          | mixed sink port across protocols (TcpBbr:5000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | wifi_ac            | *                          | mixed sink port across protocols (TcpBbr:5000,TcpCubic:50000,TcpNewReno:50000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | wifi_ax            | *                          | mixed sink port across protocols (TcpBbr:5000,TcpCubic:50000,TcpNewReno:50000,TcpSwift:50000) => artifacts from two sim.cc revisions | all (cross-protocol comparison invalid)
+
+-- C. duplicate scenario configuration (byte-identical FlowMonitor artifacts) --
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | dc_oversub_10to1   | *                          | config identical to congested_heavy (10Gbps/1Gbps/2us/5us) at generation time; artifacts byte-identical | all (redundant, congested_heavy retained)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | satellite_leo      | *                          | config identical to lte_good (100Mbps/50Mbps/5ms/20ms); label does not describe a LEO link | all (redundant and mislabelled, lte_good retained)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | dc_oversub_10to1   | *                          | config identical to congested_heavy (10Gbps/1Gbps/2us/5us) at generation time; artifacts byte-identical | all (redundant, congested_heavy retained)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | satellite_leo      | *                          | config identical to lte_good (100Mbps/50Mbps/5ms/20ms); label does not describe a LEO link | all (redundant and mislabelled, lte_good retained)
+
+-- D. degenerate TcpBbr baseline on microsecond-RTT high-rate paths (util < 1%) --
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | dc_100g            | TcpBbr                     | goodput 2.20 Mbps = 0.000% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown, not a policy outcome | all (scenario reduced to 3-protocol comparison)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | intra_rack_10g     | TcpBbr                     | goodput 2.24 Mbps = 0.020% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown, not a policy outcome | all (scenario reduced to 3-protocol comparison)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | intra_rack_25g     | TcpBbr                     | goodput 2.20 Mbps = 0.010% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown, not a policy outcome | all (scenario reduced to 3-protocol comparison)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | rdma_like_25g      | TcpBbr                     | goodput 2.07 Mbps = 0.010% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown, not a policy outcome | all (scenario reduced to 3-protocol comparison)
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | rdma_like_50g      | TcpBbr                     | goodput 2.09 Mbps = 0.000% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown, not a policy outcome | all (scenario reduced to 3-protocol comparison)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | dc_100g            | TcpBbr                     | goodput 2.20 Mbps = 0.000% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown, not a policy outcome | all (scenario reduced to 3-protocol comparison)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | intra_rack_10g     | TcpBbr                     | goodput 2.23 Mbps = 0.020% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown, not a policy outcome | all (scenario reduced to 3-protocol comparison)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | intra_rack_25g     | TcpBbr                     | goodput 2.20 Mbps = 0.010% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown, not a policy outcome | all (scenario reduced to 3-protocol comparison)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | rdma_like_25g      | TcpBbr                     | goodput 2.07 Mbps = 0.010% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown, not a policy outcome | all (scenario reduced to 3-protocol comparison)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | rdma_like_50g      | TcpBbr                     | goodput 2.09 Mbps = 0.000% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown, not a policy outcome | all (scenario reduced to 3-protocol comparison)
+
+-- E. provenance of the TcpSwift label --
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | *                  | TcpSwift                   | summary rows labelled TcpSwift are derived from *_TcpSwift.flowmonitor artifacts (pre-rename revision) | none (label alias recorded for traceability)
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | *                  | TcpSwift                   | summary rows labelled TcpSwift are derived from *_TcpSwift.flowmonitor artifacts (pre-rename revision) | none (label alias recorded for traceability)
+
+-- F. implementation-revision boundary --
+2026-08-20T19:10:00+08:00 | logs/comparison/*.flowmonitor      | *                  | *                          | all artifacts predate the v3.0.0 fixes (windowed delivery rate, RED/ECN marking, ECN classification, baseline-relative reward) | headline claims must state the revision; full-matrix rerun pending
+2026-08-20T19:10:00+08:00 | logs/comparison-udp/*.flowmonitor  | *                  | *                          | all artifacts predate the v3.0.0 fixes (windowed delivery rate, RED/ECN marking, ECN classification, baseline-relative reward) | headline claims must state the revision; full-matrix rerun pending
+
+Clean set after A-F (cross-protocol comparison admissible):
+  tcp_only  (19): asymmetric_high, congested_heavy, cross_dc_wan, dc_100m, dc_500m,
+                  intra_rack_10g, intra_rack_25g, leaf_spine_20g, lte_good, lte_poor,
+                  nr_5g_edge, nr_5g_embb, satellite_geo, symmetric_low, wan_metro,
+                  wifi_ac, wifi_ax, wifi_legacy, wifi_n
+  udp_burst (15): asymmetric_high, congested_heavy, dc_100m, dc_500m, intra_rack_10g,
+                  intra_rack_25g, leaf_spine_20g, lte_good, lte_poor, nr_5g_edge,
+                  satellite_geo, symmetric_low, wan_metro, wifi_legacy, wifi_n
+  paired  (15): the udp_burst list above is a subset of the tcp_only list.
+  TcpBbr additionally excluded in intra_rack_10g and intra_rack_25g (rule D).
+
+-- E (clarification, supersedes the rule E entries above) --
+2026-08-20T20:05:00+08:00 | logs/comparison/*.flowmonitor      | *                  | TcpSwift                   | artifacts renamed TcpLark -> TcpSwift by the maintainer; rule E no longer applies as an alias caveat | none (metric values verified unchanged, 288/288 rows identical)
+2026-08-20T20:05:00+08:00 | logs/comparison-udp/*.flowmonitor  | *                  | TcpSwift                   | artifacts renamed TcpLark -> TcpSwift by the maintainer; rule E no longer applies as an alias caveat | none (metric values verified unchanged, 288/288 rows identical)
+Note: logs/summary/kpi_forward.csv regenerated after the rename; every KPI column is byte-identical to
+the pre-rename derivation, so only the Source column changed. Rule F (pre-v3.0.0 revision boundary)
+still applies unchanged.

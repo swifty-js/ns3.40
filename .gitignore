@@ -189,4 +189,5 @@ stats.html
 
 cmake-cache/
 .lock-ns3_*
-lark
+
+lark/public/data/
