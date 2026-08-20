@@ -142,6 +142,7 @@ def run_sim(
         f" --simSeed={sim_seed}"
         f" --enable_udp_burst={enable_udp_burst}"
         f" --openGymPort={open_gym_port}"
+        f" --queue_disc_type=ns3::RedQueueDisc"
         f" --prefix_name={prefix}"
     )
 

@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
   bool flow_monitor = true;
   bool sack = true;
   bool enable_udp_burst = false;
-  std::string queue_disc_type = "ns3::PfifoFastQueueDisc";
+  std::string queue_disc_type = "ns3::RedQueueDisc";
   std::string recovery = "ns3::TcpClassicRecovery";
 
   CommandLine cmd;
@@ -131,7 +131,8 @@ int main(int argc, char *argv[]) {
   cmd.AddValue("run", "Run index (for setting repeatable seeds)", run);
   cmd.AddValue("flow_monitor", "Enable flow monitor", flow_monitor);
   cmd.AddValue("queue_disc_type",
-               "Queue disc type for gateway (e.g. ns3::CoDelQueueDisc)",
+               "Queue disc type for gateway (ns3::RedQueueDisc, "
+               "ns3::PfifoFastQueueDisc or ns3::CoDelQueueDisc)",
                queue_disc_type);
   cmd.AddValue("sack", "Enable or disable SACK option", sack);
   cmd.AddValue("enable_udp_burst", "Enable or disable UDP burst traffic",
@@ -203,14 +204,11 @@ int main(int argc, char *argv[]) {
   Config::SetDefault("ns3::TcpL4Protocol::SocketType",
                      TypeIdValue(TypeId::LookupByName(transport_prot)));
 
-  // Enable ECN only when using TcpSwift with Python agent
-  if (transport_prot.compare("ns3::TcpSwift") == 0) {
-    Config::SetDefault("ns3::TcpSocketBase::UseEcn",
-                       EnumValue(TcpSocketState::On));
-  } else {
-    Config::SetDefault("ns3::TcpSocketBase::UseEcn",
-                       EnumValue(TcpSocketState::Off));
-  }
+  // ECN is enabled for ALL variants so baseline algorithms receive the same
+  // in-network congestion signal as TcpSwift; the previous Swift-only
+  // setting biased the comparison.
+  Config::SetDefault("ns3::TcpSocketBase::UseEcn",
+                     EnumValue(TcpSocketState::On));
 
   //// Configure the error model
   //// Here we use RateErrorModel with packet error rate
@@ -248,6 +246,9 @@ int main(int argc, char *argv[]) {
   TrafficControlHelper tchCoDel;
   tchCoDel.SetRootQueueDisc("ns3::CoDelQueueDisc");
 
+  TrafficControlHelper tchRed;
+  tchRed.SetRootQueueDisc("ns3::RedQueueDisc");
+
   DataRate access_b(access_bandwidth);
   DataRate bottle_b(bottleneck_bandwidth);
   Time access_d(access_delay);
@@ -271,16 +272,35 @@ int main(int argc, char *argv[]) {
       "ns3::CoDelQueueDisc::MaxSize",
       QueueSizeValue(QueueSize(QueueSizeUnit::BYTES, queue_bytes)));
 
+  // RED with ECN marking: mark from 30% of the queue (documented design),
+  // hard limit at the same size as the other queue discs.
+  Config::SetDefault(
+      "ns3::RedQueueDisc::MaxSize",
+      QueueSizeValue(QueueSize(QueueSizeUnit::PACKETS, queue_packets)));
+  Config::SetDefault("ns3::RedQueueDisc::MinTh",
+                     DoubleValue(0.3 * queue_packets));
+  Config::SetDefault("ns3::RedQueueDisc::MaxTh",
+                     DoubleValue(0.9 * queue_packets));
+  Config::SetDefault("ns3::RedQueueDisc::UseEcn", BooleanValue(true));
+  Config::SetDefault("ns3::RedQueueDisc::MeanPktSize",
+                     UintegerValue(mtu_bytes));
+  Config::SetDefault("ns3::RedQueueDisc::LinkBandwidth",
+                     DataRateValue(bottle_b));
+  Config::SetDefault("ns3::RedQueueDisc::LinkDelay", TimeValue(bottle_d));
+
   if (queue_disc_type.compare("ns3::PfifoFastQueueDisc") == 0) {
     tchPfifo.Install(d.GetLeft()->GetDevice(1));
     tchPfifo.Install(d.GetRight()->GetDevice(1));
   } else if (queue_disc_type.compare("ns3::CoDelQueueDisc") == 0) {
     tchCoDel.Install(d.GetLeft()->GetDevice(1));
     tchCoDel.Install(d.GetRight()->GetDevice(1));
+  } else if (queue_disc_type.compare("ns3::RedQueueDisc") == 0) {
+    tchRed.Install(d.GetLeft()->GetDevice(1));
+    tchRed.Install(d.GetRight()->GetDevice(1));
   } else {
     NS_FATAL_ERROR(
-        "Queue not recognized. Allowed values are ns3::CoDelQueueDisc or "
-        "ns3::PfifoFastQueueDisc");
+        "Queue not recognized. Allowed values are ns3::RedQueueDisc, "
+        "ns3::CoDelQueueDisc or ns3::PfifoFastQueueDisc");
   }
 
   // Assign IP Addresses
