@@ -14,3 +14,6 @@
 
 allowBuilds:
   puppeteer: true
+minimumReleaseAgeExclude:
+  - '@lark.js/mvc@0.0.26'
+  - '@lark.js/sentry@0.0.16'

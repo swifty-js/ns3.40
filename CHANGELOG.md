@@ -69,7 +69,7 @@ regenerated with a full experiment-matrix rerun.
     for nonexistent `TcpSwift::Reward/Penalty` attributes.
   - Flow i starts at `start_time*(i+1)`, so flow 0 no longer starts at
     t=0 simultaneously with the sinks.
-  - Leftover `TCP_LARK_*` include guards renamed to `TCP_SWIFT_*`; log
+  - Leftover `TCP_SWIFT_*` include guards renamed to `TCP_SWIFT_*`; log
     components renamed `TcpSwift`/`TcpSwiftEnv`.
   Commit `b6d2680`.
 
