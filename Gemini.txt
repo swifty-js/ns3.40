@@ -2,9 +2,9 @@
 
 Gemini: Divide-and-Conquer for Practical Learning-Based Internet Congestion Control
 
-Wenzheng Yang∗†, Yan Liu†, Chen Tian∗, Junchen Jiang‡, Lingfeng Guo†
+Wenzheng Yang∗, Yan Liu, Chen Tian∗, Junchen Jiang‡, Lingfeng Guo
 
-∗State Key Laboratory for Novel Software Technology, Nanjing University, China †Cloud ARCH & Platform Dept., Tencent, China ‡University of Chicago, USA {rosswzyang, rockyanliu, lingfengguo}@tencent.com, tianchen@nju.edu.cn, junchenj@uchicago.edu
+∗State Key Laboratory for Novel Software Technology, Nanjing University, China Cloud ARCH & Platform Dept., Tencent, China ‡University of Chicago, USA {rosswzyang, rockyanliu, lingfengguo}@tencent.com, tianchen@nju.edu.cn, junchenj@uchicago.edu
 
 Abstract—Learning-based Internet congestion control algorithms have attracted much attention due to their potential performance improvement over traditional algorithms. However, such performance improvement is usually at the expense of black-box design and high computational overhead, which prevent them from large-scale deployment over production networks. To address this problem, we propose a novel Internet congestion control algorithm called Gemini. It contains a parameterized congestion control module, which is white-box designed with low computational overhead, and an online parameter optimization module, which serves to adapt the parameterized congestion control module to different networks for higher transmission performance. Extensive trace-driven emulations reveal Gemini achieves better balances between delay and throughput than state-of-the-art algorithms. Moreover, we successfully deploy Gemini over production networks. The evaluation results show that the average throughput of Gemini is 5% higher than that of Cubic (4% higher than that of BBR) over a mobile application downloading service and 61% higher than that of Cubic (33% higher than that of BBR) over a commercial network speed-test benchmarking service.
 

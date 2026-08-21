@@ -10,6 +10,7 @@ sudo apt install libzmq5 libzmq3-dev libprotobuf-dev protobuf-compiler
 sudo apt autoclean && sudo apt autoremove
 
 uv sync --no-install-project
+source .venv/bin/activate
 ./ns3 configure --enable-mtp --enable-examples
 ./ns3 build
 uv pip install ./contrib/opengym/model/ns3gym
