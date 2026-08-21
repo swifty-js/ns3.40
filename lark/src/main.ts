@@ -26,12 +26,12 @@ Framework.boot({
 
 if (Framework.isBooted()) {
   initLarkSentry({
-    dsn: "/ns3.40",
+    dsn: "/ns3.40-flowmonitor",
     debug: true,
-    projectId: "ns3.40",
+    projectId: "ns3.40-flowmonitor",
     beforePushEventList(eventList) {
       if (!import.meta.env.DEV) {
-        console.log("@swifty.js/sentry App:", eventList);
+        console.log("@lark.js/sentry App:", eventList);
         return false;
       }
       return eventList;

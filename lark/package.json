@@ -1,5 +1,5 @@
 {
-  "name": "ns3-flowmonitor",
+  "name": "ns3.40-flowmonitor",
   "version": "0.0.0",
   "private": true,
   "type": "module",
