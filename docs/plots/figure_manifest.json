@@ -376,27 +376,15 @@
   "figures": [
     {
       "stem": "fig01_goodput_clean",
-      "files": [
-        "fig01_goodput_clean.png",
-        "fig01_goodput_clean.pdf",
-        "fig01_goodput_clean.svg"
-      ]
+      "files": ["fig01_goodput_clean.png", "fig01_goodput_clean.pdf", "fig01_goodput_clean.svg"]
     },
     {
       "stem": "fig02_delay_clean",
-      "files": [
-        "fig02_delay_clean.png",
-        "fig02_delay_clean.pdf",
-        "fig02_delay_clean.svg"
-      ]
+      "files": ["fig02_delay_clean.png", "fig02_delay_clean.pdf", "fig02_delay_clean.svg"]
     },
     {
       "stem": "fig03_tradeoff_clean",
-      "files": [
-        "fig03_tradeoff_clean.png",
-        "fig03_tradeoff_clean.pdf",
-        "fig03_tradeoff_clean.svg"
-      ]
+      "files": ["fig03_tradeoff_clean.png", "fig03_tradeoff_clean.pdf", "fig03_tradeoff_clean.svg"]
     },
     {
       "stem": "fig04_udp_burst_clean",
@@ -408,11 +396,7 @@
     },
     {
       "stem": "fig05_audit_funnel",
-      "files": [
-        "fig05_audit_funnel.png",
-        "fig05_audit_funnel.pdf",
-        "fig05_audit_funnel.svg"
-      ]
+      "files": ["fig05_audit_funnel.png", "fig05_audit_funnel.pdf", "fig05_audit_funnel.svg"]
     },
     {
       "stem": "fig06_architecture_zh",
@@ -424,11 +408,7 @@
     },
     {
       "stem": "fig07_workflow_zh",
-      "files": [
-        "fig07_workflow_zh.png",
-        "fig07_workflow_zh.pdf",
-        "fig07_workflow_zh.svg"
-      ]
+      "files": ["fig07_workflow_zh.png", "fig07_workflow_zh.pdf", "fig07_workflow_zh.svg"]
     }
   ]
 }

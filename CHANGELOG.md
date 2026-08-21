@@ -158,7 +158,7 @@ regenerated with a full experiment-matrix rerun.
     always `N/A` because those lines never existed) and TCP
     `AggregateThroughput`/`AggregateLossRate`; the summary previously
     recorded only the first flow's throughput.
-  Commit `a40c294`.
+    Commit `a40c294`.
 - **Secondary hardening** (`tcp-swift-env.cc`, `tcp-swift.h`,
   `tcp-swift-env.h`, `tcp-swift.cc`, `sim.cc`, `tcp_swift.py`):
   - Deferred cwnd cached in `GetSsThresh` is discarded on CA_LOSS (RTO)
@@ -173,7 +173,7 @@ regenerated with a full experiment-matrix rerun.
     t=0 simultaneously with the sinks.
   - Leftover `TCP_SWIFT_*` include guards renamed to `TCP_SWIFT_*`; log
     components renamed `TcpSwift`/`TcpSwiftEnv`.
-  Commit `b6d2680`.
+    Commit `b6d2680`.
 
 ### Documentation
 

@@ -16,15 +16,7 @@
 name = "ns3.40"
 version = "0.1.0"
 requires-python = ">=3.13"
-dependencies = [
-    "matplotlib",
-    "pandoc",
-    "pdf2image",
-    "pdfplumber",
-    "pillow",
-    "pypdf",
-    "ruff",
-]
+dependencies = ["matplotlib", "pandoc", "pdf2image", "pdfplumber", "pillow", "pypdf", "ruff"]
 
 [build-system]
 build-backend = "setuptools.build_meta"

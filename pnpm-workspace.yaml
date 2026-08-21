@@ -19,5 +19,5 @@ packages:
   - lark
 
 minimumReleaseAgeExclude:
-  - '@lark.js/mvc@0.0.26 || 0.0.27'
-  - '@lark.js/sentry@0.0.16 || 0.0.17'
+  - "@lark.js/mvc@0.0.26 || 0.0.27"
+  - "@lark.js/sentry@0.0.16 || 0.0.17"

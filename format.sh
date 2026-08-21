@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 set -euo pipefail
 
 git ls-files -z \
@@ -30,6 +29,3 @@ ruff format ./
 # go install mvdan.cc/sh/v3/cmd/shfmt@latest
 git ls-files -z '*.sh' |
 	xargs -0 -r shfmt -l -w
-
-# pnpm add oxfmt -g
-pnpm exec oxfmt --write ./

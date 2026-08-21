@@ -1,5 +1,9 @@
 {
   "type": "module",
+  "scripts": {
+    "git:commit": "git add -A && git commit -m 'feat: Introduce new features'",
+    "git:push": "pnpm git:commit && git push origin main"
+  },
   "dependencies": {
     "@lark.js/mvc": "^0.0.27",
     "@lark.js/sentry": "^0.0.17",
@@ -8,11 +12,6 @@
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
-    "oxfmt": "^0.54.0",
     "vite": "^8.2.1"
-  },
-  "scripts": {
-    "git:commit": "git add -A && git commit -m 'feat: Introduce new features'",
-    "git:push": "pnpm git:commit && git push origin main"
   }
 }

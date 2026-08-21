@@ -138,9 +138,7 @@ def run_sim(
         print(f"[SKIP] {scenario}_{protocol}_s{sim_seed} - flowmonitor already exists")
         return True
 
-    print(
-        f"[INFO] Running: Protocol={protocol}, Scenario={scenario}, Seed={sim_seed}"
-    )
+    print(f"[INFO] Running: Protocol={protocol}, Scenario={scenario}, Seed={sim_seed}")
     print(
         f"[INFO]   Access: {access_bw} @ {access_delay}, "
         f"Bottleneck: {bottleneck_bw} @ {bottleneck_delay}"
@@ -397,9 +395,7 @@ def cmd_summary(args):
                 "Throughput_Mbps": (
                     f"{np.mean(g['throughput']):.4f}" if g["throughput"] else "N/A"
                 ),
-                "LossRate_Pct": (
-                    f"{np.mean(g['loss']):.6f}" if g["loss"] else "N/A"
-                ),
+                "LossRate_Pct": (f"{np.mean(g['loss']):.6f}" if g["loss"] else "N/A"),
             }
         )
 
@@ -953,9 +949,7 @@ def plot_flow_throughput_comparison(log_dir: str, output_dir: str):
         proto_samples = samples.setdefault(scenario, {}).setdefault(proto, {})
         for flow in flows:
             if flow.protocol == 6 and flow.flow_id in {1, 3, 5}:
-                proto_samples.setdefault(flow.flow_id, []).append(
-                    flow.throughput_mbps
-                )
+                proto_samples.setdefault(flow.flow_id, []).append(flow.throughput_mbps)
     for scenario, proto_map in samples.items():
         for proto, flow_samples in proto_map.items():
             data.setdefault(scenario, {})[proto] = {
