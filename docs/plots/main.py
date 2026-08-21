@@ -135,24 +135,39 @@ S_ORDER = [
 ]
 SID_BY_SCENARIO = {scenario: sid for sid, scenario in S_ORDER}
 UDP_PAIRED_SIDS = [
-    "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8",
-    "S10", "S13", "S14", "S16", "S17", "S18", "S19",
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "S6",
+    "S7",
+    "S8",
+    "S10",
+    "S13",
+    "S14",
+    "S16",
+    "S17",
+    "S18",
+    "S19",
 ]
 DEGENERATE_BBR_UTIL = 0.01
 
 
 def rate_mbps(text: str) -> float:
     match = re.match(r"([\d.]+)([GMK]?)bps", text)
-    return float(match.group(1)) * {"G": 1000.0, "M": 1.0, "K": 1e-3, "": 1e-6}[
-        match.group(2)
-    ]
+    return (
+        float(match.group(1))
+        * {"G": 1000.0, "M": 1.0, "K": 1e-3, "": 1e-6}[match.group(2)]
+    )
 
 
 def delay_ms(text: str) -> float:
     match = re.match(r"([\d.]+)(ns|us|ms|s)", text)
-    return float(match.group(1)) * {"ns": 1e-6, "us": 1e-3, "ms": 1.0, "s": 1e3}[
-        match.group(2)
-    ]
+    return (
+        float(match.group(1))
+        * {"ns": 1e-6, "us": 1e-3, "ms": 1.0, "s": 1e3}[match.group(2)]
+    )
 
 
 def ns_value(text: str | None) -> float:
@@ -347,9 +362,7 @@ def audit(rows: list[dict]) -> dict:
                 )
 
     expected_tcp = [scenario for _, scenario in S_ORDER]
-    expected_udp = [
-        scenario for sid, scenario in S_ORDER if sid in UDP_PAIRED_SIDS
-    ]
+    expected_udp = [scenario for sid, scenario in S_ORDER if sid in UDP_PAIRED_SIDS]
     assert sorted(kept["tcp_only"]) == sorted(expected_tcp), (
         f"TCP kept set diverges from published S1-S19: {sorted(kept['tcp_only'])}"
     )
@@ -456,7 +469,12 @@ def plot_goodput(view: dict, plots: list) -> None:
             )
     ax.legend(ncol=4, loc="upper center", bbox_to_anchor=(0.5, 1.22), frameon=False)
     fig.tight_layout()
-    plots.append({"stem": "fig01_goodput_clean", "files": save_figure(fig, "fig01_goodput_clean")})
+    plots.append(
+        {
+            "stem": "fig01_goodput_clean",
+            "files": save_figure(fig, "fig01_goodput_clean"),
+        }
+    )
 
 
 def plot_delay(view: dict, plots: list) -> None:
@@ -481,7 +499,9 @@ def plot_delay(view: dict, plots: list) -> None:
     ax.set_ylabel("Mean one-way delay (ms)")
     ax.set_title("Forward one-way delay; dashes mark the base propagation OWD")
     handles, labels = ax.get_legend_handles_labels()
-    handles.append(Line2D([], [], color="#222222", linestyle=(0, (3, 2)), linewidth=1.0))
+    handles.append(
+        Line2D([], [], color="#222222", linestyle=(0, (3, 2)), linewidth=1.0)
+    )
     labels.append("Base OWD")
     ax.legend(
         handles,
@@ -492,7 +512,9 @@ def plot_delay(view: dict, plots: list) -> None:
         frameon=False,
     )
     fig.tight_layout()
-    plots.append({"stem": "fig02_delay_clean", "files": save_figure(fig, "fig02_delay_clean")})
+    plots.append(
+        {"stem": "fig02_delay_clean", "files": save_figure(fig, "fig02_delay_clean")}
+    )
 
 
 def plot_tradeoff(view: dict, plots: list) -> None:
@@ -533,7 +555,12 @@ def plot_tradeoff(view: dict, plots: list) -> None:
     ax.set_title("Utilization-delay trade-off (TCP-only, 19 scenarios)")
     ax.legend(frameon=False, loc="lower right")
     fig.tight_layout()
-    plots.append({"stem": "fig03_tradeoff_clean", "files": save_figure(fig, "fig03_tradeoff_clean")})
+    plots.append(
+        {
+            "stem": "fig03_tradeoff_clean",
+            "files": save_figure(fig, "fig03_tradeoff_clean"),
+        }
+    )
 
 
 def plot_udp_burst(view: dict, plots: list) -> None:
@@ -579,7 +606,9 @@ def plot_udp_burst(view: dict, plots: list) -> None:
     axes[0].axhline(0, color="#444444", linewidth=0.8)
     axes[0].set_ylabel("Goodput change under burst (%)")
     axes[0].set_title("Cross-traffic robustness on the 15 paired scenarios")
-    axes[0].legend(ncol=4, loc="upper center", bbox_to_anchor=(0.5, 1.28), frameon=False)
+    axes[0].legend(
+        ncol=4, loc="upper center", bbox_to_anchor=(0.5, 1.28), frameon=False
+    )
     axes[1].set_yscale("symlog", linthresh=0.1)
     axes[1].set_ylabel("Added loss under burst (pp)")
     axes[1].set_xticks(x)
@@ -595,7 +624,12 @@ def plot_udp_burst(view: dict, plots: list) -> None:
                 color="#8B0000",
             )
     fig.tight_layout()
-    plots.append({"stem": "fig04_udp_burst_clean", "files": save_figure(fig, "fig04_udp_burst_clean")})
+    plots.append(
+        {
+            "stem": "fig04_udp_burst_clean",
+            "files": save_figure(fig, "fig04_udp_burst_clean"),
+        }
+    )
 
 
 def plot_audit_funnel(exclusions: list[dict], plots: list) -> None:
@@ -605,7 +639,9 @@ def plot_audit_funnel(exclusions: list[dict], plots: list) -> None:
         if item["rule"] == "B" and "mixed sink port" in item["reason"]
     )
     old_revision = sum(
-        1 for item in exclusions if item["rule"] == "B" and "superseded" in item["reason"]
+        1
+        for item in exclusions
+        if item["rule"] == "B" and "superseded" in item["reason"]
     )
     duplicates = sum(1 for item in exclusions if item["rule"] == "C")
     bbr_points = sum(1 for item in exclusions if item["rule"] == "D")
@@ -651,7 +687,9 @@ def plot_audit_funnel(exclusions: list[dict], plots: list) -> None:
         color="#333333",
     )
     fig.tight_layout()
-    plots.append({"stem": "fig05_audit_funnel", "files": save_figure(fig, "fig05_audit_funnel")})
+    plots.append(
+        {"stem": "fig05_audit_funnel", "files": save_figure(fig, "fig05_audit_funnel")}
+    )
 
 
 def add_box(ax, xy, width, height, text, facecolor, fontsize=8.5) -> None:
@@ -681,7 +719,9 @@ def add_arrow(ax, start, end, text=None, color="#333333") -> None:
         "",
         xy=end,
         xytext=start,
-        arrowprops=dict(arrowstyle="-|>", color=color, linewidth=1.1, shrinkA=3, shrinkB=3),
+        arrowprops=dict(
+            arrowstyle="-|>", color=color, linewidth=1.1, shrinkA=3, shrinkB=3
+        ),
     )
     if text:
         ax.text(
@@ -699,13 +739,57 @@ def plot_architecture(plots: list) -> None:
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.axis("off")
-    add_box(ax, (0.03, 0.60), 0.20, 0.22, "ns-3 TCP协议栈\n五类回调采集\nACK/丢包/RTT/ECN", "#DCEAF7")
-    add_box(ax, (0.29, 0.60), 0.22, 0.22, "OpenGym状态容器\n11维有效观测\n+ 4项元数据", "#E8F3E8")
-    add_box(ax, (0.57, 0.60), 0.20, 0.22, "跨进程同步交互\nZeroMQ + Protobuf\n请求-应答", "#FFF7DE")
-    add_box(ax, (0.81, 0.60), 0.16, 0.22, "智能体决策\n动作对\n[ssThresh, cWnd]", "#FCE4D6")
-    add_box(ax, (0.05, 0.12), 0.24, 0.24, "拥塞三分类判定\n超时 0.50 / ECN 0.75\n普通丢包 0.70", "#F4CCCC")
-    add_box(ax, (0.35, 0.12), 0.26, 0.24, "两级BDP估计\n时间窗交付速率\n+ 40样本最大值滤波", "#EADCF8")
-    add_box(ax, (0.67, 0.12), 0.28, 0.24, "基线相对奖励自适应\n快/慢EMA对比\n有界步长逼近 α×BDP", "#D9EAD3")
+    add_box(
+        ax,
+        (0.03, 0.60),
+        0.20,
+        0.22,
+        "ns-3 TCP协议栈\n五类回调采集\nACK/丢包/RTT/ECN",
+        "#DCEAF7",
+    )
+    add_box(
+        ax,
+        (0.29, 0.60),
+        0.22,
+        0.22,
+        "OpenGym状态容器\n11维有效观测\n+ 4项元数据",
+        "#E8F3E8",
+    )
+    add_box(
+        ax,
+        (0.57, 0.60),
+        0.20,
+        0.22,
+        "跨进程同步交互\nZeroMQ + Protobuf\n请求-应答",
+        "#FFF7DE",
+    )
+    add_box(
+        ax, (0.81, 0.60), 0.16, 0.22, "智能体决策\n动作对\n[ssThresh, cWnd]", "#FCE4D6"
+    )
+    add_box(
+        ax,
+        (0.05, 0.12),
+        0.24,
+        0.24,
+        "拥塞三分类判定\n超时 0.50 / ECN 0.75\n普通丢包 0.70",
+        "#F4CCCC",
+    )
+    add_box(
+        ax,
+        (0.35, 0.12),
+        0.26,
+        0.24,
+        "两级BDP估计\n时间窗交付速率\n+ 40样本最大值滤波",
+        "#EADCF8",
+    )
+    add_box(
+        ax,
+        (0.67, 0.12),
+        0.28,
+        0.24,
+        "基线相对奖励自适应\n快/慢EMA对比\n有界步长逼近 α×BDP",
+        "#D9EAD3",
+    )
     add_arrow(ax, (0.23, 0.71), (0.29, 0.71), "观测")
     add_arrow(ax, (0.51, 0.71), (0.57, 0.71))
     add_arrow(ax, (0.77, 0.71), (0.81, 0.71))
@@ -744,7 +828,12 @@ def plot_architecture(plots: list) -> None:
         fontweight="bold",
     )
     fig.tight_layout()
-    plots.append({"stem": "fig06_architecture_zh", "files": save_figure(fig, "fig06_architecture_zh")})
+    plots.append(
+        {
+            "stem": "fig06_architecture_zh",
+            "files": save_figure(fig, "fig06_architecture_zh"),
+        }
+    )
 
 
 def plot_workflow(plots: list) -> None:
@@ -832,7 +921,9 @@ def plot_workflow(plots: list) -> None:
         color=feedback_color,
     )
     fig.suptitle("拥塞控制方法整体流程", fontsize=12, fontweight="bold", y=0.995)
-    plots.append({"stem": "fig07_workflow_zh", "files": save_figure(fig, "fig07_workflow_zh")})
+    plots.append(
+        {"stem": "fig07_workflow_zh", "files": save_figure(fig, "fig07_workflow_zh")}
+    )
 
 
 def clean_stale_outputs() -> list[str]:
@@ -900,8 +991,19 @@ def main() -> None:
     (PLOTS_DIR / "figure_manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    print(json.dumps({k: manifest[k] for k in ["kpi_csv_status", "spot_checks_vs_thesis_tables"]}, ensure_ascii=False, indent=2))
-    print(f"exclusions: {len(result['exclusions'])} records; figures: {[p['stem'] for p in plots]}")
+    print(
+        json.dumps(
+            {
+                k: manifest[k]
+                for k in ["kpi_csv_status", "spot_checks_vs_thesis_tables"]
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    print(
+        f"exclusions: {len(result['exclusions'])} records; figures: {[p['stem'] for p in plots]}"
+    )
 
 
 if __name__ == "__main__":

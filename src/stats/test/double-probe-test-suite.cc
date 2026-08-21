@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 // Include a header file from your module to test.
 #include "ns3/double-probe.h"
 #include "ns3/names.h"

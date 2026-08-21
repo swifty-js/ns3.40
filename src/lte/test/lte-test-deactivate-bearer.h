@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #ifndef LENA_TEST_DEACTIVATE_BEARER_H
 #define LENA_TEST_DEACTIVATE_BEARER_H
 
