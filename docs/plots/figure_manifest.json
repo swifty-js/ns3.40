@@ -1,201 +1,434 @@
 {
-  "generated_files": [
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig01_tcp_throughput_representative.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig02_udp_burst_throughput_retention.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig03_delay_loss_tradeoff.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig04_swift_advantage_heatmap.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig05_flowmonitor_fairness_distribution.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig06_scenario_family_summary.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig07_swift_system_architecture.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig08_multi_signal_decision_flow.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig09_patent_method_steps.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig10_experiment_dumbbell_topology.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig11_logs_inventory_audit.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig12_swift_advantage_ranked_scenarios.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig13_protocol_metric_scorecard.png",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig01_tcp_throughput_representative.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig02_udp_burst_throughput_retention.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig03_delay_loss_tradeoff.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig04_swift_advantage_heatmap.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig05_flowmonitor_fairness_distribution.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig06_scenario_family_summary.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig07_swift_system_architecture.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig08_multi_signal_decision_flow.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig09_patent_method_steps.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig10_experiment_dumbbell_topology.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig11_logs_inventory_audit.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig12_swift_advantage_ranked_scenarios.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig13_protocol_metric_scorecard.pdf",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig01_tcp_throughput_representative.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig02_udp_burst_throughput_retention.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig03_delay_loss_tradeoff.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig04_swift_advantage_heatmap.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig05_flowmonitor_fairness_distribution.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig06_scenario_family_summary.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig07_swift_system_architecture.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig08_multi_signal_decision_flow.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig09_patent_method_steps.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig10_experiment_dumbbell_topology.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig11_logs_inventory_audit.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig12_swift_advantage_ranked_scenarios.svg",
-    "/Users/hangtiancheng/github/ns3.40/docs/plots/fig13_protocol_metric_scorecard.svg"
-  ],
-  "logs_inventory": {
-    ".flowmonitor": 288,
-    ".log": 360,
-    ".txt": 1,
-    ".png": 32,
-    ".csv": 3
+  "source": "logs/comparison/*.flowmonitor + logs/comparison-udp/*.flowmonitor (288 artifacts)",
+  "kpi_csv": "logs/summary/kpi_forward.csv",
+  "kpi_csv_status": "kpi_forward.csv regenerated: identical to previous version",
+  "audit_rules": {
+    "A": "metrics recomputed over forward flows only (proto 6, 10.1.x -> 10.2.x)",
+    "B": "groups excluded on revision mixing or whole-group old revision (sink port 5000)",
+    "C": "duplicate configs excluded: dc_oversub_10to1 (= congested_heavy), satellite_leo (= lte_good)",
+    "D": "BBR data points with util < 1% excluded"
   },
-  "summary_records_used": 288,
-  "flowmonitor_flow_records": 3744,
-  "text_log_records": 361,
-  "existing_log_png_records": 32,
-  "swift_advantage_top_scenarios": [
+  "kept_groups": {
+    "tcp_only": [
+      "S1=intra_rack_10g",
+      "S2=intra_rack_25g",
+      "S3=leaf_spine_20g",
+      "S4=asymmetric_high",
+      "S5=congested_heavy",
+      "S6=symmetric_low",
+      "S7=dc_500m",
+      "S8=dc_100m",
+      "S9=cross_dc_wan",
+      "S10=wan_metro",
+      "S11=wifi_ac",
+      "S12=wifi_ax",
+      "S13=wifi_n",
+      "S14=wifi_legacy",
+      "S15=nr_5g_embb",
+      "S16=nr_5g_edge",
+      "S17=lte_good",
+      "S18=lte_poor",
+      "S19=satellite_geo"
+    ],
+    "udp_burst": [
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "S5",
+      "S6",
+      "S7",
+      "S8",
+      "S10",
+      "S13",
+      "S14",
+      "S16",
+      "S17",
+      "S18",
+      "S19"
+    ]
+  },
+  "exclusions": [
     {
-      "scenario": "satellite_geo",
-      "score": 110.66838806811859,
-      "tcp_gain_pct": 59.038344491783334,
-      "tcp_vs_best_baseline": 1.1166666666666667,
-      "delay_reduction_pct": 9.467925599079429,
-      "tcp_loss_reduction_pp": 2.34,
-      "udp_retention_gain_pct": 30.436521403140016,
-      "udp_loss_reduction_pp": 2.6033333333333335,
-      "tcp_swift_mbps": 8.71,
-      "udp_swift_mbps": 5.8
+      "rule": "B",
+      "setting": "tcp_only",
+      "scenario": "congested_light",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000); artifacts from two sim.cc revisions"
     },
     {
-      "scenario": "dc_100g",
-      "score": 63.475739126458535,
-      "tcp_gain_pct": 49.99651200913533,
-      "tcp_vs_best_baseline": 0.9999801387866194,
-      "delay_reduction_pct": 90.73449260316636,
-      "tcp_loss_reduction_pp": 0.0,
-      "udp_retention_gain_pct": -0.13094677315175218,
-      "udp_loss_reduction_pp": 0.0,
-      "tcp_swift_mbps": 101703.75,
-      "udp_swift_mbps": 101305.27
-    },
-    {
-      "scenario": "rdma_like_50g",
-      "score": 63.32749845829717,
-      "tcp_gain_pct": 49.99353788853445,
-      "tcp_vs_best_baseline": 0.999974151108702,
-      "delay_reduction_pct": 90.65412382410851,
-      "tcp_loss_reduction_pp": 0.0,
-      "udp_retention_gain_pct": -0.26415800385355404,
-      "udp_loss_reduction_pp": 0.0,
-      "tcp_swift_mbps": 51064.7,
-      "udp_swift_mbps": 50662.17
-    },
-    {
-      "scenario": "intra_rack_25g",
-      "score": 62.89658202411859,
-      "tcp_gain_pct": 49.98825111594818,
-      "tcp_vs_best_baseline": 0.9999620104091479,
-      "delay_reduction_pct": 89.58577283372365,
-      "tcp_loss_reduction_pp": 0.0,
-      "udp_retention_gain_pct": -0.5295350168881385,
-      "udp_loss_reduction_pp": 0.0,
-      "tcp_swift_mbps": 25532.34,
-      "udp_swift_mbps": 25131.0
-    },
-    {
-      "scenario": "rdma_like_25g",
-      "score": 62.8945550568931,
-      "tcp_gain_pct": 49.9886035601538,
-      "tcp_vs_best_baseline": 0.9999620104240263,
-      "delay_reduction_pct": 89.56999755680431,
-      "tcp_loss_reduction_pp": 0.0,
-      "udp_retention_gain_pct": -0.5295481367813437,
-      "udp_loss_reduction_pp": 0.0,
-      "tcp_swift_mbps": 25532.35,
-      "udp_swift_mbps": 25131.01
-    },
-    {
-      "scenario": "oversub_4to1_10g",
-      "score": 61.1122456644516,
-      "tcp_gain_pct": 19.544805301238675,
-      "tcp_vs_best_baseline": 0.9995183893058933,
-      "delay_reduction_pct": 14.063191789092377,
-      "tcp_loss_reduction_pp": 0.023333333333333334,
-      "udp_retention_gain_pct": 39.257961594849064,
-      "udp_loss_reduction_pp": 0.02666666666666667,
-      "tcp_swift_mbps": 2552.7,
-      "udp_swift_mbps": 2169.06
-    },
-    {
-      "scenario": "cross_pod_20g",
-      "score": 60.18502654144439,
-      "tcp_gain_pct": 47.808952995409946,
-      "tcp_vs_best_baseline": 0.9998804441987996,
-      "delay_reduction_pct": 87.46216121084124,
-      "tcp_loss_reduction_pp": 0.0,
-      "udp_retention_gain_pct": -0.7432506355917412,
-      "udp_loss_reduction_pp": 0.0,
-      "tcp_swift_mbps": 20406.44,
-      "udp_swift_mbps": 20004.72
-    },
-    {
-      "scenario": "intra_rack_10g",
-      "score": 60.023308849683175,
-      "tcp_gain_pct": 49.9732739682577,
-      "tcp_vs_best_baseline": 0.9999138422255337,
-      "delay_reduction_pct": 74.80943053359451,
-      "tcp_loss_reduction_pp": 0.0033333333333333335,
-      "udp_retention_gain_pct": -1.1980463652803697,
-      "udp_loss_reduction_pp": 0.0033333333333333335,
-      "tcp_swift_mbps": 10212.94,
-      "udp_swift_mbps": 9811.36
-    },
-    {
-      "scenario": "mixed_small_flow",
-      "score": 58.90339756132388,
-      "tcp_gain_pct": 19.696866092413256,
-      "tcp_vs_best_baseline": 0.99964757019227,
-      "delay_reduction_pct": -3.0346904499912952,
-      "tcp_loss_reduction_pp": 0.0033333333333333335,
-      "udp_retention_gain_pct": 39.63506836974264,
-      "udp_loss_reduction_pp": 0.0033333333333333335,
-      "tcp_swift_mbps": 2042.24,
-      "udp_swift_mbps": 1719.72
-    },
-    {
+      "rule": "B",
+      "setting": "tcp_only",
       "scenario": "congested_medium",
-      "score": 58.56219807077986,
-      "tcp_gain_pct": 19.491897310675576,
-      "tcp_vs_best_baseline": 0.99964757019227,
-      "delay_reduction_pct": -2.838150289017327,
-      "tcp_loss_reduction_pp": 0.0033333333333333335,
-      "udp_retention_gain_pct": 39.46935663679021,
-      "udp_loss_reduction_pp": 0.0033333333333333335,
-      "tcp_swift_mbps": 2042.24,
-      "udp_swift_mbps": 1719.72
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:50000,TcpNewReno:5000,TcpSwift:50000); artifacts from two sim.cc revisions"
     },
     {
+      "rule": "B",
+      "setting": "tcp_only",
       "scenario": "cross_pod_10g",
-      "score": 55.870843280503685,
-      "tcp_gain_pct": 45.720078743340764,
-      "tcp_vs_best_baseline": 0.9999206931225272,
-      "delay_reduction_pct": 75.76459369252775,
-      "tcp_loss_reduction_pp": 0.0033333333333333335,
-      "udp_retention_gain_pct": -1.2405911833829109,
-      "udp_loss_reduction_pp": 0.0033333333333333335,
-      "tcp_swift_mbps": 10212.68,
-      "udp_swift_mbps": 9811.11
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000); artifacts from two sim.cc revisions"
     },
     {
+      "rule": "B",
+      "setting": "tcp_only",
+      "scenario": "cross_pod_20g",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "tcp_only",
+      "scenario": "dc_100g",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "C",
+      "setting": "tcp_only",
+      "scenario": "dc_oversub_10to1",
+      "protocol": "*",
+      "reason": "duplicate of congested_heavy (identical link parameters at generation time)"
+    },
+    {
+      "rule": "B",
+      "setting": "tcp_only",
       "scenario": "leaf_spine_50g",
-      "score": 52.75292670265704,
-      "tcp_gain_pct": 39.43954074785123,
-      "tcp_vs_best_baseline": 0.9999751301310995,
-      "delay_reduction_pct": 90.73439465579317,
-      "tcp_loss_reduction_pp": 0.0,
-      "udp_retention_gain_pct": -0.29677324356316426,
-      "udp_loss_reduction_pp": 0.0,
-      "tcp_swift_mbps": 51064.54,
-      "udp_swift_mbps": 50662.01
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:5000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:50000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "tcp_only",
+      "scenario": "mixed_large_flow",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "tcp_only",
+      "scenario": "mixed_small_flow",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:50000,TcpNewReno:5000,TcpSwift:50000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "tcp_only",
+      "scenario": "oversub_2to1_25g",
+      "protocol": "*",
+      "reason": "whole group generated by the superseded sim.cc revision (sink port 5000); not comparable with the retained revision"
+    },
+    {
+      "rule": "B",
+      "setting": "tcp_only",
+      "scenario": "oversub_2to1_50g",
+      "protocol": "*",
+      "reason": "whole group generated by the superseded sim.cc revision (sink port 5000); not comparable with the retained revision"
+    },
+    {
+      "rule": "B",
+      "setting": "tcp_only",
+      "scenario": "oversub_4to1_10g",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:50000,TcpNewReno:5000,TcpSwift:50000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "tcp_only",
+      "scenario": "oversub_4to1_40g",
+      "protocol": "*",
+      "reason": "whole group generated by the superseded sim.cc revision (sink port 5000); not comparable with the retained revision"
+    },
+    {
+      "rule": "B",
+      "setting": "tcp_only",
+      "scenario": "rdma_like_25g",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "tcp_only",
+      "scenario": "rdma_like_50g",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "C",
+      "setting": "tcp_only",
+      "scenario": "satellite_leo",
+      "protocol": "*",
+      "reason": "duplicate of lte_good (identical link parameters at generation time)"
+    },
+    {
+      "rule": "B",
+      "setting": "tcp_only",
+      "scenario": "wan_longhaul",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:5000,TcpCubic:5000,TcpNewReno:50000,TcpSwift:50000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "congested_light",
+      "protocol": "*",
+      "reason": "whole group generated by the superseded sim.cc revision (sink port 5000); not comparable with the retained revision"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "congested_medium",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:50000,TcpNewReno:5000,TcpSwift:50000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "cross_dc_wan",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:5000,TcpCubic:50000,TcpNewReno:50000,TcpSwift:50000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "cross_pod_10g",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "cross_pod_20g",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "dc_100g",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "C",
+      "setting": "udp_burst",
+      "scenario": "dc_oversub_10to1",
+      "protocol": "*",
+      "reason": "duplicate of congested_heavy (identical link parameters at generation time)"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "leaf_spine_50g",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:5000,TcpCubic:5000,TcpNewReno:50000,TcpSwift:50000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "mixed_large_flow",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "mixed_small_flow",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:50000,TcpNewReno:5000,TcpSwift:50000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "nr_5g_embb",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:5000,TcpCubic:50000,TcpNewReno:50000,TcpSwift:50000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "oversub_2to1_25g",
+      "protocol": "*",
+      "reason": "whole group generated by the superseded sim.cc revision (sink port 5000); not comparable with the retained revision"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "oversub_2to1_50g",
+      "protocol": "*",
+      "reason": "whole group generated by the superseded sim.cc revision (sink port 5000); not comparable with the retained revision"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "oversub_4to1_10g",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:50000,TcpNewReno:5000,TcpSwift:50000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "oversub_4to1_40g",
+      "protocol": "*",
+      "reason": "whole group generated by the superseded sim.cc revision (sink port 5000); not comparable with the retained revision"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "rdma_like_25g",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "rdma_like_50g",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:50000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:5000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "C",
+      "setting": "udp_burst",
+      "scenario": "satellite_leo",
+      "protocol": "*",
+      "reason": "duplicate of lte_good (identical link parameters at generation time)"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "wan_longhaul",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:5000,TcpCubic:5000,TcpNewReno:5000,TcpSwift:50000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "wifi_ac",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:5000,TcpCubic:50000,TcpNewReno:50000,TcpSwift:50000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "B",
+      "setting": "udp_burst",
+      "scenario": "wifi_ax",
+      "protocol": "*",
+      "reason": "mixed sink port across protocols (TcpBbr:5000,TcpCubic:50000,TcpNewReno:50000,TcpSwift:50000); artifacts from two sim.cc revisions"
+    },
+    {
+      "rule": "D",
+      "setting": "tcp_only",
+      "scenario": "intra_rack_10g",
+      "protocol": "TcpBbr",
+      "reason": "goodput 2.24 Mbps = 0.02% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown"
+    },
+    {
+      "rule": "D",
+      "setting": "tcp_only",
+      "scenario": "intra_rack_25g",
+      "protocol": "TcpBbr",
+      "reason": "goodput 2.2 Mbps = 0.01% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown"
+    },
+    {
+      "rule": "D",
+      "setting": "udp_burst",
+      "scenario": "intra_rack_10g",
+      "protocol": "TcpBbr",
+      "reason": "goodput 2.23 Mbps = 0.02% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown"
+    },
+    {
+      "rule": "D",
+      "setting": "udp_burst",
+      "scenario": "intra_rack_25g",
+      "protocol": "TcpBbr",
+      "reason": "goodput 2.2 Mbps = 0.01% of bottleneck; ns-3.40 BBR pacing/RTT-resolution breakdown"
     }
   ],
-  "anomalies_excluded": []
+  "spot_checks_vs_thesis_tables": [
+    "OK  tcp_only/cross_dc_wan/TcpSwift/Goodput_Mbps: 709.72 (thesis: 709.7)",
+    "OK  tcp_only/cross_dc_wan/TcpNewReno/Goodput_Mbps: 998.38 (thesis: 998.4)",
+    "OK  tcp_only/dc_100m/TcpSwift/Delay_ms: 35.4207 (thesis: 35.42)",
+    "OK  tcp_only/satellite_geo/TcpSwift/Loss_pct: 0.0 (thesis: 0.0)"
+  ],
+  "stale_outputs_removed": [
+    "fig01_goodput_clean.pdf",
+    "fig01_goodput_clean.png",
+    "fig01_goodput_clean.svg",
+    "fig02_delay_clean.pdf",
+    "fig02_delay_clean.png",
+    "fig02_delay_clean.svg",
+    "fig03_tradeoff_clean.pdf",
+    "fig03_tradeoff_clean.png",
+    "fig03_tradeoff_clean.svg",
+    "fig04_udp_burst_clean.pdf",
+    "fig04_udp_burst_clean.png",
+    "fig04_udp_burst_clean.svg",
+    "fig05_audit_funnel.pdf",
+    "fig05_audit_funnel.png",
+    "fig05_audit_funnel.svg",
+    "fig06_architecture_zh.pdf",
+    "fig06_architecture_zh.png",
+    "fig06_architecture_zh.svg",
+    "fig07_workflow_zh.pdf",
+    "fig07_workflow_zh.png",
+    "fig07_workflow_zh.svg"
+  ],
+  "figures": [
+    {
+      "stem": "fig01_goodput_clean",
+      "files": [
+        "fig01_goodput_clean.png",
+        "fig01_goodput_clean.pdf",
+        "fig01_goodput_clean.svg"
+      ]
+    },
+    {
+      "stem": "fig02_delay_clean",
+      "files": [
+        "fig02_delay_clean.png",
+        "fig02_delay_clean.pdf",
+        "fig02_delay_clean.svg"
+      ]
+    },
+    {
+      "stem": "fig03_tradeoff_clean",
+      "files": [
+        "fig03_tradeoff_clean.png",
+        "fig03_tradeoff_clean.pdf",
+        "fig03_tradeoff_clean.svg"
+      ]
+    },
+    {
+      "stem": "fig04_udp_burst_clean",
+      "files": [
+        "fig04_udp_burst_clean.png",
+        "fig04_udp_burst_clean.pdf",
+        "fig04_udp_burst_clean.svg"
+      ]
+    },
+    {
+      "stem": "fig05_audit_funnel",
+      "files": [
+        "fig05_audit_funnel.png",
+        "fig05_audit_funnel.pdf",
+        "fig05_audit_funnel.svg"
+      ]
+    },
+    {
+      "stem": "fig06_architecture_zh",
+      "files": [
+        "fig06_architecture_zh.png",
+        "fig06_architecture_zh.pdf",
+        "fig06_architecture_zh.svg"
+      ]
+    },
+    {
+      "stem": "fig07_workflow_zh",
+      "files": [
+        "fig07_workflow_zh.png",
+        "fig07_workflow_zh.pdf",
+        "fig07_workflow_zh.svg"
+      ]
+    }
+  ]
 }

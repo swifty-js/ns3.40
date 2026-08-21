@@ -216,7 +216,14 @@ Swift与之处于不同的设计点。第一，\textbf{决策位置与时间尺�
 
 \subsection{系统架构}
 
-Swift的系统架构由四个核心模块组成。\textbf{网络仿真模块}基于ns-3\cite{ns3}构建，实现完整TCP/IP协议栈和多种网络拓扑（近端高速链路、哑铃型、无线/移动、广域网与卫星链路等）。\textbf{拥塞控制环境模块}基于OpenGym\cite{opengym}框架实现，在TCP协议栈的五个关键回调点（GetSsThresh、IncreaseWindow、PktsAcked、CongestionStateSet、CwndEvent）采集11维状态参数，并将智能体决策应用于TCP连接。\textbf{智能决策模块}采用Python实现，执行多信号融合拥塞检测、差异化拥塞响应、自适应参数调优和融合控制策略计算，维护每个TCP连接的独立状态。\textbf{进程间通信模块}采用ZeroMQ消息队列和Protocol Buffers序列化，实现仿真进程与决策进程间的同步交互；由于OpenGym路径依赖ZMQ同步通信，当前TcpSwift实验未启用MTP并行仿真。
+Swift的系统架构由四个核心模块组成，整体控制回路如图\ref{fig:architecture}所示。\textbf{网络仿真模块}基于ns-3\cite{ns3}构建，实现完整TCP/IP协议栈和多种网络拓扑（近端高速链路、哑铃型、无线/移动、广域网与卫星链路等）。\textbf{拥塞控制环境模块}基于OpenGym\cite{opengym}框架实现，在TCP协议栈的五个关键回调点（GetSsThresh、IncreaseWindow、PktsAcked、CongestionStateSet、CwndEvent）采集11维状态参数，并将智能体决策应用于TCP连接。\textbf{智能决策模块}采用Python实现，执行多信号融合拥塞检测、差异化拥塞响应、自适应参数调优和融合控制策略计算，维护每个TCP连接的独立状态。\textbf{进程间通信模块}采用ZeroMQ消息队列和Protocol Buffers序列化，实现仿真进程与决策进程间的同步交互；由于OpenGym路径依赖ZMQ同步通信，当前TcpSwift实验未启用MTP并行仿真。
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.86\textwidth]{plots/fig06_architecture_zh.pdf}
+\caption{Swift控制回路总体架构：协议栈回调采集的观测经OpenGym容器与ZeroMQ同步信道送入智能体，智能体内部依次执行拥塞三分类判定、两级BDP估计与基线相对奖励自适应，动作对经应答写回协议栈}
+\label{fig:architecture}
+\end{figure*}
 
 Swift将拥塞控制建模为马尔可夫决策过程$\langle S, A, P, R, \gamma \rangle$。状态空间$S$为11维有效RL观测子空间（嵌入于15元素OpenGym传输容器，另含4项元数据通道），动作空间$A$直接输出新的ssthresh和cwnd值（连续动作空间），采用基于规则的确定性策略而非神经网络，以提高可解释性并避免神经网络推理依赖。
 
@@ -490,12 +497,19 @@ Swift为每个TCP连接维护独立状态，通过socketUuid为键的哈希表�
 \textbf{排除规则}：对完整归档矩阵（36个场景 $\times$ 4个协议 $\times$ 2种设置）执行数据质量审计，得到四条排除规则，全部记录于\texttt{logs/error.txt}的"AUDIT PASS 2026-08-20"条目中：
 \begin{itemize}
 \item \textbf{规则A（指标定义缺陷）}：两份绘图汇总表的吞吐量与延迟列由\texttt{kpi\_forward.csv}取代。
-\item \textbf{规则B（仿真器版本混用）}：27个（设置，场景）组合内部不同协议的汇聚端口分别为5000与50000，表明产物来自两个\texttt{sim.cc}版本，跨协议对比不成立，相关场景整体排除。
+\item \textbf{规则B（仿真器版本混用）}：27个（设置，场景）组合内部不同协议的汇聚端口分别为5000与50000，表明产物来自两个\texttt{sim.cc}版本，跨协议对比不成立，相关场景整体排除；另有7个组合虽然端口内部一致，但整组产自已被取代的旧修订（端口5000），与保留集合不可比，同样排除。
 \item \textbf{规则C（重复与错标配置）}：\texttt{dc\_oversub\_10to1}与\texttt{congested\_heavy}、\texttt{satellite\_leo}与\texttt{lte\_good}的配置完全相同且产物逐字节一致，保留后者。其中\texttt{satellite\_leo}实际被配置为100/50 Mbps、5/20 ms链路，并不具备LEO卫星链路特征，属标签错误；因此\textbf{本文不基于该数据集给出任何LEO卫星结论}，GEO卫星场景（\texttt{satellite\_geo}）不受影响。
 \item \textbf{规则D（基线退化）}：在微秒级RTT高速率路径上BBR吞吐量不足瓶颈容量的1\%（约2 Mbps），其成因是ns-3.40中BBR的pacing与RTT分辨率失配，而非拥塞控制策略的结果；据此在\texttt{intra\_rack\_10g}与\texttt{intra\_rack\_25g}中排除BBR，这两个场景退化为三协议对比。
 \end{itemize}
 
-经上述规则筛选后，纯TCP设置保留19个场景，UDP突发设置保留15个场景（后者为前者的真子集），合计132条可用于跨协议对比的记录。场景配置如表\ref{tab:scenarios}所示。为便于组织讨论，按路径特征将19个场景归为四组：\textbf{G1}为微秒级RTT高速链路，\textbf{G2}为千兆级近端与城域/跨域链路，\textbf{G3}为无线与蜂窝接入链路，\textbf{G4}为GEO卫星链路。
+经上述规则筛选后，纯TCP设置保留19个场景，UDP突发设置保留15个场景（后者为前者的真子集），合计132条可用于跨协议对比的记录。图\ref{fig:audit-funnel}给出该筛选过程的漏斗视图，其中每一级排除均与\texttt{logs/error.txt}中的记录一一对应；本文全部图表由绘图管线\texttt{docs/plots/main.py}从原始FlowMonitor产物重新推导生成，该管线在每次运行时自动重算此漏斗并断言保留集合不变。场景配置如表\ref{tab:scenarios}所示。为便于组织讨论，按路径特征将19个场景归为四组：\textbf{G1}为微秒级RTT高速链路，\textbf{G2}为千兆级近端与城域/跨域链路，\textbf{G3}为无线与蜂窝接入链路，\textbf{G4}为GEO卫星链路。
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{plots/fig05_audit_funnel.pdf}
+\caption{数据审计漏斗：72个(设置, 场景)组合经规则B（修订混用与整组旧修订）、规则C（重复配置）过滤后保留34个组合；规则A重写全部保留组合的指标定义，规则D另行排除4个退化BBR数据点}
+\label{fig:audit-funnel}
+\end{figure}
 
 \begin{table}[htbp]
 \centering
@@ -503,44 +517,58 @@ Swift为每个TCP连接维护独立状态，通过socketUuid为键的哈希表�
 \label{tab:scenarios}
 \footnotesize
 \setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{@{}cllr@{}}
+\begin{tabular}{@{}ccllr@{}}
 \toprule
-\textbf{组} & \textbf{场景} & \textbf{瓶颈(Mbps)} & \textbf{基础单向时延(ms)} \\
+\textbf{编号} & \textbf{组} & \textbf{场景} & \textbf{瓶颈(Mbps)} & \textbf{基础单向时延(ms)} \\
 \midrule
-G1 & intra\_rack\_10g$^{\ddagger}$ & 10000 & 0.004 \\
-G1 & intra\_rack\_25g$^{\ddagger}$ & 25000 & 0.004 \\
-G1 & leaf\_spine\_20g & 20000 & 0.009 \\
+S1 & G1 & intra\_rack\_10g$^{\ddagger}$ & 10000 & 0.004 \\
+S2 & G1 & intra\_rack\_25g$^{\ddagger}$ & 25000 & 0.004 \\
+S3 & G1 & leaf\_spine\_20g & 20000 & 0.009 \\
 \midrule
-G2 & asymmetric\_high & 1000 & 0.012 \\
-G2 & congested\_heavy & 1000 & 0.009 \\
-G2 & symmetric\_low & 1000 & 0.030 \\
-G2 & dc\_100m & 100 & 0.009 \\
-G2 & dc\_500m & 500 & 0.009 \\
-G2 & wan\_metro & 1000 & 2.20 \\
-G2 & cross\_dc\_wan$^{\dagger}$ & 1000 & 5.02 \\
+S4 & G2 & asymmetric\_high & 1000 & 0.012 \\
+S5 & G2 & congested\_heavy & 1000 & 0.009 \\
+S6 & G2 & symmetric\_low & 1000 & 0.030 \\
+S8 & G2 & dc\_100m & 100 & 0.009 \\
+S7 & G2 & dc\_500m & 500 & 0.009 \\
+S10 & G2 & wan\_metro & 1000 & 2.20 \\
+S9 & G2 & cross\_dc\_wan$^{\dagger}$ & 1000 & 5.02 \\
 \midrule
-G3 & wifi\_ac$^{\dagger}$ & 400 & 7.00 \\
-G3 & wifi\_ax$^{\dagger}$ & 600 & 5.00 \\
-G3 & wifi\_n & 50 & 14.0 \\
-G3 & wifi\_legacy & 10 & 30.0 \\
-G3 & lte\_good & 50 & 30.0 \\
-G3 & lte\_poor & 10 & 70.0 \\
-G3 & nr\_5g\_edge & 100 & 14.0 \\
-G3 & nr\_5g\_embb$^{\dagger}$ & 500 & 7.00 \\
+S11 & G3 & wifi\_ac$^{\dagger}$ & 400 & 7.00 \\
+S12 & G3 & wifi\_ax$^{\dagger}$ & 600 & 5.00 \\
+S13 & G3 & wifi\_n & 50 & 14.0 \\
+S14 & G3 & wifi\_legacy & 10 & 30.0 \\
+S17 & G3 & lte\_good & 50 & 30.0 \\
+S18 & G3 & lte\_poor & 10 & 70.0 \\
+S16 & G3 & nr\_5g\_edge & 100 & 14.0 \\
+S15 & G3 & nr\_5g\_embb$^{\dagger}$ & 500 & 7.00 \\
 \midrule
-G4 & satellite\_geo & 10 & 320.0 \\
+S19 & G4 & satellite\_geo & 10 & 320.0 \\
 \bottomrule
 \end{tabular}
 \vspace{2pt}
 
 \raggedright
-\scriptsize $\dagger$ 该场景不在UDP突发设置的15个洁净场景之列；$\ddagger$ 该场景按规则D排除BBR基线。
+\scriptsize $\dagger$ 该场景不在UDP突发设置的15个洁净场景之列；$\ddagger$ 该场景按规则D排除BBR基线。编号S1--S19为全文统一的场景标识，图\ref{fig:goodput-overview}--图\ref{fig:udp-burst}的横轴使用该编号。
 \end{table}
 
 \subsection{纯TCP设置下的稳态性能}
 \label{subsec:main-results}
 
-表\ref{tab:throughput}、表\ref{tab:latency}与表\ref{tab:loss}分别给出19个洁净场景的聚合吞吐量、平均单向延迟与丢包率。
+表\ref{tab:throughput}、表\ref{tab:latency}与表\ref{tab:loss}分别给出19个洁净场景的聚合吞吐量、平均单向延迟与丢包率。图\ref{fig:goodput-overview}与图\ref{fig:delay-overview}以对数坐标给出前两项指标的全景视图（横轴为表\ref{tab:scenarios}中的场景编号）：吞吐量柱组逐场景几乎重合，而延迟图中各场景的基线传播时延以黑色短划线标出，柱顶与短划线之间的距离即排队分量，Swift在S1--S3的柱体几乎落在短划线上。
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.92\textwidth]{plots/fig01_goodput_clean.pdf}
+\caption{19个审计后场景的聚合前向吞吐量（对数坐标）。S1、S2的BBR数据点按规则D排除}
+\label{fig:goodput-overview}
+\end{figure*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.92\textwidth]{plots/fig02_delay_clean.pdf}
+\caption{19个场景的平均单向前向延迟（对数坐标）。黑色短划线为各场景的基线单向传播时延，柱顶与短划线的距离即排队分量}
+\label{fig:delay-overview}
+\end{figure*}
 
 \begin{table}[htbp]
 \centering
@@ -739,7 +767,14 @@ BBR     & 39.07\% & 9.69\% & $+$50.78\% & 6/13 \\
 
 \subsubsection{场景级对照}
 
-表\ref{tab:udp-burst-headline}给出15个洁净场景的吞吐量与延迟。Swift在其中14个场景取得最高吞吐量，唯一例外是\texttt{wan\_metro}（801.06 Mbps对CUBIC 802.95与NewReno 801.87，相对最优基线低0.24\%）。优势最显著的是GEO卫星场景：Swift 5.70 Mbps对NewReno 1.99、CUBIC 4.08与BBR 1.80，分别提升186.4\%、39.7\%与216.7\%，相对NewReno/CUBIC均值提升87.8\%——即纯TCP设置下的29.8\%优势在跨流量干扰下扩大约三倍。中低速蜂窝与WiFi场景亦呈现一致趋势：\texttt{lte\_good}提升12.7\%（对NewReno）与2.7\%（对CUBIC）、\texttt{nr\_5g\_edge}提升9.1\%与2.1\%、\texttt{wifi\_n}提升8.0\%与2.1\%、\texttt{lte\_poor}提升15.7\%与10.5\%。
+表\ref{tab:udp-burst-headline}给出15个洁净场景的吞吐量与延迟，图\ref{fig:udp-burst}以逐场景柱状图并列呈现吞吐量变化与新增丢包：Swift的回落集中于$-2\%$至$-34\%$的窄带内且下半幅不存在Swift柱体（新增丢包严格为零），而BBR在千兆级链路上出现$-89\%$至$-90\%$的深坑。Swift在其中14个场景取得最高吞吐量，唯一例外是\texttt{wan\_metro}（801.06 Mbps对CUBIC 802.95与NewReno 801.87，相对最优基线低0.24\%）。优势最显著的是GEO卫星场景：Swift 5.70 Mbps对NewReno 1.99、CUBIC 4.08与BBR 1.80，分别提升186.4\%、39.7\%与216.7\%，相对NewReno/CUBIC均值提升87.8\%——即纯TCP设置下的29.8\%优势在跨流量干扰下扩大约三倍。中低速蜂窝与WiFi场景亦呈现一致趋势：\texttt{lte\_good}提升12.7\%（对NewReno）与2.7\%（对CUBIC）、\texttt{nr\_5g\_edge}提升9.1\%与2.1\%、\texttt{wifi\_n}提升8.0\%与2.1\%、\texttt{lte\_poor}提升15.7\%与10.5\%。
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.92\textwidth]{plots/fig04_udp_burst_clean.pdf}
+\caption{15个配对场景的跨流量鲁棒性：UDP突发引起的吞吐量变化（上）与新增丢包（下，符号对数坐标）。Swift无新增丢包，故下半幅不存在对应柱体；S1、S2的BBR按规则D排除}
+\label{fig:udp-burst}
+\end{figure*}
 
 \begin{table*}[htbp]
 \centering

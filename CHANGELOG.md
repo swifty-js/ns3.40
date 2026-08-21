@@ -4,6 +4,43 @@ All notable changes to the swift-tcp example and its experiment tooling.
 Format follows [Keep a Changelog](https://keepachangelog.com/); versions refer
 to the TcpSwift agent (`contrib/opengym/examples/swift-tcp/tcp_swift.py`).
 
+## [Unreleased] - Figure pipeline rebuilt on the audited dataset (2026-08-21)
+
+### Added
+
+- `docs/plots/main.py` (rewritten): the publication-figure pipeline now
+  derives every number from the raw `.flowmonitor` artifacts with
+  forward-flow-only metrics (audit rule A), regenerates
+  `logs/summary/kpi_forward.csv` (verified byte-identical to the committed
+  version, closing its provenance gap), applies exclusion rules B/C/D
+  (27 revision-mixed groups, 7 whole-group old-revision runs, 4 duplicate
+  configs, 4 degenerate BBR points), asserts the kept sets equal the
+  published S1-S19 / 15-scenario lists, spot-checks values against the
+  thesis tables, and emits `figure_manifest.json` with per-rule exclusion
+  records. Previous figures were built from the direction-mixed summary
+  CSVs with per-scenario averaging across both `sim.cc` revisions and a
+  Jain index computed over data + ACK flows; all 13 stale figures were
+  removed.
+- New audited figures `fig01`-`fig05` (goodput, delay vs base-OWD,
+  utilization-delay trade-off, UDP-burst robustness, audit funnel) plus the
+  v3.0.0 architecture schematic `fig06_architecture_zh` and the patent
+  workflow `fig07_workflow_zh`.
+- `docs/thesis.tex`: five figures embedded (architecture, audit funnel,
+  goodput, delay, UDP burst); the scenario table gained the canonical
+  S1-S19 IDs; rule B wording now distinguishes the 7 whole-group
+  old-revision exclusions. Builds to 14 pages.
+- `docs/NJUPT_Professional_Thesis_draft1/chapters/chapter4.tex`: five data
+  figures embedded (audit funnel, goodput, delay, trade-off scatter,
+  UDP burst), each with an interpretive paragraph; rule B wording updated
+  identically.
+
+### Removed
+
+- `docs/mermaid.js`, `docs/workflow.mermaid`, `docs/workflow.png`: the
+  mermaid rendering path (broken since `mmdc` was never installed) is
+  replaced by `plot_workflow` in `docs/plots/main.py`; `docs/patent.md`
+  now references `docs/plots/fig07_workflow_zh.png` as 图1.
+
 ## [Unreleased] - Documentation refresh (2026-08-20)
 
 Refresh of the documentation artifacts against the v3.0.0 implementation and a
