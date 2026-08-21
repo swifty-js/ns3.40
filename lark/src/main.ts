@@ -1,4 +1,4 @@
-import "./styles/global.css";
+import "./global.css";
 
 import { Framework } from "@lark.js/mvc";
 import { enablePlugin, initLarkSentry } from "@lark.js/sentry";
