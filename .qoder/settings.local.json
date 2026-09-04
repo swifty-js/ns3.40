@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /Users/hangtiancheng/ns3.40 && python3 -c \"\nimport pdfplumber\nwith pdfplumber.open\\('Gemini.pdf'\\) as pdf:\n    print\\('pages', len\\(pdf.pages\\)\\)\n\" 2>&1 | tail -5)",
+      "Bash(ls -la /Users/hangtiancheng/ns3.40/contrib/opengym/examples/swift-tcp/ && echo \"--- git log ---\" && cd /Users/hangtiancheng/ns3.40 && git --no-pager log --oneline -12 && echo \"--- status ---\" && git --no-pager status --short)",
+      "Bash(cat /Users/hangtiancheng/ns3.40/docs/workflow.mermaid 2>/dev/null | head -60; ls -la /Users/hangtiancheng/ns3.40/docs/*.png /Users/hangtiancheng/ns3.40/docs/*.pdf 2>/dev/null)",
+      "Bash(ls -la /Users/hangtiancheng/ns3.40/docs/plots/ 2>/dev/null | head -30)"
+    ]
+  }
+}

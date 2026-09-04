@@ -1,0 +1,58 @@
+[0/2] Re-checking globbed directories...
+ninja: no work to do.
+Ns3Env parameters:
+--openGymPort: 5555
+--seed: 42
+--Tcp version: ns3::TcpSwift
+--Queue size: 100 packets (150000 bytes), BDP=1124 bytes
+Simulation process id: 26065 (parent (waf shell) id: 26059)
+Waiting for Python process to connect on port: tcp://localhost:5555
+Please start proper Python Gym Agent
+TCP Flow 1 Src Addr: 10.1.1.1 Dst Addr: 10.2.1.1
+Time Last Rx Packet: 20.1
+Time First Tx Packet: 0
+Tx Packets Count: 284159
+Rx Packets Count: 284019
+Loss Rate: 0%
+Throughput: 168.658 Mbps
+TCP Flow 2 Src Addr: 10.2.1.1 Dst Addr: 10.1.1.1
+Time Last Rx Packet: 20.1
+Time First Tx Packet: 1.0856e-05
+Tx Packets Count: 142010
+Rx Packets Count: 142010
+Loss Rate: 0%
+Throughput: 2.93912 Mbps
+TCP Flow 3 Src Addr: 10.1.2.1 Dst Addr: 10.2.2.1
+Time Last Rx Packet: 20.1
+Time First Tx Packet: 0.1
+Tx Packets Count: 279563
+Rx Packets Count: 279455
+Loss Rate: 0%
+Throughput: 166.778 Mbps
+TCP Flow 4 Src Addr: 10.2.2.1 Dst Addr: 10.1.2.1
+Time Last Rx Packet: 20.1
+Time First Tx Packet: 0.102401
+Tx Packets Count: 139728
+Rx Packets Count: 139728
+Loss Rate: 0%
+Throughput: 2.90669 Mbps
+TCP Flow 5 Src Addr: 10.1.3.1 Dst Addr: 10.2.3.1
+Time Last Rx Packet: 20.1
+Time First Tx Packet: 0.2
+Tx Packets Count: 277531
+Rx Packets Count: 277393
+Loss Rate: 0%
+Throughput: 166.379 Mbps
+TCP Flow 6 Src Addr: 10.2.3.1 Dst Addr: 10.1.3.1
+Time Last Rx Packet: 20.0999
+Time First Tx Packet: 0.202418
+Tx Packets Count: 138697
+Rx Packets Count: 138696
+Loss Rate: 0%
+Throughput: 2.89975 Mbps
+Wait for stop message
+RxPkts:
+---SinkId: 0 RxPkts: 284017
+---SinkId: 1 RxPkts: 279453
+---SinkId: 2 RxPkts: 277391
+Total Rx Bytes Count: 408984480

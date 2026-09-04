@@ -1,0 +1,62 @@
+[0/2] Re-checking globbed directories...
+[1/2] Building CXX object contrib/opengym/examples/CMakeFiles/swift-tcp.dir/swift-tcp/tcp-swift-env.cc.o
+[2/2] Linking CXX executable contrib/opengym/examples/ns3.40-swift-tcp-debug
+Ns3Env parameters:
+--openGymPort: No OpenGym
+--seed: 42
+--Tcp version: ns3::TcpCubic
+--Queue size: 199 packets (298500 bytes), BDP=99999 bytes
+TCP Flow 1 Src Addr: 10.1.1.1 Dst Addr: 10.2.1.1
+Time Last Rx Packet: 20.1
+Time First Tx Packet: 0
+Tx Packets Count: 56314056
+Rx Packets Count: 56309878
+Loss Rate: 0.00126611%
+Throughput: 33438.5 Mbps
+TCP Flow 2 Src Addr: 10.2.1.1 Dst Addr: 10.1.1.1
+Time Last Rx Packet: 20.1
+Time First Tx Packet: 4.015e-06
+Tx Packets Count: 28173087
+Rx Packets Count: 28173081
+Loss Rate: 0%
+Throughput: 583.311 Mbps
+TCP Flow 3 Src Addr: 10.1.2.1 Dst Addr: 10.2.2.1
+Time Last Rx Packet: 20.1
+Time First Tx Packet: 0.1
+Tx Packets Count: 55477721
+Rx Packets Count: 55474578
+Loss Rate: 0.000461446%
+Throughput: 33107.2 Mbps
+TCP Flow 4 Src Addr: 10.2.2.1 Dst Addr: 10.1.2.1
+Time Last Rx Packet: 20.1
+Time First Tx Packet: 0.100004
+Tx Packets Count: 27746851
+Rx Packets Count: 27746845
+Loss Rate: 0%
+Throughput: 577.196 Mbps
+TCP Flow 5 Src Addr: 10.1.3.1 Dst Addr: 10.2.3.1
+Time Last Rx Packet: 20.1
+Time First Tx Packet: 0.2
+Tx Packets Count: 55061617
+Rx Packets Count: 55058223
+Loss Rate: 0.000232467%
+Throughput: 33023.9 Mbps
+TCP Flow 6 Src Addr: 10.2.3.1 Dst Addr: 10.1.3.1
+Time Last Rx Packet: 20.1
+Time First Tx Packet: 0.200016
+Tx Packets Count: 27533235
+Rx Packets Count: 27533230
+Loss Rate: 0%
+Throughput: 575.596 Mbps
+TCP Flow 7 Src Addr: 10.1.1.1 Dst Addr: 10.2.1.1
+Time Last Rx Packet: 20.1
+Time First Tx Packet: 1.00001
+Tx Packets Count: 937499
+Rx Packets Count: 937498
+Loss Rate: 0%
+Throughput: 413.088 Mbps
+RxPkts:
+---SinkId: 0 RxPkts: 56274289
+---SinkId: 1 RxPkts: 55455707
+---SinkId: 2 RxPkts: 55050102
+Total Rx Bytes Count: 81075022560

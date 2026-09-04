@@ -1,0 +1,9 @@
+{
+  "type": "module",
+  "scripts": {
+    "git:commit": "git add -A && git commit -m 'feat: Introduce new features'",
+    "git:commit:n": "git add -A && git commit -m 'feat: Introduce new features' -n",
+    "git:push": "pnpm git:commit && git push origin main",
+    "git:reset": "rm -rf ./.git && git init && git remote add origin git@github.com:swifty-js/ns3.40.git && pnpm git:commit:n && git push origin main -f --set-upstream"
+  }
+}
