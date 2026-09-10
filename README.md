@@ -48,7 +48,6 @@ to balance throughput, delay and loss simultaneously.
 │       └── rl-tcp/                   # upstream RL-TCP example (baseline reference)
 ├── main.py                           # experiment runner / plotter / summarizer
 ├── Makefile                          # build, tcp, udp, gen, format, clean targets
-├── ieg/                              # C++17 flowmonitor validator / encryptor / CSV tool
 ├── lark/                             # web dashboard for flowmonitor results (Vite + @lark.js/mvc)
 ├── docs/                             # thesis (tex/pdf), patent draft, plots
 └── logs/                             # simulation artifacts, plots and summary CSVs
@@ -136,17 +135,6 @@ loss, per-flow breakdowns) from `logs/`. It is deployed to GitHub Pages at
 pnpm install
 pnpm --filter flowmonitor parse   # logs/*.flowmonitor -> lark/public/data
 pnpm --filter flowmonitor dev     # local dev server
-```
-
-## ieg — Flowmonitor Tooling
-
-[`ieg/`](ieg) is a standalone C++17 utility for post-processing simulation
-output: validating `.flowmonitor`/XML files, encrypting/decrypting them and
-exporting CSV.
-
-```bash
-cd ieg && cmake -B build && cmake --build build
-./build/ieg validate ../logs     # also: encrypt | decrypt | csv
 ```
 
 ## Documentation Toolchain
