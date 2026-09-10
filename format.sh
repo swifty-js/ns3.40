@@ -23,8 +23,8 @@ git ls-files -z \
 	'*.h++' '*.c++' |
 	xargs -0 -r clang-format -i
 
-# pip install ruff
-uv run ruff format ./
+# pip3 install ruff
+ruff format ./
 
 # go install mvdan.cc/sh/v3/cmd/shfmt@latest
 git ls-files -z '*.sh' |

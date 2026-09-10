@@ -606,7 +606,6 @@ PROTOCOL_COLORS_BAR = [
     "#42b883",  # Vue Green
     "#61dafb",  # React Blue
     "#dd0031",  # Angular Red
-
     "#673ab8",  # Preact Purple
 ]
 PROTOCOL_COLORS_MAP = {

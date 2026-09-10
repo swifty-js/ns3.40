@@ -1,0 +1,1 @@
+2026-09-10T05:51:53Z | logs/manifest.json | all scenarios | all protocols | recorded size and SHA-256 metadata are stale for plots/summary.csv, plots-udp/summary.csv, and summary/kpi_forward.csv; current CSV metrics were independently reproduced from all 288 FlowMonitor XML files within rounding tolerance | none (manifest integrity metadata only)
