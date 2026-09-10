@@ -6,7 +6,7 @@
   "scripts": {
     "parse": "node scripts/parse.mjs",
     "dev": "vite",
-    "build": "vite build",
+    "build": "pnpm parse && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "format": "prettier -w ./ --experimental-cli"
