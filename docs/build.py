@@ -60,9 +60,9 @@ def clean_trash(directory: Path | None = None) -> None:
             pass
 
 
-def build_simple(tex: str, compiler: str = "xelatex") -> None:
+def build_conference_with_bib(tex: str, compiler: str = "xelatex") -> None:
     name = tex.removesuffix(".tex")
-    log(f"Compiling {tex} ...")
+    log(f"Compiling {tex} (with BibTeX)...")
     try:
         run_command(
             [compiler, "-interaction=nonstopmode", "-halt-on-error", tex], DOCS_DIR
@@ -72,11 +72,25 @@ def build_simple(tex: str, compiler: str = "xelatex") -> None:
         raise SystemExit(1)
 
     try:
+        run_command(["bibtex", name], DOCS_DIR)
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        err(f"BibTeX failed for {tex}. Please check {name}.blg for details.")
+        raise SystemExit(1)
+
+    try:
         run_command(
             [compiler, "-interaction=nonstopmode", "-halt-on-error", tex], DOCS_DIR
         )
     except (FileNotFoundError, subprocess.CalledProcessError):
         err(f"Pass 2 failed for {tex}. Please check {name}.log for details.")
+        raise SystemExit(1)
+
+    try:
+        run_command(
+            [compiler, "-interaction=nonstopmode", "-halt-on-error", tex], DOCS_DIR
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        err(f"Pass 3 failed for {tex}. Please check {name}.log for details.")
         raise SystemExit(1)
 
     log(f"{name}.pdf successfully generated ✓")
@@ -155,7 +169,7 @@ def do_build(target: str) -> None:
         return
 
     if target == "thesis":
-        build_simple("thesis.tex", "xelatex")
+        build_conference_with_bib("thesis.tex", "xelatex")
         return
 
     if target == "all":
