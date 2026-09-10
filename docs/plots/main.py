@@ -638,7 +638,7 @@ def plot_architecture(plots: list) -> None:
     ax.text(
         0.5,
         0.97,
-        "算法控制回路总体架构（v3.0.0）",
+        "算法控制回路总体架构（v0.1.0）",
         ha="center",
         fontsize=12,
         fontweight="bold",

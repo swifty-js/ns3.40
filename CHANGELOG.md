@@ -4,11 +4,11 @@ All notable changes to the swift-tcp example and its experiment tooling.
 Format follows [Keep a Changelog](https://keepachangelog.com/); versions refer
 to the TcpSwift agent (`contrib/opengym/examples/swift-tcp/tcp_swift.py`).
 
-## [Unreleased] - Full-matrix rerun data sync and heuristic reframing (2026-09-10)
+## [0.0.1] - Full-matrix rerun data sync and heuristic reframing (2026-09-10)
 
 No source code was changed by this entry; it synchronises the documentation
 artifacts with the full 36-scenario rerun of 2026-09-09 (`logs/manifest.json`),
-which was produced by the current v3.0.0 implementation under symmetric
+which was produced by the current v0.1.0 implementation under symmetric
 RED/ECN marking (all four protocols `UseEcn=On`, `MinTh=0.3Q`, `MaxTh=0.9Q`)
 and the proportionally scaled UDP burst (`average load = 32% of the
 bottleneck, peak 64%, 50% duty cycle, 1024 B packets`; the old fixed
@@ -44,7 +44,7 @@ bottleneck, peak 64%, 50% duty cycle, 1024 B packets`; the old fixed
 - `logs/summary/kpi_forward.csv` unchanged (byte-identical); the pipeline
   now writes LF line endings so future runs keep the file stable.
 
-## [Unreleased] - Figure pipeline rebuilt on the audited dataset (2026-08-21)
+## [0.0.2] - Figure pipeline rebuilt on the audited dataset (2026-08-21)
 
 ### Added
 
@@ -63,7 +63,7 @@ bottleneck, peak 64%, 50% duty cycle, 1024 B packets`; the old fixed
   removed.
 - New audited figures `fig01`-`fig05` (goodput, delay vs base-OWD,
   utilization-delay trade-off, UDP-burst robustness, audit funnel) plus the
-  v3.0.0 architecture schematic `fig06_architecture_zh` and the patent
+  v0.1.0 architecture schematic `fig06_architecture_zh` and the patent
   workflow `fig07_workflow_zh`.
 - `docs/thesis.tex`: five figures embedded (architecture, audit funnel,
   goodput, delay, UDP burst); the scenario table gained the canonical
@@ -81,9 +81,9 @@ bottleneck, peak 64%, 50% duty cycle, 1024 B packets`; the old fixed
   replaced by `plot_workflow` in `docs/plots/main.py`; `docs/patent.md`
   now references `docs/plots/fig07_workflow_zh.png` as 图1.
 
-## [Unreleased] - Documentation refresh (2026-08-20)
+## [0.0.3] - Documentation refresh (2026-08-20)
 
-Refresh of the documentation artifacts against the v3.0.0 implementation and a
+Refresh of the documentation artifacts against the v0.1.0 implementation and a
 re-audited experiment dataset. No source code was changed by this entry.
 
 ### Added
@@ -107,12 +107,12 @@ re-audited experiment dataset. No source code was changed by this entry.
   (`dc_oversub_10to1` = `congested_heavy`, `satellite_leo` = `lte_good`, with
   byte-identical artifacts), (D) the degenerate TcpBbr baseline on
   microsecond-RTT high-rate paths, (E) the `TcpLark` label provenance, and
-  (F) the pre-v3.0.0 revision boundary. A later clarification records the
+  (F) the pre-v0.1.0 revision boundary. A later clarification records the
   maintainer's `TcpLark -> TcpSwift` artifact rename and confirms every KPI
   column is byte-identical after regeneration. Historical records were not
   modified. Clean sets: 19 scenarios (TCP-only) and 15 (UDP-burst).
 - `docs/NJUPT_Professional_Thesis_draft1/`: algorithm descriptions in
-  chapters 3, 5 and 6 aligned with v3.0.0 (time-window delivery rate,
+  chapters 3, 5 and 6 aligned with v0.1.0 (time-window delivery rate,
   three-way classification inside the window-reduction callback,
   baseline-relative reward adaptation, freeze counter-reset ordering, stale
   action invalidation, RED/ECN signal path, MSS 1440). Chapter 4 rebuilt from
@@ -120,7 +120,7 @@ re-audited experiment dataset. No source code was changed by this entry.
   the CSV with zero mismatches.
 - `docs/thesis.tex`: same alignment and the same data source, with the
   contribution list consolidated to three points.
-- `docs/patent.md`: technical description corrected to the v3.0.0 algorithm
+- `docs/patent.md`: technical description corrected to the v0.1.0 algorithm
   (two-stage time-window BDP estimation, baseline-relative reward adaptation,
   three-way classification in the window-reduction callback, `min(cwnd, BDP)`
   ssthresh anchoring, `max(4*BDP, 200*MSS)` window bound, freeze counter-reset
@@ -146,7 +146,7 @@ re-audited experiment dataset. No source code was changed by this entry.
   `(scenario, protocol, setting)`** with no `_s<seed>` suffix, so no
   cross-seed confidence intervals are reported.
 
-## [3.0.0] - 2026-08-20
+## [0.1.0] - 2026-08-20
 
 Fixes for the findings of the 2026-08-20 code review (C1-C5 plus secondary
 issues). All quantitative results recorded before this version (including the

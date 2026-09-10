@@ -480,7 +480,7 @@ Swift为每个TCP连接维护独立状态，通过socketUuid为键的哈希表�
 
 \textbf{拓扑与负载}：使用\texttt{PointToPointDumbbellHelper}构造哑铃拓扑，左右各3个叶子节点（$nLeaf=3$）经接入链路汇聚到一条共享瓶颈链路；每对叶子节点上运行一条\texttt{BulkSendHelper}长流，3条流分别在0、100与200 ms错峰启动，仿真时长20 s。MTU取1500 B，应用数据单元（MSS）为1440 B，启用SACK；瓶颈队列长度按$\max(BDP \cdot nLeaf / MTU, \; 100)$个报文配置，其中$BDP$由瓶颈速率与基础RTT算出，使缓冲深度随场景带宽和时延同步伸缩。
 
-\textbf{队列管理与ECN}：瓶颈两侧网关统一安装RED队列，标记下限$MinTh = 0.3Q$、上限$MaxTh = 0.9Q$、\texttt{UseEcn=true}，并对四种协议一律设置\texttt{TcpSocketBase::UseEcn=On}，使ECN早期预警信号在对照协议之间对称可得。本文引用的全部实验产物（\path{logs/comparison/}与\path{logs/comparison-udp/}，2026-09-09批量运行）均在该配置下、由时间窗口投递速率估计与基线相对反馈自适应的当前实现（v3.0.0）生成，因此ECN分支、对称ECN与修正后的带宽估计器均为真实可观测的配置项，不再存在“ECN仅对Swift开启”或“队列不置CE”之类的历史不对称。
+\textbf{队列管理与ECN}：瓶颈两侧网关统一安装RED队列，标记下限$MinTh = 0.3Q$、上限$MaxTh = 0.9Q$、\texttt{UseEcn=true}，并对四种协议一律设置\texttt{TcpSocketBase::UseEcn=On}，使ECN早期预警信号在对照协议之间对称可得。本文引用的全部实验产物（\path{logs/comparison/}与\path{logs/comparison-udp/}，2026-09-09批量运行）均在该配置下、由时间窗口投递速率估计与基线相对反馈自适应的当前实现（v0.1.0）生成，因此ECN分支、对称ECN与修正后的带宽估计器均为真实可观测的配置项，不再存在“ECN仅对Swift开启”或“队列不置CE”之类的历史不对称。
 
 \textbf{A/B对照设置}：两组实验共享完全相同的场景参数、拓扑与随机种子（单种子、每次配置一次确定性运行），仅\texttt{enable\_udp\_burst}取值不同：
 \begin{itemize}
