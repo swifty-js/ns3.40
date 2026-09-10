@@ -17,11 +17,15 @@ const ROOT = path.dirname(fileURLToPath(import.meta.url));
 /** Release title used for every upload. */
 const RELEASE_NAME = 'ns3-docs';
 
-/** Repo-relative paths of the artifacts to upload. @type {readonly string[]} */
+/**
+ * Repo-relative paths of the artifacts to upload. Asset names on GitHub are
+ * derived from the file basename, so keep basenames ASCII-only.
+ * @type {readonly string[]}
+ */
 const ARTIFACTS = [
   'docs/NJUPT_Professional_Thesis_draft1/NJUPT_Professional_Thesis_d1.pdf',
   'docs/thesis.pdf',
-  'docs/南京-杭天铖-20260910-计算机网络拥塞控制.docx',
+  'docs/nanjing-hangtiancheng-network-congestion-control.docx',
 ];
 
 /** @type {string[]} Command-line arguments (excluding `node` and the script). */
@@ -44,6 +48,13 @@ const draft = args.includes('--draft');
 const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 /** Release tag; defaults to `ns3-docs-<YYYYMMDD>`. @type {string} */
 const tag = flag('--tag', `${RELEASE_NAME}-${today}`);
+
+/**
+ * Resolved absolute paths of the artifacts to upload.
+ * @type {string[]}
+ */
+const files = ARTIFACTS.map((a) => path.join(ROOT, a));
+
 /** Release notes; defaults to a bullet list of artifact filenames. @type {string} */
 const notes = flag('--notes', ARTIFACTS.map((a) => `- ${path.basename(a)}`).join('\n'));
 
@@ -61,7 +72,6 @@ function gh(...cmd) {
   }).trim();
 }
 
-const files = ARTIFACTS.map((a) => path.join(ROOT, a));
 const missing = files.filter((f) => !existsSync(f));
 if (missing.length) {
   console.error('Missing artifact files:\n' + missing.map((m) => `  ${m}`).join('\n'));
