@@ -22,9 +22,9 @@
  * The pipeline reads logs, recomputes KPIs from forward TCP data flows, and
  * selects the documented S1-S19 and UDP comparison subsets.
  *
- * JavaScript port of the former `docs/plots/main.py`. The scenario table now
- * comes from `lib/scenarios.js` instead of being recovered by parsing the AST of
- * `main.py`; every other input and output is unchanged.
+ * JavaScript replacement for the former Python plotter. Shared scenarios and
+ * FlowMonitor parsing come from `lib/`, and the method diagrams describe the
+ * native C++ TcpSwift control path.
  *
  * Each figure is written as `.png` (Word/Markdown), `.pdf` (LaTeX) and `.svg`
  * (vector editing).
@@ -69,6 +69,16 @@ const EXPECTED_ARTIFACTS = 288;
 
 /** Name of the figure inventory written alongside the images. */
 const MANIFEST_NAME = "figure_manifest.json";
+
+/** Figure stems owned by this pipeline. */
+const FIGURE_STEMS = new Set([
+  "fig01_goodput_clean",
+  "fig02_delay_clean",
+  "fig03_tradeoff_clean",
+  "fig04_udp_burst_clean",
+  "fig06_architecture_zh",
+  "fig07_workflow_zh",
+]);
 
 /**
  * KPI columns whose Python value is an `int`.
@@ -1118,10 +1128,10 @@ export async function plotArchitecture(renderer) {
       color,
     );
 
-  box(0.03, 0.60, 0.20, 0.22, "ns-3 TCP协议栈\n五类回调采集\nACK/丢包/RTT/ECN", "#DCEAF7");
-  box(0.29, 0.60, 0.22, 0.22, "状态传输容器\n11维有效观测\n+ 4项元数据", "#E8F3E8");
-  box(0.57, 0.60, 0.20, 0.22, "跨进程同步交互\nZeroMQ + Protobuf\n请求-应答", "#FFF7DE");
-  box(0.81, 0.60, 0.16, 0.22, "决策模块\n决策输出\n[ssThresh, cWnd]", "#FCE4D6");
+  box(0.03, 0.60, 0.20, 0.22, "ns-3 TCP协议栈\n五类原生回调\nACK/丢包/RTT/ECN", "#DCEAF7");
+  box(0.29, 0.60, 0.22, 0.22, "TcpSwift连接状态\n速率样本 / minRTT\nBDP / α / 安全计数", "#E8F3E8");
+  box(0.57, 0.60, 0.20, 0.22, "原生C++决策逻辑\n同一离散事件进程\n无IPC / Python依赖", "#FFF7DE");
+  box(0.81, 0.60, 0.16, 0.22, "窗口状态写回\nssThresh\n与cWnd", "#FCE4D6");
   box(
     0.05,
     0.12,
@@ -1147,16 +1157,15 @@ export async function plotArchitecture(renderer) {
     "#D9EAD3",
   );
 
-  arrow([0.23, 0.71], [0.29, 0.71], "观测", undefined);
-  arrow([0.51, 0.71], [0.57, 0.71], undefined, undefined);
-  arrow([0.77, 0.71], [0.81, 0.71], undefined, undefined);
+  arrow([0.23, 0.71], [0.29, 0.71], "读取状态", undefined);
+  arrow([0.51, 0.71], [0.57, 0.71], "本地计算", undefined);
+  arrow([0.77, 0.71], [0.81, 0.71], "更新", undefined);
   arrow([0.17, 0.60], [0.17, 0.36], "拥塞信号", undefined);
   arrow([0.44, 0.60], [0.48, 0.36], "速率样本", undefined);
   arrow([0.29, 0.24], [0.35, 0.24], "非拥塞路径", undefined);
   arrow([0.61, 0.24], [0.67, 0.24], "BDP", undefined);
   arrow([0.86, 0.36], [0.88, 0.60], "候选窗口", "#0072B2");
 
-  // Curved feedback arrow from the decision module back to the collectors.
   shapes.shapes.push({
     type: "path",
     path:
@@ -1168,7 +1177,7 @@ export async function plotArchitecture(renderer) {
   });
   shapes.label(
     { x: canvas.x(0.5), y: canvas.y(0.945) },
-    "动作 [ssThresh, cWnd] 经应答写回协议栈",
+    "窗口状态由原生回调直接写回协议栈",
     { fontSize: 7.5, color: "#0072B2" },
   );
 
@@ -1178,7 +1187,7 @@ export async function plotArchitecture(renderer) {
     margin,
     canvas,
     components: shapes,
-    title: { text: "算法控制回路总体架构（v0.1.0）" },
+    title: { text: "原生C++拥塞控制回路总体架构" },
   });
 
   return saveFigure(renderer, {
@@ -1244,7 +1253,7 @@ export async function plotWorkflow(renderer) {
     0.795,
     0.44,
     0.095,
-    "S1 状态获取：11维有效观测子空间\n窗口状态 / 传输指标 / 时延测量 / 协议栈内部状态",
+    "S1 原生回调读取连接状态\n窗口状态 / 传输指标 / 时延测量 / 协议栈事件",
     "#DCEAF7",
   );
   box(0.28, 0.66, 0.44, 0.09, "S2 拥塞判定\n窗口缩减回调内的三分类语义判定", "#FFF7DE");
@@ -1282,7 +1291,7 @@ export async function plotWorkflow(renderer) {
     "S5a 目标窗口逼近\n目标窗口 = α × BDP\n上行有界步长 / 下行超出量的一半",
     "#E8F3E8",
   );
-  box(0.28, 0.02, 0.44, 0.065, "S6 决策应用：更新拥塞窗口与慢启动阈值", "#FCE4D6");
+  box(0.28, 0.02, 0.44, 0.065, "S6 原生写回：更新拥塞窗口与慢启动阈值", "#FCE4D6");
 
   arrow([0.50, 0.93], [0.50, 0.89], undefined, undefined);
   arrow([0.50, 0.795], [0.50, 0.75], undefined, undefined);
@@ -1328,29 +1337,29 @@ export async function plotWorkflow(renderer) {
 }
 
 /**
- * Delete previous figure outputs so renamed figures cannot linger.
+ * Delete only outputs owned by this pipeline so unrelated figures remain intact.
  *
  * @returns {Promise<string[]>} Names of the removed files.
  */
 export async function cleanStaleOutputs() {
   /** @type {string[]} */
   const removed = [];
-  /** @type {string[]} */
+  /** @type {Set<string>} */
   let entries;
   try {
-    entries = await readdir(PLOTS_DIR);
+    entries = new Set(await readdir(PLOTS_DIR));
   } catch {
     return removed;
   }
-  for (const entry of entries.sort()) {
-    if (!entry.startsWith("fig")) continue;
-    if (![".png", ".pdf", ".svg"].some((suffix) => entry.endsWith(suffix))) {
-      continue;
+  for (const stem of FIGURE_STEMS) {
+    for (const extension of ["png", "pdf", "svg"]) {
+      const entry = `${stem}.${extension}`;
+      if (!entries.has(entry)) continue;
+      await rm(path.join(PLOTS_DIR, entry), { force: true });
+      removed.push(entry);
     }
-    await rm(path.join(PLOTS_DIR, entry), { force: true });
-    removed.push(entry);
   }
-  return removed;
+  return removed.sort();
 }
 
 /**
@@ -1385,10 +1394,11 @@ export async function main() {
   }
 
   const manifest = {
-    source: "logs/{comparison,comparison-udp}/*.flowmonitor (288 artifacts)",
+    source: "logs/{comparison,comparison-udp}/*.flowmonitor (288 archived artifacts)",
     kpi_csv: path.relative(REPO_ROOT, KPI_CSV).split(path.sep).join("/"),
     kpi_csv_status: csvStatus,
-    metric_definition: "forward TCP data flows only (proto 6, 10.1.x -> 10.2.x)",
+    metric_definition:
+      "forward TCP data flows only (proto 6, 10.1.x -> 10.2.x); aggregate goodput uses the shared first-TX to last-RX span",
     selected_groups: {
       tcp_only: S_ORDER.map(([sid, scenario]) => `${sid}=${scenario}`),
       udp_burst: UDP_PAIRED_SIDS,

@@ -1,0 +1,44 @@
+{
+  // Type checking configuration for the JavaScript tooling that replaced the
+  // Python drivers (`main.py`, `docs/build.py`, `docs/plots/main.py`).
+  //
+  // These scripts are plain ESM JavaScript with JSDoc type annotations, so the
+  // compiler runs in check-only mode: `npm run typecheck` (tsc --noEmit) never
+  // emits output, it only reports type errors.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "lib": [
+      "ES2023"
+    ],
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "noEmit": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2023",
+    "types": [
+      "node"
+    ],
+    "useUnknownInCatchVariables": true,
+    "verbatimModuleSyntax": true
+  },
+  "exclude": [
+    "node_modules",
+    "flowmonitor",
+    "scratch",
+    "build",
+    "cmake-cache"
+  ],
+  "include": [
+    "main.js",
+    "lib/**/*.js",
+    "docs/**/*.js"
+  ]
+}

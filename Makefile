@@ -27,9 +27,7 @@ format:
 
 .PHONY: build
 build:
-	test -d ./.venv || uv venv
-	. .venv/bin/activate && \
-	./ns3 configure --enable-mtp --enable-examples && \
+	./ns3 configure --enable-mtp --enable-examples
 	./ns3 build
 
 .PHONY: kill
@@ -38,16 +36,13 @@ kill:
 
 .PHONY: tcp
 tcp: build
-	python3 ./main.py sim --duration $(DURATION) --n-leaf $(N_LEAF) --sim-seed $(SIM_SEED)
+	node ./main.js sim --duration $(DURATION) --n-leaf $(N_LEAF) --sim-seed $(SIM_SEED)
 
 .PHONY: udp
 udp: build
-	python3 ./main.py sim --udp --duration $(DURATION) --n-leaf $(N_LEAF) --sim-seed $(SIM_SEED)
+	node ./main.js sim --udp --duration $(DURATION) --n-leaf $(N_LEAF) --sim-seed $(SIM_SEED)
 
 .PHONY: gen
 gen:
-	rm -rf ./logs
-	python3 ./docs/mock.py --apply
-	python3 ./main.py draw
-	python3 ./main.py summary
-	python3 ./docs/plots/main.py
+	node ./main.js draw
+	node ./main.js summary

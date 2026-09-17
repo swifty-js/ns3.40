@@ -1,28 +1,25 @@
-# Swift — RL-Assisted Multi-Signal Congestion Control on ns-3.40
+# Swift — Multi-Signal Congestion Control on ns-3.40
 
-**Swift** (`TcpSwift`) is a reinforcement-learning-assisted, multi-signal fusion
-TCP congestion control algorithm, implemented and evaluated on the
-[ns-3.40](https://www.nsnam.org/) discrete-event network simulator through the
-[ns3-gym](https://github.com/tkn-tub/ns3-gym) bridge. It targets long-distance
-and heterogeneous access paths — data-center fabrics, WiFi, LTE/5G, metro/long-haul
-WAN and satellite links — where fixed-parameter, single-signal algorithms struggle
-to balance throughput, delay and loss simultaneously.
+**Swift** (`TcpSwift`) is a deterministic, multi-signal fusion TCP congestion
+control algorithm implemented directly in C++ for the
+[ns-3.40](https://www.nsnam.org/) discrete-event network simulator. It targets
+long-distance and heterogeneous access paths — data-center fabrics, WiFi,
+LTE/5G, metro/long-haul WAN and satellite links — where fixed-parameter,
+single-signal algorithms struggle to balance throughput, delay and loss.
 
 - Author: [Hang Tiancheng](https://github.com/hangtiancheng)
-- Paper: _Swift: 基于强化学习的多信号融合自适应网络拥塞控制算法_ — see [`docs/thesis.tex`](docs/thesis.tex)
+- Paper: _Swift: 启发式多信号融合自适应网络拥塞控制算法_ — see [`docs/thesis.tex`](docs/thesis.tex)
 
 ## Highlights
 
-- **Multi-signal congestion awareness.** ECN negotiation/marking state, the
-  congestion-avoidance state machine, congestion-event semantics, RTT vs. min-RTT
-  and bytes-in-flight are organized into an 11-dimensional effective observation
-  subspace (carried in a 15-element OpenGym container alongside socket/env routing
-  metadata) and exposed to the Python agent over ZMQ.
-- **RL-assisted adaptive fusion control.** A min-RTT-aware RTT-inflation ratio,
-  the environment reward's offset from its own slow baseline, and consecutive-growth
-  trends jointly tune a per-flow multiplicative factor α ∈ [0.85, 1.30]; cwnd
-  converges toward the α × BDP target, where BDP comes from a windowed max-filter
-  over a sliding-window delivery-rate estimate (BBR-style).
+- **Multi-signal congestion awareness.** ECN state, the congestion-avoidance
+  state machine, congestion-event semantics, RTT versus min-RTT and
+  bytes-in-flight are consumed directly by the native congestion controller.
+- **Adaptive fusion control.** A min-RTT-aware RTT-inflation ratio, relative
+  performance feedback and consecutive-growth trends jointly tune a per-flow
+  multiplicative factor α ∈ [0.85, 1.30]; cwnd converges toward the α × BDP
+  target, where BDP comes from a windowed max-filter over a sliding-window
+  delivery-rate estimate.
 - **Stability and safety under uncertain signals.** Differentiated window-retention
   factors (loss ρ = 0.70, ECN ρ = 0.75, timeout ρ = 0.50), a consecutive-decrease
   floor, a post-decrease freeze window, queue-dwell-free slow-start threshold
@@ -35,90 +32,77 @@ to balance throughput, delay and loss simultaneously.
 
 ```
 .
-├── contrib/opengym/                  # ns3-gym (ZMQ + protobuf RL bridge)
-│   ├── model/ns3gym/                 #   Python package installed into the venv
-│   └── examples/
-│       ├── swift-tcp/                # ★ Swift: algorithm, env, sim and agent
-│       │   ├── tcp-swift.{h,cc}      #   TcpSwift congestion ops (C++)
-│       │   ├── tcp-swift-env.{h,cc}  #   TcpSwiftEnv: 15-dim observation space
-│       │   ├── sim.cc                #   dumbbell-topology simulation entry point
-│       │   ├── tcp_swift.py          #   Python agent (v3.0 control law)
-│       │   ├── tcp_base.py           #   shared event-based agent base class
-│       │   └── test_swift.py         #   agent launcher
-│       └── rl-tcp/                   # upstream RL-TCP example (baseline reference)
-├── main.py                           # experiment runner / plotter / summarizer
+├── scratch/swift-tcp/                # Native C++ Swift implementation
+│   ├── tcp-swift.{h,cc}              #   Congestion controller and per-flow state
+│   ├── sim.cc                        #   Dumbbell-topology simulation entry point
+│   └── CMakeLists.txt                #   Scratch executable definition
+├── main.js                           # typed experiment runner / plotter / summarizer
+├── lib/                              # FlowMonitor parser and Plotly renderer
 ├── Makefile                          # build, tcp, udp, gen, format, clean targets
-├── lark/                             # web dashboard for flowmonitor results (Vite + @lark.js/mvc)
-├── docs/                             # thesis (tex/pdf), patent draft, plots
+├── flowmonitor/                      # web dashboard for FlowMonitor results
+├── docs/                             # thesis, patent draft, build driver and plots
 └── logs/                             # simulation artifacts, plots and summary CSVs
 ```
 
 ## Build
 
-> System prerequisites (Debian/Ubuntu): ZMQ and Protocol Buffers for the
-> ns3-gym bridge, plus [uv](https://docs.astral.sh/uv/) for the Python
-> environment.
+Swift uses only standard ns-3 C++ modules. No OpenGym, ZeroMQ, Protobuf or
+Python bindings are required to build or run simulations on macOS or Linux.
 
 ```bash
-sudo apt update && sudo apt full-upgrade
-sudo apt install libzmq5 libzmq3-dev libprotobuf-dev protobuf-compiler
-sudo apt autoclean && sudo apt autoremove
-
-uv sync --no-install-project
-source .venv/bin/activate
-./ns3 configure --enable-mtp --enable-examples
+./ns3 clean
+./ns3 configure --build-profile=optimized --enable-mtp --enable-examples
+./ns3 build swift-tcp
 ./ns3 build
-uv pip install ./contrib/opengym/model/ns3gym
 ```
 
 `make build` wraps the configure/build steps; `make clean` removes all build
-artifacts and caches.
+artifacts and caches. Install the Node.js tooling and the headless browser once:
+
+```bash
+pnpm install
+pnpm exec playwright install chromium
+pnpm typecheck
+```
 
 ## Quick Start
 
-Each RL run is a **two-process pair**: the ns-3 simulation listens on the
-OpenGym ZMQ port and blocks until the Python agent connects, so launch the
-simulator first and the agent second (in separate terminals).
+All protocols run as a single native ns-3 process.
 
 ```bash
-# RL-TCP reference example
-./ns3 run "rl-tcp --transport_prot=TcpRl" &> ./logs/rl-tcp-ns3.log
-python ./contrib/opengym/examples/rl-tcp/test_tcp.py --start=0 &> ./logs/rl-tcp-agent.log
+# Swift
+./ns3 run "swift-tcp --transport_prot=TcpSwift"
 
-# Swift (RL agent driving TcpSwift)
-./ns3 run "swift-tcp --transport_prot=TcpSwift" &> ./logs/swift-tcp-ns3.log
-python ./contrib/opengym/examples/swift-tcp/test_swift.py --start=0 &> ./logs/swift-tcp-agent.log
-python ./contrib/opengym/examples/swift-tcp/test_swift.py --start=0 --verbose &> ./logs/swift-tcp-agent.log
-
-# Classic baselines run standalone (no agent needed)
-./ns3 run "swift-tcp --transport_prot=TcpNewReno" &> ./logs/swift-tcp-new-reno.log
+# Classic baseline
+./ns3 run "swift-tcp --transport_prot=TcpNewReno"
 ```
 
 The `swift-tcp` binary accepts the full scenario parameter set:
 `--transport_prot`, `--access_bandwidth`, `--bottleneck_bandwidth`,
 `--access_delay`, `--bottleneck_delay`, `--duration`, `--nLeaf`, `--simSeed`,
-`--enable_udp_burst`, `--openGymPort`, `--queue_disc_type` and `--prefix_name`
-(see `contrib/opengym/examples/swift-tcp/sim.cc`).
+`--enable_udp_burst`, `--queue_disc_type` and `--prefix_name`
+(see `scratch/swift-tcp/sim.cc`).
 
 ## Benchmark Matrix
 
-`main.py` drives the full evaluation. It defines **36 scenarios** across
+`main.js` drives the full evaluation. It is plain ESM JavaScript checked by
+TypeScript through `// @ts-check` and JSDoc annotations. It defines **36 scenarios** across
 11 categories — intra-rack and leaf-spine data center, oversubscription,
 congestion gradients, cross-pod/cross-DC, RDMA-like ultra-low latency, mixed
 and asymmetric traffic, bandwidth scaling, WiFi (802.11n/ac/ax/legacy),
 cellular (LTE, 5G NR eMBB/edge) and WAN/satellite (metro, long-haul, LEO, GEO) —
 and runs each against `TcpSwift`, `TcpNewReno`, `TcpCubic` and `TcpBbr`.
-The optional `--udp` flag adds an 800 Mbps on/off UDP burst flow to stress the
-protocols. Completed runs are skipped automatically (resume via existing
-`.flowmonitor` files).
+The optional `--udp` flag adds an on/off UDP flow whose configured peak rate is
+64% of the bottleneck rate and whose nominal long-term offered load is 32%.
+Completed runs are skipped automatically using the seed-qualified filenames.
+New native results are isolated from legacy generated fixtures under `logs/real/`.
 
 ```bash
-python main.py sim                          # all scenarios, pure TCP   -> logs/comparison
-python main.py sim --udp                    # + UDP burst interference  -> logs/comparison-udp
-python main.py sim --scenario wifi_ac       # single scenario
-python main.py sim --num-seeds 10           # 10 RngRun repetitions per config
-python main.py draw                         # plots -> logs/plots*
-python main.py summary                      # CSV report -> logs/summary
+node main.js sim --num-seeds 3             # pure TCP -> logs/real/comparison
+node main.js sim --udp --num-seeds 3       # UDP burst -> logs/real/comparison-udp
+node main.js sim --scenario wifi_ac        # single scenario
+node main.js draw                          # plots -> logs/real/plots*
+node main.js summary                       # CSV -> logs/real/summary
 ```
 
 Makefile shortcuts: `make tcp`, `make udp` (single quick run), `make gen`
@@ -149,7 +133,16 @@ brew install --cask mactex
 
 # https://github.com/be5invis/Sarasa-Gothic
 brew install gnuplot
+
+node docs/build.js thesis   # conference paper
+node docs/build.js njupt    # NJUPT thesis
+node docs/build.js all      # both documents in parallel
+node docs/plots/main.js     # Plotly PNG/SVG + Chromium vector PDF
 ```
+
+The document and figure drivers are typed JavaScript. Plotly.js runs inside a
+headless Chromium page; `Plotly.toImage` writes PNG/SVG and `page.pdf()` writes
+the vector PDF output.
 
 ## Development
 
@@ -159,6 +152,6 @@ make format    # clang-format (C/C++), ruff format (Python), shfmt (shell)
 
 ## License
 
-Apache License 2.0 for the Swift additions (`contrib/opengym/examples/swift-tcp`,
-`ieg`, tooling scripts); ns-3 itself is GPL-2.0-only — see
+Apache License 2.0 for the Swift additions (`scratch/swift-tcp`, `ieg`, tooling
+scripts); ns-3 itself is GPL-2.0-only — see
 [LICENSE](LICENSE) and upstream ns-3 licensing for details.

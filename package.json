@@ -1,0 +1,23 @@
+{
+  "name": "ns3.40",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "TcpSwift ns-3.40 simulation driver and thesis figure pipeline",
+  "license": "Apache-2.0",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "sim": "node main.js sim",
+    "draw": "node main.js draw",
+    "summary": "node main.js summary",
+    "plots": "node docs/plots/main.js",
+    "docs:build": "node docs/build.js"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "fast-xml-parser": "^5.11.1",
+    "playwright": "^1.63.0",
+    "plotly.js-dist-min": "^4.1.1",
+    "typescript": "^6.0.3"
+  }
+}
