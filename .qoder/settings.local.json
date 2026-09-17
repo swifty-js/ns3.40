@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__codegraph__codegraph_explore",
+      "mcp__codegraph__*",
+      "Bash(find /Users/hangtiancheng/github/ns3.40/contrib/opengym/examples/swift-tcp -type f | head -80)"
+    ]
+  }
+}

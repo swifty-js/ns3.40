@@ -1,0 +1,17 @@
+{
+  "chat.editor.fontFamily": "Swifty, LXGW Wenkai",
+  "chat.fontFamily": "Swifty, LXGW Wenkai",
+  "debug.console.fontFamily": "Swifty, LXGW Wenkai",
+  "editor.codeLensFontFamily": "Swifty, LXGW Wenkai",
+  "editor.fontFamily": "Swifty, LXGW Wenkai",
+  "editor.inlayHints.fontFamily": "Swifty, LXGW Wenkai",
+  "editor.inlineSuggest.fontFamily": "Swifty, LXGW Wenkai",
+  "gitlens.blame.fontFamily": "Swifty, LXGW Wenkai",
+  "gitlens.currentLine.fontFamily": "Swifty, LXGW Wenkai",
+  "markdown.preview.fontFamily": "Swifty, LXGW Wenkai",
+  "notebook.markup.fontFamily": "Swifty, LXGW Wenkai",
+  "notebook.output.fontFamily": "Swifty, LXGW Wenkai",
+  "pgsql.resultsFontFamily": "Swifty, LXGW Wenkai",
+  "scm.inputFontFamily": "Swifty, LXGW Wenkai",
+  "terminal.integrated.fontFamily": "Swifty, LXGW Wenkai"
+}
