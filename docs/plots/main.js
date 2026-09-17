@@ -449,7 +449,7 @@ function topLegend() {
  * @param {FigureSpec} spec
  * @returns {Promise<{ stem: string, files: string[] }>} Written file names.
  */
-async function saveFigure(renderer, spec) {
+export async function saveFigure(renderer, spec) {
   const rendered = await renderer.render(
     spec,
     { png: true, pdf: true, svg: true },
@@ -870,7 +870,7 @@ const BEZIER_CIRCLE_K = 0.5522847498307936;
  * @param {number} r - Corner radius.
  * @returns {string}
  */
-function roundedRectPath(x, y, w, h, r) {
+export function roundedRectPath(x, y, w, h, r) {
   const radius = Math.max(0, Math.min(r, w / 2, h / 2));
   const c = radius * BEZIER_CIRCLE_K;
   return [
@@ -897,7 +897,7 @@ function roundedRectPath(x, y, w, h, r) {
  * @param {{ top: number, right: number, bottom: number, left: number }} options.margin
  * @returns {{ plotWidth: number, plotHeight: number, x: (fraction: number) => number, y: (fraction: number) => number }}
  */
-function diagramCanvas(options) {
+export function diagramCanvas(options) {
   const { width, height, margin } = options;
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
@@ -921,7 +921,7 @@ function diagramCanvas(options) {
  * @param {{ text: string, size?: number }} [options.title]
  * @returns {Partial<Layout>}
  */
-function diagramLayout(options) {
+export function diagramLayout(options) {
   const { width, height, margin, canvas, components, title } = options;
 
   /** @type {Partial<Layout>} */
@@ -961,7 +961,7 @@ function diagramLayout(options) {
 /**
  * Accumulator for the shapes, annotations, and line traces of a diagram.
  */
-class ShapeState {
+export class ShapeState {
   /** @type {Partial<Shape>[]} */
   shapes = [];
   /** @type {Partial<Annotation>[]} */
