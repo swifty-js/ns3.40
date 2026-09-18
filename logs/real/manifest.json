@@ -1,0 +1,27 @@
+{
+  "accepted_records": 0,
+  "anomaly_count": 360,
+  "expected": {
+    "protocols": [
+      "TcpSwift",
+      "TcpNewReno",
+      "TcpCubic",
+      "TcpBbr"
+    ],
+    "records": 288,
+    "scenarios": 36,
+    "seeds": [
+      42
+    ],
+    "settings": [
+      "tcp_only",
+      "udp_burst"
+    ]
+  },
+  "files": {},
+  "generated_at_utc": "2026-09-17T07:44:19.170000+00:00",
+  "git_revision": "1cb9aa9c3c7d4dcb8032740c456de40d78b05954",
+  "platform": "macOS-26.3.2-arm64-arm-64bit-Mach-O",
+  "source": "native ns-3.40 FlowMonitor output",
+  "working_tree_dirty": true
+}

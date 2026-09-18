@@ -1093,9 +1093,6 @@ export async function plotArchitecture(renderer) {
   const height = inches(4.6);
   const margin = { top: 40, right: 10, bottom: 10, left: 10 };
   const shapes = new ShapeState();
-
-  // Fractional geometry mirrors the matplotlib original; the canvas helper
-  // scales it to points.
   const canvas = diagramCanvas({ width, height, margin });
   const box = (
     /** @type {number} */ x,
@@ -1103,7 +1100,6 @@ export async function plotArchitecture(renderer) {
     /** @type {number} */ w,
     /** @type {number} */ h,
     /** @type {string} */ text,
-    /** @type {string} */ color,
   ) =>
     shapes.box(
       {
@@ -1113,7 +1109,7 @@ export async function plotArchitecture(renderer) {
         height: canvas.y(h),
       },
       text,
-      color,
+      "rgba(0,0,0,0)",
     );
   const arrow = (
     /** @type {[number, number]} */ start,
@@ -1128,57 +1124,35 @@ export async function plotArchitecture(renderer) {
       color,
     );
 
-  box(0.03, 0.60, 0.20, 0.22, "ns-3 TCP协议栈\n五类原生回调\nACK/丢包/RTT/ECN", "#DCEAF7");
-  box(0.29, 0.60, 0.22, 0.22, "TcpSwift连接状态\n速率样本 / minRTT\nBDP / α / 安全计数", "#E8F3E8");
-  box(0.57, 0.60, 0.20, 0.22, "原生C++决策逻辑\n同一离散事件进程\n无IPC / Python依赖", "#FFF7DE");
-  box(0.81, 0.60, 0.16, 0.22, "窗口状态写回\nssThresh\n与cWnd", "#FCE4D6");
-  box(
-    0.05,
-    0.12,
-    0.24,
-    0.24,
-    "拥塞三分类判定\n超时 0.50 / ECN 0.75\n普通丢包 0.70",
-    "#F4CCCC",
-  );
-  box(
-    0.35,
-    0.12,
-    0.26,
-    0.24,
-    "两级BDP估计\n时间窗交付速率\n+ 40样本最大值滤波",
-    "#EADCF8",
-  );
-  box(
-    0.67,
-    0.12,
-    0.28,
-    0.24,
-    "基线相对反馈自适应\n快/慢EMA对比\n有界步长逼近 α×BDP",
-    "#D9EAD3",
-  );
+  box(0.03, 0.62, 0.20, 0.18, "ns-3 原生回调\nACK · 丢包 · RTT · ECN");
+  box(0.29, 0.62, 0.20, 0.18, "连接状态\ncwnd · minRTT · BDP · α");
+  box(0.56, 0.62, 0.18, 0.18, "C++ 决策\n同一事件进程");
+  box(0.81, 0.62, 0.16, 0.18, "协议栈写回\ncwnd · ssthresh");
+  box(0.08, 0.18, 0.26, 0.16, "拥塞分类\n超时 · ECN · 丢包");
+  box(0.40, 0.18, 0.22, 0.16, "两级 BDP 估计\n交付速率 · 最大值");
+  box(0.70, 0.18, 0.26, 0.16, "α 自适应\nRTT 反馈 · 目标窗口");
 
-  arrow([0.23, 0.71], [0.29, 0.71], "读取状态", undefined);
-  arrow([0.51, 0.71], [0.57, 0.71], "本地计算", undefined);
-  arrow([0.77, 0.71], [0.81, 0.71], "更新", undefined);
-  arrow([0.17, 0.60], [0.17, 0.36], "拥塞信号", undefined);
-  arrow([0.44, 0.60], [0.48, 0.36], "速率样本", undefined);
-  arrow([0.29, 0.24], [0.35, 0.24], "非拥塞路径", undefined);
-  arrow([0.61, 0.24], [0.67, 0.24], "BDP", undefined);
-  arrow([0.86, 0.36], [0.88, 0.60], "候选窗口", "#0072B2");
+  arrow([0.23, 0.71], [0.29, 0.71], "读取", undefined);
+  arrow([0.49, 0.71], [0.56, 0.71], "决策", undefined);
+  arrow([0.74, 0.71], [0.81, 0.71], "更新", undefined);
+  arrow([0.13, 0.62], [0.18, 0.34], "拥塞信号", undefined);
+  arrow([0.34, 0.31], [0.56, 0.65], "拥塞类型", undefined);
+  arrow([0.62, 0.26], [0.70, 0.26], "BDP", undefined);
+  arrow([0.83, 0.34], [0.68, 0.62], "目标窗口", undefined);
 
   shapes.shapes.push({
     type: "path",
     path:
-      `M ${canvas.x(0.86)} ${canvas.y(0.82)} ` +
-      `Q ${canvas.x(0.5)} ${canvas.y(0.90)} ${canvas.x(0.13)} ${canvas.y(0.82)}`,
-    line: { color: "#0072B2", width: 1.2, dash: "dot" },
+      `M ${canvas.x(0.89)} ${canvas.y(0.80)} ` +
+      `Q ${canvas.x(0.5)} ${canvas.y(0.93)} ${canvas.x(0.13)} ${canvas.y(0.80)}`,
+    line: { color: "#333333", width: 1.2, dash: "dot" },
     fillcolor: "rgba(0,0,0,0)",
     layer: "above",
   });
   shapes.label(
     { x: canvas.x(0.5), y: canvas.y(0.945) },
-    "窗口状态由原生回调直接写回协议栈",
-    { fontSize: 7.5, color: "#0072B2" },
+    "原生回调写回",
+    { fontSize: 7.5 },
   );
 
   const layout = diagramLayout({
@@ -1187,7 +1161,7 @@ export async function plotArchitecture(renderer) {
     margin,
     canvas,
     components: shapes,
-    title: { text: "原生C++拥塞控制回路总体架构" },
+    title: { text: "原生 C++ 拥塞控制回路" },
   });
 
   return saveFigure(renderer, {
@@ -1218,7 +1192,6 @@ export async function plotWorkflow(renderer) {
     /** @type {number} */ w,
     /** @type {number} */ h,
     /** @type {string} */ text,
-    /** @type {string} */ color,
   ) =>
     shapes.box(
       {
@@ -1228,7 +1201,7 @@ export async function plotWorkflow(renderer) {
         height: canvas.y(h),
       },
       text,
-      color,
+      "rgba(0,0,0,0)",
     );
   const arrow = (
     /** @type {[number, number]} */ start,
@@ -1242,79 +1215,38 @@ export async function plotWorkflow(renderer) {
       text,
       color,
     );
-  const point = (/** @type {[number, number]} */ p) => ({
-    x: canvas.x(p[0]),
-    y: canvas.y(p[1]),
-  });
 
-  box(0.40, 0.93, 0.20, 0.045, "连接建立", "#EEEEEE");
-  box(
-    0.28,
-    0.795,
-    0.44,
-    0.095,
-    "S1 原生回调读取连接状态\n窗口状态 / 传输指标 / 时延测量 / 协议栈事件",
-    "#DCEAF7",
-  );
-  box(0.28, 0.66, 0.44, 0.09, "S2 拥塞判定\n窗口缩减回调内的三分类语义判定", "#FFF7DE");
-  box(
-    0.11,
-    0.30,
-    0.40,
-    0.22,
-    "S5b 差异化缩减与安全保护\n保留因子：超时 0.50 / ECN 0.75 / 丢包 0.70\n" +
-      "慢启动阈值锚定 min(cwnd, BDP)\n连续缩减保护 · 降窗后冻结\n窗口箝位 · 陈旧决策作废",
-    "#F4CCCC",
-  );
-  box(
-    0.58,
-    0.46,
-    0.40,
-    0.13,
-    "S3 带宽延迟积两级估计\n时间窗交付速率（跨度 ≥ 2×最小RTT）\n" +
-      "40样本最大值滤波，BDP = 最大带宽 × 最小RTT",
-    "#EADCF8",
-  );
-  box(
-    0.58,
-    0.295,
-    0.40,
-    0.115,
-    "S4 参数自适应\nRTT膨胀 + 基线相对反馈 + 连续增长\n乘性增加因子 α ∈ [0.85, 1.30]",
-    "#D9EAD3",
-  );
-  box(
-    0.58,
-    0.135,
-    0.40,
-    0.11,
-    "S5a 目标窗口逼近\n目标窗口 = α × BDP\n上行有界步长 / 下行超出量的一半",
-    "#E8F3E8",
-  );
-  box(0.28, 0.02, 0.44, 0.065, "S6 原生写回：更新拥塞窗口与慢启动阈值", "#FCE4D6");
+  box(0.40, 0.93, 0.20, 0.045, "连接建立");
+  box(0.31, 0.80, 0.38, 0.08, "S1 状态采集\n窗口 · 传输 · RTT · 事件");
+  box(0.34, 0.67, 0.32, 0.075, "S2 拥塞判定");
+  box(0.06, 0.42, 0.36, 0.11, "S5b 差异化缩减\n0.50 / 0.75 / 0.70 · 安全保护");
+  box(0.58, 0.53, 0.36, 0.09, "S3 两级 BDP 估计\n交付速率 · 最大值滤波");
+  box(0.58, 0.38, 0.36, 0.09, "S4 α 自适应\nRTT · 快慢 EMA · 连续增长");
+  box(0.58, 0.23, 0.36, 0.09, "S5a 目标窗口\n有界跟踪 α × BDP");
+  box(0.31, 0.06, 0.38, 0.08, "S6 原生写回\ncwnd · ssthresh");
 
-  arrow([0.50, 0.93], [0.50, 0.89], undefined, undefined);
-  arrow([0.50, 0.795], [0.50, 0.75], undefined, undefined);
-  arrow([0.40, 0.66], [0.31, 0.52], "拥塞（三类）", undefined);
-  arrow([0.60, 0.66], [0.74, 0.59], "非拥塞", undefined);
-  arrow([0.78, 0.46], [0.78, 0.41], undefined, undefined);
-  arrow([0.78, 0.295], [0.78, 0.245], undefined, undefined);
-  arrow([0.68, 0.135], [0.60, 0.085], undefined, undefined);
-  arrow([0.31, 0.30], [0.38, 0.085], undefined, undefined);
+  arrow([0.50, 0.93], [0.50, 0.88], undefined, undefined);
+  arrow([0.50, 0.80], [0.50, 0.745], undefined, undefined);
+  arrow([0.40, 0.67], [0.24, 0.53], "拥塞", undefined);
+  arrow([0.60, 0.67], [0.76, 0.62], "非拥塞", undefined);
+  arrow([0.76, 0.53], [0.76, 0.47], undefined, undefined);
+  arrow([0.76, 0.38], [0.76, 0.32], undefined, undefined);
+  arrow([0.68, 0.23], [0.60, 0.14], undefined, undefined);
+  arrow([0.24, 0.42], [0.40, 0.14], undefined, undefined);
 
-  const feedbackColor = "#0072B2";
+  const feedbackColor = "#333333";
   shapes.polyline(
     [
-      [canvas.x(0.28), canvas.y(0.0525)],
-      [canvas.x(0.05), canvas.y(0.0525)],
-      [canvas.x(0.05), canvas.y(0.8425)],
+      [canvas.x(0.31), canvas.y(0.10)],
+      [canvas.x(0.04), canvas.y(0.10)],
+      [canvas.x(0.04), canvas.y(0.84)],
     ],
     feedbackColor,
   );
-  arrow([0.05, 0.8425], [0.28, 0.8425], undefined, feedbackColor);
+  arrow([0.04, 0.84], [0.31, 0.84], undefined, feedbackColor);
   shapes.label(
-    { x: canvas.x(0.038), y: canvas.y(0.62) },
-    "反馈信号：快速EMA与慢速基线EMA更新",
+    { x: canvas.x(0.028), y: canvas.y(0.48) },
+    "反馈 · EMA 更新",
     { fontSize: 7.5, color: feedbackColor, rotate: -90 },
   );
 

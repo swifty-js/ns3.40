@@ -42,7 +42,11 @@ import { appendAnomalies, rateToMbps, timeToMs } from "../../main.js";
 import { buildCsv } from "../../lib/csv.js";
 import { isFile, parseFlowMonitor, ScenarioResult } from "../../lib/flowmonitor.js";
 import { FigureRenderer } from "../../lib/plotly.js";
-import { DEFAULT_N_LEAF, SCENARIOS } from "../../lib/scenarios.js";
+import {
+  DEFAULT_N_LEAF,
+  PROTOCOL_COLORS_MAP,
+  SCENARIOS,
+} from "../../lib/scenarios.js";
 import { metricSummary } from "../../lib/stats.js";
 import { axisStyle, baseLayout, inches } from "../../lib/theme.js";
 import {
@@ -90,10 +94,10 @@ export const PATENT_SCENARIOS = [
  * @type {ReadonlyArray<readonly [string, string, string]>}
  */
 export const PATENT_PROTOCOLS = [
-  ["TcpSwift", "本发明方法", "#1F6FB2"],
-  ["TcpNewReno", "对比方法一", "#8C9AA6"],
-  ["TcpCubic", "对比方法二", "#E08A1E"],
-  ["TcpBbr", "对比方法三", "#7E6BC4"],
+  ["TcpSwift", "本发明方法", PROTOCOL_COLORS_MAP.TcpSwift],
+  ["TcpNewReno", "对比方法一", PROTOCOL_COLORS_MAP.TcpNewReno],
+  ["TcpCubic", "对比方法二", PROTOCOL_COLORS_MAP.TcpCubic],
+  ["TcpBbr", "对比方法三", PROTOCOL_COLORS_MAP.TcpBbr],
 ];
 
 /** Settings compared by the robustness chart. */
@@ -429,26 +433,8 @@ export function diamondPath(box) {
   ].join(" ");
 }
 
-/** Face colour of the state-acquisition steps. */
-const COLOR_STATE = "#DCEAF7";
-
-/** Face colour of the semantic-classification decisions. */
-const COLOR_DECISION = "#FFF7DE";
-
-/** Face colour of the congestion-response steps. */
-const COLOR_CONGESTION = "#F4CCCC";
-
-/** Face colour of the non-congestion steps. */
-const COLOR_INCREASE = "#D9EAD3";
-
-/** Face colour of the measurement and estimation steps. */
-const COLOR_MEASURE = "#EADCF8";
-
-/** Face colour of the output steps. */
-const COLOR_OUTPUT = "#FCE4D6";
-
-/** Face colour of neutral entry, exit and note steps. */
-const COLOR_NEUTRAL = "#EEEEEE";
+/** Transparent node fill used by the patent flowcharts. */
+const TRANSPARENT_FILL = "rgba(0,0,0,0)";
 
 /**
  * Fraction-based placement API over a diagram canvas.
@@ -598,155 +584,63 @@ class FlowCanvas {
  * @returns {Promise<{ stem: string, files: string[] }>}
  */
 export async function plotStateClassification(renderer) {
-  const width = inches(9.2);
-  const height = inches(6.8);
+  const width = inches(9.4);
+  const height = inches(7.2);
   const margin = { top: 36, right: 10, bottom: 10, left: 10 };
   const canvas = diagramCanvas({ width, height, margin });
   const flow = new FlowCanvas(canvas);
+  const box = (
+    /** @type {number} */ x,
+    /** @type {number} */ y,
+    /** @type {number} */ w,
+    /** @type {number} */ h,
+    /** @type {string} */ text,
+    /** @type {number} */ fontSize = 8,
+  ) => flow.box(x, y, w, h, text, TRANSPARENT_FILL, fontSize);
+  const decision = (
+    /** @type {number} */ x,
+    /** @type {number} */ y,
+    /** @type {number} */ w,
+    /** @type {number} */ h,
+    /** @type {string} */ text,
+  ) => flow.node(x, y, w, h, text, TRANSPARENT_FILL, 8);
 
-  flow.box(0.30, 0.93, 0.34, 0.045, "连接建立并进入拥塞控制", COLOR_NEUTRAL, 8.5);
-  flow.arrow([0.47, 0.93], [0.47, 0.885]);
-  flow.box(
-    0.04,
-    0.775,
-    0.50,
-    0.11,
-    "S1 多回调点状态获取\n" +
-      "窗口缩减回调 · 窗口增长回调 · 确认报文处理回调\n" +
-      "拥塞状态设置回调 · 拥塞窗口事件回调",
-    COLOR_STATE,
-    8,
-  );
-  flow.arrow([0.29, 0.775], [0.29, 0.735]);
-  flow.box(
-    0.04,
-    0.635,
-    0.50,
-    0.10,
-    "S1 状态传输容器组装（15 元素）\n11 维有效观测子空间 + 4 项跨模块路由元数据",
-    COLOR_STATE,
-    8,
-  );
-  flow.box(
-    0.60,
-    0.615,
-    0.38,
-    0.285,
-    "11 维有效观测子空间\n" +
-      "① 窗口状态：慢启动阈值、拥塞窗口\n" +
-      "② 传输指标：报文段大小、已确认报文段数、在途字节数\n" +
-      "③ 时延测量：最近往返时延、最小往返时延\n" +
-      "④ 协议栈状态：回调类型、拥塞避免状态机、\n" +
-      "　　拥塞事件、显式拥塞通知状态",
-    "#F1F7FC",
-    7,
-  );
-  flow.arrow([0.54, 0.685], [0.60, 0.73]);
+  box(0.39, 0.94, 0.22, 0.04, "进入拥塞控制", 8.5);
+  box(0.29, 0.84, 0.42, 0.065, "S1 五类回调采集\n缩减 · 增长 · ACK · 状态 · ECN");
+  box(0.29, 0.73, 0.42, 0.065, "15 元素状态容器\n11 维观测 + 4 项路由元数据");
+  decision(0.35, 0.60, 0.30, 0.09, "S2 缩减回调？");
+  decision(0.02, 0.44, 0.30, 0.09, "CA_LOSS？");
+  decision(0.68, 0.44, 0.30, 0.09, "ACK 路径存在\nCE / ECE？");
+  decision(0.29, 0.29, 0.34, 0.09, "CE / ECE 或\n窗口缩减状态？");
 
-  flow.node(
-    0.08,
-    0.495,
-    0.42,
-    0.11,
-    "S2 观测由窗口缩减回调触发？",
-    COLOR_DECISION,
-    8.5,
-  );
-  flow.arrow([0.29, 0.635], [0.29, 0.605]);
+  box(0.01, 0.14, 0.22, 0.065, "超时拥塞\nρ = 0.50");
+  box(0.26, 0.14, 0.22, 0.065, "普通丢包\nρ = 0.70");
+  box(0.52, 0.14, 0.22, 0.065, "ECN 拥塞\nρ = 0.75");
+  box(0.77, 0.14, 0.22, 0.065, "非拥塞");
+  box(0.20, 0.02, 0.60, 0.07, "输出语义 · 更新计数\n移交窗口决策");
 
-  flow.box(
-    0.58,
-    0.40,
-    0.40,
-    0.16,
-    "S2 确认事件路径（窗口增长回调）\n" +
-      "显式拥塞通知状态指示收到 CE 标记或 ECE 回显：\n" +
-      "判定为显式拥塞通知类拥塞并触发响应\n" +
-      "其余：判定为非拥塞状态，\n" +
-      "转入拥塞窗口增长决策",
-    COLOR_DECISION,
-    7.5,
-  );
-  flow.arrow([0.50, 0.55], [0.58, 0.52], "否", undefined, 10);
+  flow.arrow([0.50, 0.94], [0.50, 0.905]);
+  flow.arrow([0.50, 0.84], [0.50, 0.795]);
+  flow.arrow([0.50, 0.73], [0.50, 0.69]);
+  flow.arrow([0.35, 0.645], [0.17, 0.53], "是", undefined, 9);
+  flow.arrow([0.65, 0.645], [0.83, 0.53], "否", undefined, 9);
+  flow.arrow([0.17, 0.44], [0.12, 0.205], "是", undefined, 8);
+  flow.arrow([0.32, 0.485], [0.46, 0.38], "否", undefined, 9);
+  flow.arrow([0.83, 0.44], [0.63, 0.205], "是", undefined, 9);
+  flow.arrow([0.98, 0.485], [0.88, 0.205], "否", undefined, 8);
+  flow.arrow([0.29, 0.335], [0.37, 0.205], "否", undefined, 8);
+  flow.arrow([0.63, 0.335], [0.63, 0.205], "是", undefined, 8);
+  flow.arrow([0.12, 0.14], [0.32, 0.09]);
+  flow.arrow([0.37, 0.14], [0.43, 0.09]);
+  flow.arrow([0.63, 0.14], [0.57, 0.09]);
+  flow.arrow([0.88, 0.14], [0.68, 0.09]);
 
-  flow.node(
-    0.01,
-    0.295,
-    0.34,
-    0.12,
-    "拥塞避免状态机为丢失状态？",
-    COLOR_DECISION,
-    8,
-  );
-  flow.arrow([0.16, 0.495], [0.16, 0.415], "是", undefined, 9);
-
-  flow.box(
-    0.01,
-    0.155,
-    0.26,
-    0.09,
-    "超时类拥塞\n保留因子 0.50，重新进入慢启动",
-    COLOR_CONGESTION,
-    8,
-  );
-  flow.arrow([0.11, 0.295], [0.11, 0.245], "是", undefined, 7);
-
-  flow.node(
-    0.28,
-    0.215,
-    0.42,
-    0.12,
-    "显式拥塞通知状态为收到 CE 标记或 ECE 回显，\n或拥塞避免状态机已进入拥塞窗口缩减状态？",
-    COLOR_DECISION,
-    7.5,
-  );
-  flow.arrow([0.34, 0.355], [0.40, 0.335], "否", undefined, 10);
-
-  flow.box(
-    0.70,
-    0.115,
-    0.28,
-    0.09,
-    "显式拥塞通知类拥塞\n保留因子 0.75",
-    COLOR_INCREASE,
-    8,
-  );
-  flow.arrow([0.60, 0.215], [0.80, 0.205], "是", undefined, 9);
-
-  flow.box(
-    0.30,
-    0.10,
-    0.26,
-    0.09,
-    "普通丢包类拥塞\n保留因子 0.70",
-    COLOR_INCREASE,
-    8,
-  );
-  flow.arrow([0.40, 0.215], [0.42, 0.19], "否", undefined, 9);
-
-  flow.box(
-    0.02,
-    0.015,
-    0.52,
-    0.07,
-    "输出三分类语义判定结果，更新累计丢包计数与累计显式拥塞通知计数\n" +
-      "移交拥塞窗口决策（见拥塞窗口决策流程图）",
-    COLOR_OUTPUT,
-    7.5,
-  );
-  flow.arrow([0.12, 0.155], [0.20, 0.085]);
-  flow.arrow([0.42, 0.10], [0.34, 0.085]);
-  flow.arrow([0.80, 0.115], [0.48, 0.085]);
-
-  flow.box(
-    0.58,
-    0.015,
-    0.40,
-    0.07,
-    "注：恢复状态与往返时延膨胀仅用于参数调节，\n不独立触发乘性降窗",
-    COLOR_NEUTRAL,
-    7,
-  );
+  flow.label([0.84, 0.76], "观测：窗口 · 传输 · RTT · 协议栈", {
+    fontSize: 7,
+  });
+  flow.label([0.82, 0.66], "恢复与 RTT 膨胀仅参与调参", {
+    fontSize: 7,
+  });
 
   const layout = diagramLayout({
     width,
@@ -754,7 +648,7 @@ export async function plotStateClassification(renderer) {
     margin,
     canvas,
     components: flow.shapes,
-    title: { text: "多信号状态获取与拥塞语义分类流程", size: 12 },
+    title: { text: "多信号状态获取与拥塞语义分类", size: 12 },
   });
 
   return saveFigure(renderer, {
@@ -779,118 +673,92 @@ export async function plotWindowDecision(renderer) {
   const margin = { top: 36, right: 10, bottom: 10, left: 10 };
   const canvas = diagramCanvas({ width, height, margin });
   const flow = new FlowCanvas(canvas);
+  const box = (
+    /** @type {number} */ x,
+    /** @type {number} */ y,
+    /** @type {number} */ w,
+    /** @type {number} */ h,
+    /** @type {string} */ text,
+    /** @type {number} */ fontSize = 8,
+  ) => flow.box(x, y, w, h, text, TRANSPARENT_FILL, fontSize);
+  const decision = (
+    /** @type {number} */ x,
+    /** @type {number} */ y,
+    /** @type {number} */ w,
+    /** @type {number} */ h,
+    /** @type {string} */ text,
+  ) => flow.node(x, y, w, h, text, TRANSPARENT_FILL, 8);
 
-  flow.box(
-    0.02,
-    0.865,
-    0.47,
-    0.115,
-    "S3a 第一级带宽延迟积估计\n" +
-      "以确认事件维护时刻与累计已确认字节数样本\n" +
-      "时间窗跨度取最小往返时延的两倍，箝位于 5 ms ~ 1 s\n" +
-      "交付速率样本 = 窗口内累计确认字节增量 / 实际跨度",
-    COLOR_MEASURE,
-    7.5,
-  );
-  flow.arrow([0.49, 0.9225], [0.53, 0.9225]);
-  flow.box(
-    0.53,
-    0.865,
-    0.45,
-    0.115,
-    "S3b 第二级带宽延迟积估计\n" +
-      "容量 40 的交付速率队列取最大值作为瓶颈带宽估计\n" +
-      "带宽延迟积 = 瓶颈带宽估计 × 全局最小往返时延\n" +
-      "估计不可用时以当前拥塞窗口作为保守回退值",
-    COLOR_MEASURE,
-    7.5,
-  );
-
-  flow.arrow([0.50, 0.865], [0.50, 0.825]);
-  flow.box(
-    0.02,
-    0.715,
-    0.96,
-    0.105,
-    "S4 乘性增加因子自适应（每连接独立维护，初值 1.10，箝位于 [0.85, 1.30]）\n" +
-      "因子一：往返时延膨胀比对照随最小往返时延平方根增长的三级动态阈值\n" +
-      "因子二：快速指数移动平均对照其自身慢速基线与自适应裕度\n" +
-      "因子三：连续增长计数超过预设次数时进一步小幅增大",
-    COLOR_INCREASE,
-    7.5,
-  );
-
-  flow.node(
-    0.30,
-    0.595,
-    0.40,
+  box(0.02, 0.88, 0.28, 0.08, "S3a 交付速率样本\n2×minRTT · 5 ms–1 s");
+  box(0.36, 0.88, 0.28, 0.08, "S3b BDP 估计\nmax(40 样本) × minRTT");
+  box(0.70, 0.88, 0.28, 0.08, "S4 α 自适应 [0.85, 1.30]\nRTT · 快慢 EMA · 连续增长", 7.5);
+  decision(0.35, 0.70, 0.30, 0.09, "拥塞状态？");
+  box(0.02, 0.46, 0.30, 0.09, "差异化缩减\nρ = 0.50 / 0.75 / 0.70");
+  decision(0.68, 0.55, 0.30, 0.09, "冻结计数 > 0？");
+  box(0.74, 0.37, 0.24, 0.07, "保持 cwnd");
+  decision(0.39, 0.41, 0.28, 0.09, "慢启动？");
+  box(0.28, 0.26, 0.27, 0.075, "慢启动目标\nmax(2BDP, 10MSS)");
+  box(0.62, 0.26, 0.36, 0.075, "拥塞避免目标\nα×BDP · 有界升 / 半量降", 7.5);
+  box(
+    0.17,
     0.10,
-    "是否处于拥塞状态？",
-    COLOR_DECISION,
-    9,
-  );
-  flow.arrow([0.50, 0.715], [0.50, 0.655]);
-
-  flow.box(
-    0.02,
-    0.395,
-    0.46,
-    0.13,
-    "拥塞分支：差异化缩减与安全保护\n" +
-      "保留因子：超时类 0.50 / 显式拥塞通知类 0.75 / 普通丢包类 0.70\n" +
-      "新拥塞窗口 = 保留因子 × 当前拥塞窗口（不低于窗口下界）\n" +
-      "新慢启动阈值 = 保留因子 × min(当前窗口, 带宽延迟积)\n" +
-      "超时类拥塞同时重新进入慢启动阶段",
-    COLOR_CONGESTION,
+    0.66,
+    0.07,
+    "S5 统一安全约束\n缩减≤3 · 冻结4 ACK · 窗口界限 · 阈值锚定",
     7.5,
   );
-  flow.arrow([0.30, 0.595], [0.25, 0.525], "是", undefined, 10);
+  box(0.34, 0.02, 0.32, 0.05, "S6 输出\ncwnd · ssthresh");
 
-  flow.box(
-    0.52,
-    0.395,
-    0.46,
-    0.13,
-    "非拥塞分支：有界目标窗口跟踪\n" +
-      "冻结计数器为正：保持拥塞窗口不变（降窗后冻结）\n" +
-      "慢启动：目标窗口 = max(2 × 带宽延迟积, 10 × 报文段大小)\n" +
-      "拥塞避免：目标窗口 = 乘性增加因子 × 带宽延迟积；\n" +
-      "低于目标按有界步长上升，高于目标按超出量的一半回落",
-    COLOR_INCREASE,
-    7.5,
-  );
-  flow.arrow([0.70, 0.595], [0.75, 0.525], "否", undefined, 10);
+  flow.arrow([0.30, 0.92], [0.36, 0.92]);
+  flow.arrow([0.64, 0.92], [0.70, 0.92]);
+  flow.arrow([0.84, 0.88], [0.50, 0.79]);
+  flow.arrow([0.35, 0.745], [0.17, 0.55], "是", undefined, 9);
+  flow.arrow([0.65, 0.745], [0.83, 0.64], "否", undefined, 9);
+  flow.arrow([0.83, 0.55], [0.86, 0.44], "是", undefined, 8);
+  flow.arrow([0.68, 0.595], [0.53, 0.50], "否", undefined, 9);
+  flow.arrow([0.39, 0.455], [0.415, 0.335], "是", undefined, 8);
+  flow.arrow([0.67, 0.455], [0.80, 0.335], "否", undefined, 8);
 
-  flow.box(
-    0.02,
-    0.235,
-    0.96,
-    0.115,
-    "S5 统一稳定性与安全约束（在全部决策分支上施加）\n" +
-      "连续缩减计数器超过 3：保持当前拥塞窗口不再继续缩减\n" +
-      "每次降窗后 4 个确认事件内冻结窗口，抑制降窗后快速反弹\n" +
-      "窗口下界 4 × 报文段大小；上界 max(4 × 带宽延迟积, 200 × 报文段大小)\n" +
-      "新的慢启动阈值不低于新的拥塞窗口与窗口下界",
-    "#E8EEF7",
-    7.5,
+  flow.polyline(
+    [
+      [0.17, 0.46],
+      [0.17, 0.20],
+      [0.50, 0.20],
+    ],
+    "#333333",
   );
-  flow.arrow([0.25, 0.395], [0.25, 0.35]);
-  flow.arrow([0.75, 0.395], [0.75, 0.35]);
+  flow.polyline(
+    [
+      [0.415, 0.26],
+      [0.415, 0.20],
+      [0.50, 0.20],
+    ],
+    "#333333",
+  );
+  flow.polyline(
+    [
+      [0.80, 0.26],
+      [0.80, 0.20],
+      [0.50, 0.20],
+    ],
+    "#333333",
+  );
+  flow.polyline(
+    [
+      [0.86, 0.37],
+      [0.99, 0.37],
+      [0.99, 0.20],
+      [0.50, 0.20],
+    ],
+    "#333333",
+  );
+  flow.arrow([0.50, 0.20], [0.50, 0.17]);
+  flow.arrow([0.50, 0.10], [0.50, 0.07]);
 
-  flow.box(
-    0.02,
-    0.055,
-    0.96,
-    0.125,
-    "S6 动作输出与应用\n" +
-      "输出动作向量：新的慢启动阈值与新的拥塞窗口\n" +
-      "只读的窗口缩减回调中暂存拥塞窗口决策并返回新的慢启动阈值\n" +
-      "在后续窗口增长回调中应用暂存值；协议栈进入丢失状态时作废陈旧决策\n" +
-      "应用前对慢启动阈值与拥塞窗口施加不低于 2 × 报文段大小的下限校验",
-    COLOR_OUTPUT,
-    7.5,
-  );
-  flow.arrow([0.50, 0.235], [0.50, 0.18]);
+  flow.label([0.50, 0.84], "估计不可用 → 当前 cwnd", { fontSize: 7 });
+  flow.label([0.84, 0.055], "缩减回调暂存 · 增长回调应用\nCA_LOSS 作废 · 应用前 ≥ 2MSS", {
+    fontSize: 7,
+  });
 
   const layout = diagramLayout({
     width,
@@ -898,7 +766,7 @@ export async function plotWindowDecision(renderer) {
     margin,
     canvas,
     components: flow.shapes,
-    title: { text: "带宽延迟积估计、参数自适应与拥塞窗口决策流程", size: 12 },
+    title: { text: "BDP 估计、参数自适应与窗口决策", size: 12 },
   });
 
   return saveFigure(renderer, {

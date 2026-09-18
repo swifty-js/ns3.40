@@ -1,0 +1,6 @@
+Scenario,Protocol,Throughput (Mbps),Delay (ms),Jitter (ms),Loss (%)
+dc_100g,TcpNewReno,99461.78,0.9986,0.0003,0.02
+symmetric_low,TcpBbr,583.93,0.0704,0.0027,0.00
+symmetric_low,TcpCubic,998.54,6.0833,0.0338,0.00
+symmetric_low,TcpNewReno,998.54,16.5707,0.0355,0.00
+symmetric_low,TcpSwift,950.33,0.1030,0.0120,0.00

@@ -1,0 +1,1 @@
+Setting,Scenario,Protocol,Runs,Goodput_Mbps_Mean,Goodput_Mbps_Std,Goodput_Mbps_CI95,Delay_ms_Mean,Delay_ms_Std,Delay_ms_CI95,Jitter_ms_Mean,Jitter_ms_Std,Jitter_ms_CI95,Loss_pct_Mean,Loss_pct_Std,Loss_pct_CI95,Jain_Mean,Jain_Std,Jain_CI95
