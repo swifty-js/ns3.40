@@ -220,199 +220,204 @@ export class Dashboard extends LitElement {
         </header>
 
         <main class="mx-auto max-w-7xl px-6 py-8">
-          {this.loading && (
-            <div class="flex items-center justify-center py-32">
-              <div class="flex flex-col items-center gap-4">
-                <div class="border-accent/30 border-t-accent h-10 w-10 animate-spin rounded-full border-2"></div>
-                <p class="text-sm text-gray-400">Loading flow data...</p>
-              </div>
+          {/* Both panes stay mounted and toggle via a class that is always
+              present. On a conditional swap lit-jsx reuses the previous
+              element and never removes a class prop that disappears
+              (spread groom() skips properties), so an unclassed branch
+              would inherit the spinner's flex layout. */}
+          <div
+            class={
+              this.loading ? "flex items-center justify-center py-32" : "hidden"
+            }
+          >
+            <div class="flex flex-col items-center gap-4">
+              <div class="border-accent/30 border-t-accent h-10 w-10 animate-spin rounded-full border-2"></div>
+              <p class="text-sm text-gray-400">Loading flow data...</p>
             </div>
-          )}
-          {!this.loading && (
-            <div>
-              <div class="mb-8 space-y-4">
-                <div class="flex flex-wrap items-center gap-2">
+          </div>
+          <div class={this.loading ? "hidden" : "block"}>
+            <div class="mb-8 space-y-4">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="mr-1 text-xs tracking-wider text-gray-400 uppercase">
+                  Category
+                </span>
+                <button
+                  class={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium tracking-wide ${pillClass(this.filter === "All")}`}
+                  onClick={() => {
+                    this.filter = "All";
+                  }}
+                >
+                  All
+                </button>
+                {this.categories.map((cat) => (
+                  <button
+                    class={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium tracking-wide ${pillClass(this.filter === cat)}`}
+                    onClick={() => {
+                      this.filter = cat;
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
                   <span class="mr-1 text-xs tracking-wider text-gray-400 uppercase">
-                    Category
+                    Dataset
                   </span>
                   <button
-                    class={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium tracking-wide ${pillClass(this.filter === "All")}`}
+                    class={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium tracking-wide ${pillClass(this.datasetName === "All")}`}
                     onClick={() => {
-                      this.filter = "All";
+                      this.datasetName = "All";
                     }}
                   >
                     All
                   </button>
-                  {this.categories.map((cat) => (
+                  {this.datasets.map((ds) => (
                     <button
-                      class={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium tracking-wide ${pillClass(this.filter === cat)}`}
+                      class={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium tracking-wide ${pillClass(this.datasetName === ds)}`}
                       onClick={() => {
-                        this.filter = cat;
+                        this.datasetName = ds;
                       }}
                     >
-                      {cat}
+                      {ds}
                     </button>
                   ))}
                 </div>
 
-                <div class="flex flex-wrap items-center justify-between gap-4">
-                  <div class="flex items-center gap-2">
-                    <span class="mr-1 text-xs tracking-wider text-gray-400 uppercase">
-                      Dataset
-                    </span>
+                <div class="flex items-center gap-2">
+                  <span class="mr-1 text-xs tracking-wider text-gray-400 uppercase">
+                    Metric by
+                  </span>
+                  {this.algoPills.map((pill) => (
                     <button
-                      class={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium tracking-wide ${pillClass(this.datasetName === "All")}`}
+                      class={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium tracking-wide ${
+                        !pill.active
+                          ? "border-transparent opacity-50 hover:opacity-100"
+                          : ""
+                      }`}
+                      style={{
+                        background: pill.bg,
+                        color: pill.color,
+                        ...(pill.active
+                          ? { borderColor: pill.borderColor }
+                          : {}),
+                      }}
                       onClick={() => {
-                        this.datasetName = "All";
+                        this.bestAlgo = pill.algo;
                       }}
                     >
-                      All
+                      <span
+                        class="h-2 w-2 rounded-full"
+                        style={{ background: pill.color }}
+                      ></span>
+                      {pill.label}
                     </button>
-                    {this.datasets.map((ds) => (
-                      <button
-                        class={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium tracking-wide ${pillClass(this.datasetName === ds)}`}
-                        onClick={() => {
-                          this.datasetName = ds;
-                        }}
-                      >
-                        {ds}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div class="flex items-center gap-2">
-                    <span class="mr-1 text-xs tracking-wider text-gray-400 uppercase">
-                      Metric by
-                    </span>
-                    {this.algoPills.map((pill) => (
-                      <button
-                        class={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium tracking-wide ${
-                          !pill.active
-                            ? "border-transparent opacity-50 hover:opacity-100"
-                            : ""
-                        }`}
-                        style={{
-                          background: pill.bg,
-                          color: pill.color,
-                          ...(pill.active
-                            ? { borderColor: pill.borderColor }
-                            : {}),
-                        }}
-                        onClick={() => {
-                          this.bestAlgo = pill.algo;
-                        }}
-                      >
-                        <span
-                          class="h-2 w-2 rounded-full"
-                          style={{ background: pill.color }}
-                        ></span>
-                        {pill.label}
-                      </button>
-                    ))}
-                  </div>
+                  ))}
                 </div>
               </div>
+            </div>
 
-              <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {cards.map((c) => (
-                  <a
-                    href={`${base}/scenario?scenario=${encodeURIComponent(c.scenario)}&dataset=${encodeURIComponent(c.dataset)}`}
-                    class="scenario-card hover:border-accent/40 group cursor-pointer rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
-                  >
-                    <div class="mb-4 flex items-start justify-between">
-                      <div class="flex items-start gap-2.5">
-                        <div class="bg-surface-2 mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gray-400">
-                          {unsafeHTML(c.categoryIcon)}
-                        </div>
-                        <div>
-                          <h3 class="font-mono text-sm font-semibold text-gray-800 transition-colors group-hover:text-gray-900">
-                            {c.displayName}
-                          </h3>
-                          <span class="text-[10px] tracking-wider text-gray-400 uppercase">
-                            {c.category} / {c.dataset}
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {cards.map((c) => (
+                <a
+                  href={`${base}/scenario?scenario=${encodeURIComponent(c.scenario)}&dataset=${encodeURIComponent(c.dataset)}`}
+                  class="scenario-card hover:border-accent/40 group cursor-pointer rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div class="mb-4 flex items-start justify-between">
+                    <div class="flex items-start gap-2.5">
+                      <div class="bg-surface-2 mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gray-400">
+                        {unsafeHTML(c.categoryIcon)}
+                      </div>
+                      <div>
+                        <h3 class="font-mono text-sm font-semibold text-gray-800 transition-colors group-hover:text-gray-900">
+                          {c.displayName}
+                        </h3>
+                        <span class="text-[10px] tracking-wider text-gray-400 uppercase">
+                          {c.category} / {c.dataset}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="bg-surface-2 group-hover:text-accent flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors">
+                      {unsafeHTML(icons.arrowUpRight)}
+                    </div>
+                  </div>
+
+                  {c.hasSummary && (
+                    <div class="space-y-3">
+                      <div>
+                        <div class="mb-1 flex justify-between text-[11px]">
+                          <span class="text-gray-400">Throughput</span>
+                          <span class="font-mono text-gray-700">
+                            {c.throughputText}
                           </span>
                         </div>
+                        <div class="bg-surface-3 h-1.5 overflow-hidden rounded-full">
+                          <div
+                            class="h-full rounded-full transition-all duration-700"
+                            style={{
+                              width: `${c.throughputWidth}%`,
+                              background: c.algoColor,
+                            }}
+                          ></div>
+                        </div>
                       </div>
-                      <div class="bg-surface-2 group-hover:text-accent flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors">
-                        {unsafeHTML(icons.arrowUpRight)}
+                      <div>
+                        <div class="mb-1 flex justify-between text-[11px]">
+                          <span class="text-gray-400">Avg Delay</span>
+                          <span class="font-mono text-gray-700">
+                            {c.delayText}
+                          </span>
+                        </div>
+                        <div class="bg-surface-3 h-1.5 overflow-hidden rounded-full">
+                          <div
+                            class="h-full rounded-full bg-amber-500/70 transition-all duration-700"
+                            style={{ width: `${c.delayWidth}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div class="mb-1 flex justify-between text-[11px]">
+                          <span class="text-gray-400">Packet Loss</span>
+                          <span class="font-mono text-gray-700">
+                            {c.lossText}
+                          </span>
+                        </div>
+                        <div class="bg-surface-3 h-1.5 overflow-hidden rounded-full">
+                          <div
+                            class="h-full rounded-full bg-red-500/60 transition-all duration-700"
+                            style={{ width: `${c.lossWidth}%` }}
+                          ></div>
+                        </div>
                       </div>
                     </div>
+                  )}
 
-                    {c.hasSummary && (
-                      <div class="space-y-3">
-                        <div>
-                          <div class="mb-1 flex justify-between text-[11px]">
-                            <span class="text-gray-400">Throughput</span>
-                            <span class="font-mono text-gray-700">
-                              {c.throughputText}
-                            </span>
-                          </div>
-                          <div class="bg-surface-3 h-1.5 overflow-hidden rounded-full">
-                            <div
-                              class="h-full rounded-full transition-all duration-700"
-                              style={{
-                                width: `${c.throughputWidth}%`,
-                                background: c.algoColor,
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                        <div>
-                          <div class="mb-1 flex justify-between text-[11px]">
-                            <span class="text-gray-400">Avg Delay</span>
-                            <span class="font-mono text-gray-700">
-                              {c.delayText}
-                            </span>
-                          </div>
-                          <div class="bg-surface-3 h-1.5 overflow-hidden rounded-full">
-                            <div
-                              class="h-full rounded-full bg-amber-500/70 transition-all duration-700"
-                              style={{ width: `${c.delayWidth}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                        <div>
-                          <div class="mb-1 flex justify-between text-[11px]">
-                            <span class="text-gray-400">Packet Loss</span>
-                            <span class="font-mono text-gray-700">
-                              {c.lossText}
-                            </span>
-                          </div>
-                          <div class="bg-surface-3 h-1.5 overflow-hidden rounded-full">
-                            <div
-                              class="h-full rounded-full bg-red-500/60 transition-all duration-700"
-                              style={{ width: `${c.lossWidth}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    <div class="mt-4 flex items-center gap-1.5 border-t border-gray-100 pt-3">
-                      {c.algoDots.map((dot) => (
-                        <span
-                          class="h-2 w-2 rounded-full"
-                          style={{ background: dot.color }}
-                          title={dot.label}
-                        ></span>
-                      ))}
-                      <span class="ml-1 text-[10px] text-gray-400">
-                        {c.algoCountText}
-                      </span>
-                    </div>
-                  </a>
-                ))}
-              </div>
-
-              {cards.length === 0 && (
-                <div class="py-20 text-center">
-                  <p class="text-sm text-gray-400">
-                    No scenarios match the current filters.
-                  </p>
-                </div>
-              )}
+                  <div class="mt-4 flex items-center gap-1.5 border-t border-gray-100 pt-3">
+                    {c.algoDots.map((dot) => (
+                      <span
+                        class="h-2 w-2 rounded-full"
+                        style={{ background: dot.color }}
+                        title={dot.label}
+                      ></span>
+                    ))}
+                    <span class="ml-1 text-[10px] text-gray-400">
+                      {c.algoCountText}
+                    </span>
+                  </div>
+                </a>
+              ))}
             </div>
-          )}
+
+            {cards.length === 0 && (
+              <div class="py-20 text-center">
+                <p class="text-sm text-gray-400">
+                  No scenarios match the current filters.
+                </p>
+              </div>
+            )}
+          </div>
         </main>
       </div>
     );

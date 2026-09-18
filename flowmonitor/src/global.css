@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Light-DOM custom elements (createRenderRoot returns `this`): Lit's
+   default `:host { display: block }` never applies without a shadow
+   root, so the hosts fall back to `display: inline`. */
+fm-app,
+fm-dashboard,
+fm-scenario {
+  display: block;
+}
+
 @theme {
   --color-surface-0: #f8fafc;
   --color-surface-1: #ffffff;

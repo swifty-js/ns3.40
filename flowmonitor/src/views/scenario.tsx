@@ -529,201 +529,204 @@ export class Scenario extends LitElement {
         </header>
 
         <main class="mx-auto max-w-7xl px-6 py-8">
-          {this.loading && (
-            <div class="flex items-center justify-center py-32">
-              <div class="border-accent/30 border-t-accent h-10 w-10 animate-spin rounded-full border-2"></div>
-            </div>
-          )}
-          {this.data && (
-            <div>
-              <div class="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {this.algoCards.map((card) => (
-                  <div class="algo-summary-card relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <div
-                      class="absolute top-0 left-0 h-0.5 w-full"
-                      style={{
-                        background: `linear-gradient(90deg, ${card.color}, transparent)`,
-                      }}
-                    ></div>
-                    <div class="mb-4 flex items-center gap-2">
-                      <span
-                        class="h-3 w-3 rounded-full"
-                        style={{ background: card.color }}
-                      ></span>
-                      <span
-                        class="text-sm font-semibold"
-                        style={{ color: card.color }}
-                      >
-                        {card.label}
+          {/* Both panes stay mounted and toggle via a class that is always
+              present. On a conditional swap lit-jsx reuses the previous
+              element and never removes a class prop that disappears
+              (spread groom() skips properties), so an unclassed branch
+              would inherit the spinner's flex layout. */}
+          <div
+            class={
+              this.loading ? "flex items-center justify-center py-32" : "hidden"
+            }
+          >
+            <div class="border-accent/30 border-t-accent h-10 w-10 animate-spin rounded-full border-2"></div>
+          </div>
+          <div class={this.data ? "block" : "hidden"}>
+            <div class="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {this.algoCards.map((card) => (
+                <div class="algo-summary-card relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                  <div
+                    class="absolute top-0 left-0 h-0.5 w-full"
+                    style={{
+                      background: `linear-gradient(90deg, ${card.color}, transparent)`,
+                    }}
+                  ></div>
+                  <div class="mb-4 flex items-center gap-2">
+                    <span
+                      class="h-3 w-3 rounded-full"
+                      style={{ background: card.color }}
+                    ></span>
+                    <span
+                      class="text-sm font-semibold"
+                      style={{ color: card.color }}
+                    >
+                      {card.label}
+                    </span>
+                  </div>
+                  <div class="space-y-3">
+                    <div class="flex items-baseline justify-between">
+                      <span class="text-[11px] text-gray-400">Throughput</span>
+                      <span class="font-mono text-sm text-gray-800">
+                        {card.throughput}
                       </span>
                     </div>
-                    <div class="space-y-3">
-                      <div class="flex items-baseline justify-between">
-                        <span class="text-[11px] text-gray-400">
-                          Throughput
-                        </span>
-                        <span class="font-mono text-sm text-gray-800">
-                          {card.throughput}
-                        </span>
-                      </div>
-                      <div class="flex items-baseline justify-between">
-                        <span class="text-[11px] text-gray-400">Avg Delay</span>
-                        <span class="font-mono text-sm text-gray-800">
-                          {card.delay}
-                        </span>
-                      </div>
-                      <div class="flex items-baseline justify-between">
-                        <span class="text-[11px] text-gray-400">Jitter</span>
-                        <span class="font-mono text-sm text-gray-800">
-                          {card.jitter}
-                        </span>
-                      </div>
-                      <div class="flex items-baseline justify-between">
-                        <span class="text-[11px] text-gray-400">Loss Rate</span>
-                        <span class="font-mono text-sm text-gray-800">
-                          {card.loss}
-                        </span>
-                      </div>
-                      <div class="flex items-baseline justify-between">
-                        <span class="text-[11px] text-gray-400">Total RX</span>
-                        <span class="font-mono text-sm text-gray-800">
-                          {card.totalRx}
-                        </span>
-                      </div>
+                    <div class="flex items-baseline justify-between">
+                      <span class="text-[11px] text-gray-400">Avg Delay</span>
+                      <span class="font-mono text-sm text-gray-800">
+                        {card.delay}
+                      </span>
+                    </div>
+                    <div class="flex items-baseline justify-between">
+                      <span class="text-[11px] text-gray-400">Jitter</span>
+                      <span class="font-mono text-sm text-gray-800">
+                        {card.jitter}
+                      </span>
+                    </div>
+                    <div class="flex items-baseline justify-between">
+                      <span class="text-[11px] text-gray-400">Loss Rate</span>
+                      <span class="font-mono text-sm text-gray-800">
+                        {card.loss}
+                      </span>
+                    </div>
+                    <div class="flex items-baseline justify-between">
+                      <span class="text-[11px] text-gray-400">Total RX</span>
+                      <span class="font-mono text-sm text-gray-800">
+                        {card.totalRx}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div class="chart-section mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <div class="mb-6 flex items-center justify-between">
+                <h2 class="text-lg font-semibold tracking-tight text-gray-900">
+                  Algorithm Comparison
+                </h2>
+                <div class="flex items-center gap-1.5">
+                  {METRICS.map((m) => (
+                    <button
+                      class={`cursor-pointer rounded-lg px-3 py-1.5 text-xs transition-all ${
+                        this.metric === m.key
+                          ? "bg-accent/10 text-accent-soft"
+                          : "text-gray-400 hover:text-gray-600"
+                      }`}
+                      onClick={() => {
+                        this.metric = m.key;
+                      }}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <div class="relative h-64">
+                  <canvas id="barChart"></canvas>
+                </div>
+                <div class="relative h-64">
+                  <canvas id="radarChart"></canvas>
+                </div>
+              </div>
+              <p class="mt-3 text-center text-[11px] text-gray-400">
+                {this.metricLabel} comparison across congestion control
+                algorithms
+              </p>
+            </div>
+
+            <div class="chart-section mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 class="mb-5 text-lg font-semibold tracking-tight text-gray-900">
+                Delay Distribution
+              </h2>
+              <div class="relative h-72">
+                <canvas id="delayChart"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-section rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 class="mb-5 text-lg font-semibold tracking-tight text-gray-900">
+                TCP Flow Details
+              </h2>
+              <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                {this.flowTables.map((tbl) => (
+                  <div class="bg-surface-0 overflow-hidden rounded-xl border border-gray-100">
+                    <div class="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
+                      <span
+                        class="h-2.5 w-2.5 rounded-full"
+                        style={{ background: tbl.color }}
+                      ></span>
+                      <span
+                        class="text-xs font-semibold"
+                        style={{ color: tbl.color }}
+                      >
+                        {tbl.label}
+                      </span>
+                      <span class="ml-auto text-[10px] text-gray-400">
+                        {tbl.flowCountText}
+                      </span>
+                    </div>
+                    <div class="overflow-x-auto">
+                      <table class="w-full text-[11px]">
+                        <thead>
+                          <tr class="border-b border-gray-100 text-gray-400">
+                            <th class="px-4 py-2 text-left font-medium">
+                              Flow
+                            </th>
+                            <th class="px-3 py-2 text-right font-medium">
+                              Throughput
+                            </th>
+                            <th class="px-3 py-2 text-right font-medium">
+                              Delay
+                            </th>
+                            <th class="px-3 py-2 text-right font-medium">
+                              Jitter
+                            </th>
+                            <th class="px-4 py-2 text-right font-medium">
+                              Loss
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tbl.flows.map((flow) => (
+                            <tr class="hover:bg-surface-2 border-b border-gray-50 transition-colors">
+                              <td class="px-4 py-2.5">
+                                <span class="font-mono text-gray-700">
+                                  #{flow.flowId}
+                                </span>
+                                <span class="ml-1 text-gray-400">
+                                  {flow.src}:{flow.srcPort}
+                                </span>
+                              </td>
+                              <td class="px-3 py-2.5 text-right font-mono text-gray-700">
+                                {flow.throughput}
+                              </td>
+                              <td class="px-3 py-2.5 text-right font-mono text-gray-700">
+                                {flow.delay}
+                              </td>
+                              <td class="px-3 py-2.5 text-right font-mono text-gray-700">
+                                {flow.jitter}
+                              </td>
+                              <td
+                                class={`px-4 py-2.5 text-right font-mono ${
+                                  flow.hasLoss
+                                    ? "text-red-500"
+                                    : "text-gray-400"
+                                }`}
+                              >
+                                {flow.loss}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 ))}
               </div>
-
-              <div class="chart-section mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <div class="mb-6 flex items-center justify-between">
-                  <h2 class="text-lg font-semibold tracking-tight text-gray-900">
-                    Algorithm Comparison
-                  </h2>
-                  <div class="flex items-center gap-1.5">
-                    {METRICS.map((m) => (
-                      <button
-                        class={`cursor-pointer rounded-lg px-3 py-1.5 text-xs transition-all ${
-                          this.metric === m.key
-                            ? "bg-accent/10 text-accent-soft"
-                            : "text-gray-400 hover:text-gray-600"
-                        }`}
-                        onClick={() => {
-                          this.metric = m.key;
-                        }}
-                      >
-                        {m.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <div class="relative h-64">
-                    <canvas id="barChart"></canvas>
-                  </div>
-                  <div class="relative h-64">
-                    <canvas id="radarChart"></canvas>
-                  </div>
-                </div>
-                <p class="mt-3 text-center text-[11px] text-gray-400">
-                  {this.metricLabel} comparison across congestion control
-                  algorithms
-                </p>
-              </div>
-
-              <div class="chart-section mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 class="mb-5 text-lg font-semibold tracking-tight text-gray-900">
-                  Delay Distribution
-                </h2>
-                <div class="relative h-72">
-                  <canvas id="delayChart"></canvas>
-                </div>
-              </div>
-
-              <div class="chart-section rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 class="mb-5 text-lg font-semibold tracking-tight text-gray-900">
-                  TCP Flow Details
-                </h2>
-                <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                  {this.flowTables.map((tbl) => (
-                    <div class="bg-surface-0 overflow-hidden rounded-xl border border-gray-100">
-                      <div class="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
-                        <span
-                          class="h-2.5 w-2.5 rounded-full"
-                          style={{ background: tbl.color }}
-                        ></span>
-                        <span
-                          class="text-xs font-semibold"
-                          style={{ color: tbl.color }}
-                        >
-                          {tbl.label}
-                        </span>
-                        <span class="ml-auto text-[10px] text-gray-400">
-                          {tbl.flowCountText}
-                        </span>
-                      </div>
-                      <div class="overflow-x-auto">
-                        <table class="w-full text-[11px]">
-                          <thead>
-                            <tr class="border-b border-gray-100 text-gray-400">
-                              <th class="px-4 py-2 text-left font-medium">
-                                Flow
-                              </th>
-                              <th class="px-3 py-2 text-right font-medium">
-                                Throughput
-                              </th>
-                              <th class="px-3 py-2 text-right font-medium">
-                                Delay
-                              </th>
-                              <th class="px-3 py-2 text-right font-medium">
-                                Jitter
-                              </th>
-                              <th class="px-4 py-2 text-right font-medium">
-                                Loss
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {tbl.flows.map((flow) => (
-                              <tr class="hover:bg-surface-2 border-b border-gray-50 transition-colors">
-                                <td class="px-4 py-2.5">
-                                  <span class="font-mono text-gray-700">
-                                    #{flow.flowId}
-                                  </span>
-                                  <span class="ml-1 text-gray-400">
-                                    {flow.src}:{flow.srcPort}
-                                  </span>
-                                </td>
-                                <td class="px-3 py-2.5 text-right font-mono text-gray-700">
-                                  {flow.throughput}
-                                </td>
-                                <td class="px-3 py-2.5 text-right font-mono text-gray-700">
-                                  {flow.delay}
-                                </td>
-                                <td class="px-3 py-2.5 text-right font-mono text-gray-700">
-                                  {flow.jitter}
-                                </td>
-                                <td
-                                  class={`px-4 py-2.5 text-right font-mono ${
-                                    flow.hasLoss
-                                      ? "text-red-500"
-                                      : "text-gray-400"
-                                  }`}
-                                >
-                                  {flow.loss}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
-          )}
+          </div>
         </main>
       </div>
     );
